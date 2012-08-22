@@ -57,3 +57,21 @@
     float: right;
     font-weight: bold;
 }
+
+label.checkbox {
+    display: block;
+}
+
+.checkbox input {
+    float: left;
+    height: 18px;
+    vertical-align: middle;
+}
+
+.checkbox a {
+    float: left;
+    line-height: 18px;
+    margin: 0 0 0 7px;
+    font-size: 14px;
+    font-weight: bold;
+}

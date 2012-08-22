@@ -16,17 +16,21 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
+import javax.ws.rs.core.CacheControl;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.velocity.exception.VelocityException;
+
 import com.atlassian.crowd.embedded.api.User;
 import com.atlassian.jira.ComponentManager;
 import com.atlassian.jira.bc.JiraServiceContext;
@@ -516,7 +520,12 @@ public class MailRuCalService
                 return new JsonWriter(writer, JsonWriter.DROP_ROOT_MODE);
             }
         });
-        return Response.ok(xstream.toXML(eventObjs)).build();
+
+        CacheControl cc = new CacheControl();
+        cc.setNoCache(true);
+        cc.setNoStore(true);
+        cc.setMaxAge(0);
+        return Response.ok(xstream.toXML(eventObjs)).cacheControl(cc).build();
     }
 
     /**

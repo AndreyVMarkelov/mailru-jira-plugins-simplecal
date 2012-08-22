@@ -34,10 +34,14 @@
                       <ul>
                         #if($usrData)
                             #foreach($proj in $usrData.getProjs())
-                            <li><a href="#" onclick="actMailRuCalendar(event, '$baseUrl', '$proj.getName()', $proj.getcTime())"><span style="color: $proj.getColor();">$proj.getName()</span></a></li>
+                            <label for="id" class="checkbox">
+                                <input disabled="disabled" type="checkbox" id="$proj.getName()" #if($proj.isActive())checked="checked"#end/>
+                                <a href="#" onclick="actMailRuCalendar(event, '$baseUrl', '$proj.getName()', $proj.getcTime())"><span style="color: $proj.getColor();">$proj.getName()</span></a>
+                            </label>
                             #end
                         #end
                       </ul>
+                      <!--<button onclick="AJS.$('#calendar').fullCalendar('refetchEvents');">eded</button>-->
                     </td>
                   </tr>
                 </table>
