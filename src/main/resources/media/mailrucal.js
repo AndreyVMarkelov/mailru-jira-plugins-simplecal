@@ -79,6 +79,22 @@ function unblock() {
     jQuery.unblockUI();
 }
 
+function changeCalMode(baseUrl, name, ctime) {
+    var mode = AJS.$("#" + name + ctime).attr("checked");
+    jQuery.ajax({
+        url: baseUrl + "/rest/mailrucalws/1.0/mailcalsrv/changecalmode",
+        type: "POST",
+        dataType: "json",
+        data: {"mode": mode, "name": name, "ctime": ctime},
+        error: function(xhr, ajaxOptions, thrownError) {
+            alert(xhr.responseText);
+        },
+        success: function(result) {
+            AJS.$('#calendar').fullCalendar('refetchEvents');
+        }
+    });
+}
+
 function actMailRuCalendar(event, baseUrl, name, ctime) {
     event.preventDefault();
 

@@ -33,15 +33,18 @@
                     <td>
                       <ul>
                         #if($usrData)
+                            <table>
                             #foreach($proj in $usrData.getProjs())
+                            <tr><td>
                             <label for="id" class="checkbox">
-                                <input disabled="disabled" type="checkbox" id="$proj.getName()" #if($proj.isActive())checked="checked"#end/>
+                                <input onclick="changeCalMode('$baseUrl', '$proj.getName()', $proj.getcTime())" type="checkbox" id="$proj.getName()$proj.getcTime()" name="$proj.getName()$proj.getcTime()" #if($proj.isActive())checked="checked"#end/>
                                 <a href="#" onclick="actMailRuCalendar(event, '$baseUrl', '$proj.getName()', $proj.getcTime())"><span style="color: $proj.getColor();">$proj.getName()</span></a>
                             </label>
+                            </td></tr>
                             #end
+                            </table>
                         #end
                       </ul>
-                      <!--<button onclick="AJS.$('#calendar').fullCalendar('refetchEvents');">eded</button>-->
                     </td>
                   </tr>
                 </table>

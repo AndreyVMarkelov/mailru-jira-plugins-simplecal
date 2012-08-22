@@ -198,6 +198,60 @@ public class MailRuCalService
         return Response.seeOther(URI.create(baseUrl + "/plugins/servlet/mailrucal/view")).build();
     }
 
+    @POST
+    @Produces ({ MediaType.APPLICATION_JSON})
+    @Path("/changecalmode")
+    public Response changeCalendarMode(@Context HttpServletRequest request)
+    {
+        JiraAuthenticationContext authCtx = ComponentManager.getInstance().getJiraAuthenticationContext();
+        User user = authCtx.getLoggedInUser();
+        if (user == null)
+        {
+            log.error("MailRuCalService::changeCalendarMode - User is not logged");
+            return Response.status(401).build();
+        }
+
+        String name = request.getParameter("name");
+        String ctimestr = request.getParameter("ctime");
+        String mode = request.getParameter("mode");
+
+        //--> checks
+        if (!Utils.isStr(name) ||
+            !Utils.isStr(mode))
+        {
+            log.error("MailRuCalService::changeCalendarMode - Required parameters are not set");
+            return Response.status(500).build();
+        }
+
+        Long ctime;
+        try
+        {
+            ctime = Long.valueOf(ctimestr);
+        }
+        catch (NumberFormatException nfex)
+        {
+            log.error("MailRuCalService::changeCalendarMode - Incorrect input parameters");
+            return Response.status(500).build();
+        }
+
+        UserCalData usrData = mailCfg.getUserData(user.getName());
+        if (usrData != null)
+        {
+            Iterator<ProjectCalUserData> iter = usrData.getProjs().iterator();
+            while (iter.hasNext())
+            {
+                ProjectCalUserData pcud = iter.next();
+                if (pcud.getName().equals(name) && pcud.getcTime() == ctime.longValue())
+                {
+                    pcud.setActive(Boolean.parseBoolean(mode));
+                }
+            }
+            mailCfg.putUserData(user.getName(), usrData);
+        }
+
+        return Response.ok().build();
+    }
+
     /**
      * Create date point entity.
      */
@@ -487,6 +541,11 @@ public class MailRuCalService
         List<EventEntity> eventObjs = new ArrayList<EventEntity>();
         for (ProjectCalUserData pcud : usrData.getProjs())
         {
+            if (!pcud.isActive())
+            {
+                continue;
+            }
+
             Long id;
             try
             {
