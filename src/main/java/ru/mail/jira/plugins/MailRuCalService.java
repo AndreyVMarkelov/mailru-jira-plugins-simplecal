@@ -708,7 +708,7 @@ public class MailRuCalService
         {
             log.error("MailRuCalService::initInfoDialog - User is not logged");
             return Response.status(401).build();
-        }        
+        }
 
         String name = request.getParameter("name");
         String ctimestr = request.getParameter("ctime");

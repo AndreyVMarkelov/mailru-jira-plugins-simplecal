@@ -16,9 +16,9 @@
         <td class="dlgtablekey"><label for="calcolor">$i18n.getText("mailrucal.calcolor")</label></td>
         <td valign="top">
             <select id="calcolor" name="calcolor" style="background-color: $pcud.getColor(); color: white;" onchange="changeColor();" onkeydown="changeColor();" onkeyup="changeColor();">
-                <option #if($pcud.getColor() == "#ADFF2F")selected#end style="background-color: #ADFF2F;" value="#ADFF2F">Green Yellow</option>
+                <option #if($pcud.getColor() == "#efe381")selected#end style="background-color: #efe381;" value="#efe381">Yellow</option>
                 <option #if($pcud.getColor() == "#008B8B")selected#end style="background-color: #008B8B;" value="#008B8B">Dark Cyan</option>
-                <option #if($pcud.getColor() == "#FFA500")selected#end style="background-color: #FFA500;" value="#FFA500">Orange</option>
+                <option #if($pcud.getColor() == "#f4a36d")selected#end style="background-color: #f4a36d;" value="#f4a36d">Orange</option>
                 <option #if($pcud.getColor() == "#696969")selected#end style="background-color: #696969;" value="#696969">Dim Gray</option>
                 <option #if($pcud.getColor() == "#FFD700")selected#end style="background-color: #FFD700;" value="#FFD700">Gold</option>
                 <option #if($pcud.getColor() == "#FF0000")selected#end style="background-color: #FF0000;" value="#FF0000">Red</option>

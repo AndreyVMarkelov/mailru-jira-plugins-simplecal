@@ -68,6 +68,7 @@
                     unblock();
                 }
             },
+            firstDay: 1,
             monthNames: ['$i18n.getText("mailrucal.January")', '$i18n.getText("mailrucal.February")', '$i18n.getText("mailrucal.March")', '$i18n.getText("mailrucal.April")', '$i18n.getText("mailrucal.May")', '$i18n.getText("mailrucal.June")', '$i18n.getText("mailrucal.July")', '$i18n.getText("mailrucal.August")', '$i18n.getText("mailrucal.September")', '$i18n.getText("mailrucal.October")', '$i18n.getText("mailrucal.November")', '$i18n.getText("mailrucal.December")'],
             monthNamesShort: ['$i18n.getText("mailrucal.Jan")', '$i18n.getText("mailrucal.Feb")', '$i18n.getText("mailrucal.Mar")', '$i18n.getText("mailrucal.Apr")', '$i18n.getText("mailrucal.May")', '$i18n.getText("mailrucal.Jun")', '$i18n.getText("mailrucal.Jul")', '$i18n.getText("mailrucal.Aug")', '$i18n.getText("mailrucal.Sep")', '$i18n.getText("mailrucal.Oct")', '$i18n.getText("mailrucal.Nov")', '$i18n.getText("mailrucal.Dec")'],
             dayNames: ['$i18n.getText("mailrucal.Sunday")', '$i18n.getText("mailrucal.Monday")', '$i18n.getText("mailrucal.Tuesday")', '$i18n.getText("mailrucal.Wednesday")', '$i18n.getText("mailrucal.Thursday")', '$i18n.getText("mailrucal.Friday")', '$i18n.getText("mailrucal.Saturday")'],

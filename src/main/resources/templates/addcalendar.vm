@@ -47,10 +47,10 @@
               <table class="justtable">
                       <tr>
                         <td valign="top">
-            <select id="calcolor" name="calcolor" style="background-color: #ADFF2F; color: white;" onchange="changeColor();" onkeydown="changeColor();" onkeyup="changeColor();">
-                <option style="background-color: #ADFF2F;" value="#ADFF2F">Green Yellow</option>
+            <select id="calcolor" name="calcolor" style="background-color: #efe381; color: white;" onchange="changeColor();" onkeydown="changeColor();" onkeyup="changeColor();">
+                <option style="background-color: #efe381;" value="#efe381">Yellow</option>
                 <option style="background-color: #008B8B;" value="#008B8B">Dark Cyan</option>
-                <option style="background-color: #FFA500;" value="#FFA500">Orange</option>
+                <option style="background-color: #f4a36d;" value="#f4a36d">Orange</option>
                 <option style="background-color: #696969;" value="#696969">Dim Gray</option>
                 <option style="background-color: #FFD700;" value="#FFD700">Gold</option>
                 <option style="background-color: #FF0000;" value="#FF0000">Red</option>
