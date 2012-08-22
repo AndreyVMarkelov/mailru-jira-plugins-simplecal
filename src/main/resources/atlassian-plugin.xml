@@ -1,0 +1,90 @@
+<atlassian-plugin key="ru.mail.jira.plugins.mailrucal" name="Simple Calendar" plugins-version="2">
+    <plugin-info>
+        <description>This is the ru.mail.jira.plugins:mailrucal plugin for Atlassian JIRA.</description>
+        <version>1.0.0</version>
+        <vendor name="Mail.Ru Group" url="http://www.mail.ru/" />
+    </plugin-info>
+
+    <!-- Resources -->
+    <resource type="i18n" name="i18n" location="i18n.mailrucal"/>
+
+    <web-resource key="jcalendar" name="Mail.Ru Calendar Resources">
+        <transformation extension="js">
+            <transformer key="jsI18n"/>
+        </transformation>
+        <resource type="download" name="jquery-ui-1.8.17.custom.min.js" location="media/jquery-ui-1.8.17.custom.min.js"/>
+        <resource type="download" name="jquery.blockUI.js" location="media/jquery.blockUI.js"/>
+        <resource type="download" name="fullcalendar.css" location="media/fullcalendar.css"/>
+        <resource type="download" name="fullcalendar.min.js" location="media/fullcalendar.min.js"/>
+        <resource type="download" name="mailrucal.js" location="media/mailrucal.js"/>
+        <resource type="download" name="mailrucal.css" location="media/mailrucal.css"/>
+    </web-resource>
+
+    <web-resource key="jcalendar-admin" name="Mail.Ru Calendar Admin Resources">
+        <transformation extension="js">
+            <transformer key="jsI18n"/>
+        </transformation>
+        <resource type="download" name="mailrucal.js" location="media/mailrucal.js"/>
+        <resource type="download" name="mailrucal.css" location="media/mailrucal.css"/>
+    </web-resource>
+    <!-- End resources -->
+
+    <!-- Sections -->
+    <web-section key="mailrucal-link-section" name="Mail.Ru Calendar section" location="mailrucal-links-link" weight="10"/>
+    <web-item key="mailrucal-links-link"
+              name="Links Mail.Ru Calendar"
+              section="system.top.navigation.bar"
+              weight="47">
+        <condition class="com.atlassian.jira.plugin.webfragment.conditions.UserLoggedInCondition"/>
+        <label key="mailrucal.title"/>
+        <tooltip key="mailrucal.title"/>
+        <link linkId="mailrucal-links-link">/plugins/servlet/mailrucal/view</link>
+    </web-item>
+    <web-item key="mailrucal-links-link-item"
+              name="Links Mail.Ru Calendar"
+              section="mailrucal-links-link/mailrucal-link-section"
+              weight="47">
+        <label key="mailrucal.title"/>
+        <tooltip key="mailrucal.title"/>
+        <condition class="com.atlassian.jira.plugin.webfragment.conditions.UserLoggedInCondition"/>
+        <link linkId="mailrucal-links-link-item">/plugins/servlet/mailrucal/view</link>
+    </web-item>
+    <web-item key="mailrucal-configuration" name="Mail.Ru Calendar link on administrators page" section="system.admin/globalsettings" weight="95">
+        <label key="mailrucal.settingstitle"/>
+        <condition class="com.atlassian.jira.plugin.webfragment.conditions.JiraGlobalPermissionCondition">
+            <param name="permission">admin</param>
+        </condition>
+        <link linkId="god-events-configuration">/secure/ViewMailRuCalendarAdmin!default.jspa</link>
+    </web-item>
+
+    <webwork1 key="MailRuCalendarAdminAction" name="Mail.Ru Calendar Administration Action" class="java.lang.Object">
+        <actions>
+            <action name="ru.mail.jira.plugins.MailRuCalendarAdmin" alias="ViewMailRuCalendarAdmin">
+                <view name="input">/templates/mailrucaladmin.vm</view>
+                <view name="success">/templates/mailrucaladmin.vm</view>
+            </action>
+        </actions>
+    </webwork1>
+    <!-- End sections -->
+
+    <!-- Rest resources -->
+    <rest key="mailrucal-resources" path="/mailrucalws" version="1.0">
+        <description>Provides the REST resource for the "mailrucal" plugin.</description>
+    </rest>
+    <!-- End rest -->
+
+    <!-- component imports -->
+    <component key="mailrucal-config" name="Mail.Ru calendar Plug-In configuration" class="ru.mail.jira.plugins.MailRuCalCfgImpl"/>
+
+    <component-import key="pluginSettingsFactory" interface="com.atlassian.sal.api.pluginsettings.PluginSettingsFactory"/>
+    <component-import key="applicationProperties" interface="com.atlassian.sal.api.ApplicationProperties"/>
+    <component-import key="velocity-renderer" interface="com.atlassian.templaterenderer.TemplateRenderer" />
+    <component-import key="loginUriProvider" interface="com.atlassian.sal.api.auth.LoginUriProvider"/>
+    <!-- End imports -->
+
+    <!-- Servlets -->
+    <servlet key="mailrucal-renderer" class="ru.mail.jira.plugins.MailRuCalServlet">
+        <url-pattern>/mailrucal/view</url-pattern>
+    </servlet>
+    <!-- End servlets -->
+</atlassian-plugin>

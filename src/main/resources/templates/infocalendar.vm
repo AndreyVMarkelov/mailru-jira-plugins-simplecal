@@ -1,0 +1,74 @@
+## Created by Andrey Markelov 29-08-2012.
+## Copyright Mail.Ru Group 2012. All rights reserved.
+<form id="deletecalform" name="deletecalform" action="${baseUrl}/rest/mailrucalws/1.0/mailcalsrv/deletecalendar" method="post">
+  <input type="hidden" value="$pcud.getcTime()" id="calctime" name="calctime"/>
+  <input type="hidden" value="$pcud.getName()" id="origcalname" name="origcalname"/>
+  <table class="dlginfotable">
+    <tr>
+      <td class="dlgtablekey"><label for="calname">$i18n.getText("mailrucal.calname")</label></td>
+      <td valign="top"><input type="text" value="$pcud.getName()" id="calname" name="calname"/></td>
+    </tr>
+    <tr>
+        <td class="dlgtablekey"><label for="caldescr">$i18n.getText("mailrucal.caldescr")</label></td>
+        <td valign="top"><textarea rows="3" cols="30" id="caldescr" name="caldescr">$pcud.getDescr()</textarea></td>
+    </tr>
+    <tr>
+        <td class="dlgtablekey"><label for="calcolor">$i18n.getText("mailrucal.calcolor")</label></td>
+        <td valign="top">
+            <select id="calcolor" name="calcolor" style="background-color: $pcud.getColor(); color: white;" onchange="changeColor();" onkeydown="changeColor();" onkeyup="changeColor();">
+                <option #if($pcud.getColor() == "#ADFF2F")selected#end style="background-color: #ADFF2F;" value="#ADFF2F">Green Yellow</option>
+                <option #if($pcud.getColor() == "#008B8B")selected#end style="background-color: #008B8B;" value="#008B8B">Dark Cyan</option>
+                <option #if($pcud.getColor() == "#FFA500")selected#end style="background-color: #FFA500;" value="#FFA500">Orange</option>
+                <option #if($pcud.getColor() == "#696969")selected#end style="background-color: #696969;" value="#696969">Dim Gray</option>
+                <option #if($pcud.getColor() == "#FFD700")selected#end style="background-color: #FFD700;" value="#FFD700">Gold</option>
+                <option #if($pcud.getColor() == "#FF0000")selected#end style="background-color: #FF0000;" value="#FF0000">Red</option>
+                <option #if($pcud.getColor() == "#0000FF")selected#end style="background-color: #0000FF;" value="#0000FF">Blue</option>
+                <option #if($pcud.getColor() == "#FFC0CB")selected#end style="background-color: #FFC0CB;" value="#FFC0CB">Pink</option>
+            </select>
+        </td>
+    </tr>
+    <tr>
+        <td class="dlgtablekey"><label>#if($pcud.isProjectType())$i18n.getText("mailrucal.calproj")#else$i18n.getText("mailrucal.calfilter")#end</label></td>
+        <td valign="top"><input disabled="disabled" type="text" id="display" value="$targetName" name="display"/></td>
+    </tr>
+    <tr>
+        <td class="dlgtablekey"><label>$i18n.getText("mailrucal.calshow")</label></td>
+        <td valign="top">
+        #if($pcud.isIDD())
+          <input disabled="disabled" type="radio" id="display" name="display" checked="checked"/><span>$i18n.getText("mailrucal.calidd")</span>
+        #elseif($pcud.isDatePoint())
+        <table class="justtable">
+            <tr>
+            <td valign="top">
+              <input disabled="disabled" type="radio" id="display" name="display" checked="checked"/><span>$i18n.getText("mailrucal.customdatepoint")</span>
+             </td>
+             </tr>
+             <tr>
+             <td valign="top">
+          <input disabled="disabled" type="text" value="$pcud.getStartPoint()"/>
+             </td>
+             </tr>
+             </table>
+        #else
+           <table class="justtable">
+            <tr>
+            <td valign="top">
+          <input disabled="disabled" type="radio" id="display" name="display" checked="checked"/><span>$i18n.getText("mailrucal.daterange")</span>
+          </td>
+          </tr>
+          <tr>
+          <td valign="top">
+          <input disabled="disabled" type="text" value="$pcud.getStartPoint()"/>
+          </td>
+          </tr>
+          <tr>
+          <td valign="top">
+          <input disabled="disabled" type="text" value="$pcud.getEndPoint()"/>
+            </td>
+             </tr>
+             </table>
+        #end
+        </td>
+    </tr>
+  </table>
+</form>

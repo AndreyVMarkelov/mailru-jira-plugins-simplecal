@@ -1,0 +1,154 @@
+## Created by Andrey Markelov 29-08-2012.
+## Copyright Mail.Ru Group 2012. All rights reserved.
+<form id="addcalform" name="addcalform" action="${baseUrl}/rest/mailrucalws/1.0/mailcalsrv/addcalendar" method="post">
+    <table class="dlgtable">
+    <tr>
+        <td class="dlgtablekey"><label for="calname">$i18n.getText("mailrucal.calname")*</label></td>
+        <td valign="top">
+        <table class="justtable">
+            <tr>
+              <td valign="top">
+              <table class="justtable">
+                      <tr>
+                        <td valign="top">
+        <input type="text" size="30" id="calname" name="calname"/>
+        </td>
+                      </tr>
+                    </table>
+              </td>
+            </tr>
+          </table>
+        </td>
+    </tr>
+    <tr>
+        <td class="dlgtablekey"><label for="caldescr">$i18n.getText("mailrucal.caldescr")</label></td>
+        <td valign="top">
+        <table class="justtable">
+            <tr>
+              <td valign="top">
+              <table class="justtable">
+                      <tr>
+                        <td valign="top">
+           <textarea rows="3" cols="30" id="caldescr" name="caldescr"></textarea>
+           </td>
+                      </tr>
+                    </table>
+              </td>
+            </tr>
+          </table>
+         </td>
+    </tr>
+    <tr>
+        <td class="dlgtablekey"><label for="calcolor">$i18n.getText("mailrucal.calcolor")*</label></td>
+        <td valign="top">
+        <table class="justtable">
+            <tr>
+              <td valign="top">
+              <table class="justtable">
+                      <tr>
+                        <td valign="top">
+            <select id="calcolor" name="calcolor" style="background-color: #ADFF2F; color: white;" onchange="changeColor();" onkeydown="changeColor();" onkeyup="changeColor();">
+                <option style="background-color: #ADFF2F;" value="#ADFF2F">Green Yellow</option>
+                <option style="background-color: #008B8B;" value="#008B8B">Dark Cyan</option>
+                <option style="background-color: #FFA500;" value="#FFA500">Orange</option>
+                <option style="background-color: #696969;" value="#696969">Dim Gray</option>
+                <option style="background-color: #FFD700;" value="#FFD700">Gold</option>
+                <option style="background-color: #FF0000;" value="#FF0000">Red</option>
+                <option style="background-color: #0000FF;" value="#0000FF">Blue</option>
+                <option style="background-color: #FFC0CB;" value="#FFC0CB">Pink</option>
+            </select>
+            </td>
+                      </tr>
+                    </table>
+              </td>
+            </tr>
+          </table>
+        </td>
+    </tr>
+    <tr>
+        <td class="dlgtablekey"><label>$i18n.getText("mailrucal.caldisplay")*</label></td>
+        <td valign="top">
+          <table class="justtable">
+            <tr>
+              <td valign="top">
+              <table class="justtable">
+                      <tr>
+                        <td valign="top">
+                <div>
+                  <input onclick="fillProj();" type="radio" id="display" name="display" value="project" checked="checked"/><span>$i18n.getText("mailrucal.calproj")</span>&nbsp;&nbsp;
+                  <input onclick="fillJcl();" type="radio" id="display" name="display" value="jcl"/><span>$i18n.getText("mailrucal.calfilter")</span>
+                </div>
+                <select id="mainsel" name="mainsel" style="background-color: white;">
+                #foreach($entry in $aProj.entrySet())
+                  <option value="$entry.key">$entry.value</option>
+                #end
+                </select>
+                <select id="projsel" name="projsel" style="display: none;">
+                #foreach($entry in $aProj.entrySet())
+                  <option value="$entry.key">$entry.value</option>
+                #end
+                </select>
+                <select id="jclsel" name="jclsel" style="display: none;">
+                #foreach($entry in $aSearch.entrySet())
+                  <option value="$entry.key">$entry.value</option>
+                #end
+                </select>
+                </td>
+                      </tr>
+                    </table>
+              </td>
+            </tr>
+          </table>
+        </td>
+    </tr>
+    <tr>
+        <td class="dlgtablekey"><label>$i18n.getText("mailrucal.calshow")*</label></td>
+        <td valign="top">
+            <table class="justtable">
+                <tr>
+                  <td valign="top">
+                    <table class="justtable">
+                      <tr>
+                        <td valign="top">
+                          <input onclick="setIssueDueDate();" type="radio" id="showfld" name="showfld" value="idd" checked="checked"/><span>$i18n.getText("mailrucal.calidd")</span>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+                <tr>
+                  <td valign="top">
+                    <table class="justtable">
+                      <tr>
+                        <td valign="top">
+                          <input onclick="setCustomDate();" type="radio" id="showfld" name="showfld" value="cdp"/><span>$i18n.getText("mailrucal.customdatepoint")</span>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td valign="top">
+                          <input type="text" size="15" id="cdpinput" name="cdpinput" disabled="disabled"/>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+                <tr>
+                  <td valign="top">
+                    <table class="justtable">
+                      <tr>
+                        <td valign="top">
+                          <input onclick="setRange();" type="radio" id="showfld" name="showfld" value="cdr"/><span>$i18n.getText("mailrucal.daterange")</span>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td valign="top">
+                          <input type="text" size="13" id="startpoint" name="startpoint" disabled="disabled"/> - <input type="text" size="13" id="endpoint" name="endpoint" disabled="disabled"/>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+            </table>
+        </td>
+    </tr>
+</form>

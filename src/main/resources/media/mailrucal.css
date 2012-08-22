@@ -1,0 +1,59 @@
+/*
+  Created by Andrey Markelov 29-08-2012.
+  Copyright Mail.Ru Group 2012. All rights reserved.
+*/
+.optionbox {
+    margin: 12px;
+}
+
+.linemargin {
+    margin-left: 12px;
+    margin-right: 12px;
+}
+
+.rightbox {
+    float: left;
+    width: 100%;
+    height: 100%;
+}
+
+.opttext {
+    text-align: center;
+    font-weight: bold;
+    font-size: 14px;
+}
+
+.addact {
+    font-size: 14px;
+    font-weight: bold;
+    text-align: left;
+}
+
+.addcalheader {
+    font-size: 14px;
+    font-weight: bold;
+    text-align: left;
+    background-color: grey;
+}
+
+#loading {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+}
+
+.justtable {
+    border-collapse: collapse;
+    border-spacing: 0px;
+}
+
+.dlgtable {
+    padding: 12px;
+    border-collapse: collapse;
+    border-spacing: 0px;
+}
+
+.dlgtablekey {
+    float: right;
+    font-weight: bold;
+}

@@ -1,0 +1,89 @@
+## Created by Andrey Markelov 29-08-2012.
+## Copyright Mail.Ru Group 2012. All rights reserved.
+<html>
+    <head>
+        <title>$i18n.getText("mailrucal.title")</title>
+        <meta name="decorator" content="atl.general"/>
+        $webResourceManager.requireResource("jira.webresources:global-static")
+        $webResourceManager.requireResource("jira.webresources:jira-global")
+        $webResourceManager.requireResource("com.atlassian.auiplugin:ajs")
+        $webResourceManager.requireResource("ru.mail.jira.plugins.mailrucal:jcalendar")
+    </head>
+    <body class="aui">
+      <table width="100%">
+      <tr>
+        <td width="80%">
+          <div id='calendar'></div>
+        </td>
+        <td width="20%" valign="top">
+          <div class="rightbox">
+              <div class="optionbox">
+                <p>
+                  <img src="/jira/images/icons/bullet_creme.gif" height="8" align="absmiddle" border="0" width="8">
+                  <strong><a id="addMailRuCalendarBtn" name="addMailRuCalendarBtn" href="#" class="addact" onclick="addMailRuCalendar(event, '$baseUrl')">$i18n.getText("mailrucal.addcal")</a></strong>
+                </p>
+              </div>
+              <hr class="linemargin"/>
+              <div class="optionbox">
+                <table width="100%">
+                  <tr>
+                    <td class="jiraformheader"><span class="formtitle">$i18n.getText("mailrucal.allcals")</span></td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <ul>
+                        #if($usrData)
+                            #foreach($proj in $usrData.getProjs())
+                            <li><a href="#" onclick="actMailRuCalendar(event, '$baseUrl', '$proj.getName()', $proj.getcTime())"><span style="color: $proj.getColor();">$proj.getName()</span></a></li>
+                            #end
+                        #end
+                      </ul>
+                    </td>
+                  </tr>
+                </table>
+              </div>
+          </div>
+        </td>
+      </tr>
+    </table>
+    <div id='loading' style='display:none'>$i18n.getText("mailrucal.loading")</div>
+    <script type='text/javascript'>
+    AJS.$(document).ready(function() {
+        AJS.$('#calendar').fullCalendar({
+            header: {
+                left: 'prev,next today',
+                center: 'title',
+                right: 'month,basicWeek,basicDay'
+            },
+            editable: false,
+            events: "$baseUrl/rest/mailrucalws/1.0/mailcalsrv/events",
+            eventDrop: function(event, delta) {
+                alert(event.title + ' was moved ' + delta + ' days\n' +
+                    '(should probably update your database)');
+            },
+            loading: function(bool) {
+                if (bool) {
+                    block();
+                } else {
+                    unblock();
+                }
+            },
+            monthNames: ['$i18n.getText("mailrucal.January")', '$i18n.getText("mailrucal.February")', '$i18n.getText("mailrucal.March")', '$i18n.getText("mailrucal.April")', '$i18n.getText("mailrucal.May")', '$i18n.getText("mailrucal.June")', '$i18n.getText("mailrucal.July")', '$i18n.getText("mailrucal.August")', '$i18n.getText("mailrucal.September")', '$i18n.getText("mailrucal.October")', '$i18n.getText("mailrucal.November")', '$i18n.getText("mailrucal.December")'],
+            monthNamesShort: ['$i18n.getText("mailrucal.Jan")', '$i18n.getText("mailrucal.Feb")', '$i18n.getText("mailrucal.Mar")', '$i18n.getText("mailrucal.Apr")', '$i18n.getText("mailrucal.May")', '$i18n.getText("mailrucal.Jun")', '$i18n.getText("mailrucal.Jul")', '$i18n.getText("mailrucal.Aug")', '$i18n.getText("mailrucal.Sep")', '$i18n.getText("mailrucal.Oct")', '$i18n.getText("mailrucal.Nov")', '$i18n.getText("mailrucal.Dec")'],
+            dayNames: ['$i18n.getText("mailrucal.Sunday")', '$i18n.getText("mailrucal.Monday")', '$i18n.getText("mailrucal.Tuesday")', '$i18n.getText("mailrucal.Wednesday")', '$i18n.getText("mailrucal.Thursday")', '$i18n.getText("mailrucal.Friday")', '$i18n.getText("mailrucal.Saturday")'],
+            dayNamesShort: ['$i18n.getText("mailrucal.Sun")', '$i18n.getText("mailrucal.Mon")', '$i18n.getText("mailrucal.Tue")', '$i18n.getText("mailrucal.Wed")', '$i18n.getText("mailrucal.Thu")', '$i18n.getText("mailrucal.Fri")', '$i18n.getText("mailrucal.Sat")'],
+            buttonText: {
+                prev: '&nbsp;&#9668;&nbsp;',
+                next: '&nbsp;&#9658;&nbsp;',
+                prevYear: '&nbsp;&lt;&lt;&nbsp;',
+                nextYear: '&nbsp;&gt;&gt;&nbsp;',
+                today: '$i18n.getText("mailrucal.today")',
+                month: '$i18n.getText("mailrucal.month")',
+                week: '$i18n.getText("mailrucal.week")',
+                day: '$i18n.getText("mailrucal.day")'
+            },
+        });
+    });
+    </script>
+    </body>
+</html>
