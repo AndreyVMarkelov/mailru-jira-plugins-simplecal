@@ -61,7 +61,7 @@ public class MailRuCalService
     /**
      * Max fetch size.
      */
-    private static final int MAX_FETCH = 2;//1000;
+    private static final int MAX_FETCH = 1500;
 
     /**
      * Logger.
