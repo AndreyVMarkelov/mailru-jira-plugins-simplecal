@@ -158,7 +158,7 @@ public class MailRuCalendarAdmin
                 usrData = new UserCalData();
             }
 
-            usrData.add(new ProjectCalUserData(calname, caldescr, calcolor, display, mainsel, showfld, start, end));
+            usrData.add(new ProjectCalUserData(calname, caldescr, calcolor, display, mainsel, showfld, start, end, true));
             mailCfg.putUserData(pgadmin, usrData);
         }
 
@@ -177,7 +177,7 @@ public class MailRuCalendarAdmin
                             usrData = new UserCalData();
                         }
 
-                        usrData.add(new ProjectCalUserData(calname, caldescr, calcolor, display, mainsel, showfld, start, end));
+                        usrData.add(new ProjectCalUserData(calname, caldescr, calcolor, display, mainsel, showfld, start, end, true));
                         mailCfg.putUserData(user.getName(), usrData);
                     }
                 }

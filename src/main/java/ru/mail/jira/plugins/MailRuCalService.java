@@ -187,7 +187,7 @@ public class MailRuCalService
             usrData = new UserCalData();
         }
 
-        usrData.add(new ProjectCalUserData(name, descr, color, display, mainsel, showfld, start, end));
+        usrData.add(new ProjectCalUserData(name, descr, color, display, mainsel, showfld, start, end, true));
         mailCfg.putUserData(user.getName(), usrData);
 
         String baseUrl = Utils.getBaseUrl(request);

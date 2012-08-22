@@ -97,8 +97,12 @@ function actMailRuCalendar(event, baseUrl, name, ctime) {
     md.addHeader(AJS.I18n.getText("mailrucal.infocaltitle"));
     md.addPanel("load_panel", dialogBody);
     md.addButton(AJS.I18n.getText("mailrucal.updatecalbtn"), function() {
-        AJS.$("#deletecalform").get(0).setAttribute('action', baseUrl + "/rest/mailrucalws/1.0/mailcalsrv/updatecalendar");
-        AJS.$("#deletecalform").submit();
+        if (!AJS.$("#calname").val() || !AJS.$("#calcolor :selected").val()) {
+            alert(AJS.I18n.getText("mailrucal.addcalerror"));
+        } else {
+            AJS.$("#deletecalform").get(0).setAttribute('action', baseUrl + "/rest/mailrucalws/1.0/mailcalsrv/updatecalendar");
+            AJS.$("#deletecalform").submit();
+        }
     });
     md.addButton(AJS.I18n.getText("mailrucal.removecalbtn"), function() {
         if(confirm(AJS.I18n.getText("mailrucal.confirmdelete"))) {

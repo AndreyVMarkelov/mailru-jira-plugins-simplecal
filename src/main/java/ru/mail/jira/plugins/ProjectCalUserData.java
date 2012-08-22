@@ -71,6 +71,11 @@ public class ProjectCalUserData
     private int type;
 
     /**
+     * Is calendar active?
+     */
+    private boolean isActive;
+
+    /**
      * Constructor.
      */
     public ProjectCalUserData(
@@ -81,7 +86,8 @@ public class ProjectCalUserData
         String target,
         String fieldType,
         String startPoint,
-        String endPoint)
+        String endPoint,
+        boolean isActive)
     {
         this.name = name;
         this.descr = descr;
@@ -91,6 +97,7 @@ public class ProjectCalUserData
         initFieldType(fieldType);
         this.startPoint = startPoint;
         this.endPoint = endPoint;
+        this.isActive = isActive;
         this.cTime = System.currentTimeMillis();
     }
 
@@ -145,6 +152,11 @@ public class ProjectCalUserData
         }
     }
 
+    public boolean isActive()
+    {
+        return isActive;
+    }
+
     public boolean isDatePoint()
     {
     	return fieldType == DATE_POINT;
@@ -170,6 +182,11 @@ public class ProjectCalUserData
         return type == PROJECT_TYPE;
     }
 
+    public void setActive(boolean isActive)
+    {
+        this.isActive = isActive;
+    }
+
     public void setColor(String color)
     {
         this.color = color;
@@ -191,6 +208,6 @@ public class ProjectCalUserData
         return "ProjectCalUserData[color=" + color + ", cTime=" + cTime
             + ", descr=" + descr + ", fieldType=" + fieldType + ", name="
             + name + ", target=" + target + ", startPoint=" + startPoint
-            + ", endPoint=" + endPoint + ", type=" + type + "]";
+            + ", endPoint=" + endPoint + ", type=" + type + ", isActive=" + isActive + "]";
     }
 }
