@@ -76,6 +76,11 @@ public class ProjectCalUserData
     private boolean isActive;
 
     /**
+     * Calendar creator.
+     */
+    private String creator;
+
+    /**
      * Constructor.
      */
     public ProjectCalUserData(
@@ -87,7 +92,8 @@ public class ProjectCalUserData
         String fieldType,
         String startPoint,
         String endPoint,
-        boolean isActive)
+        boolean isActive,
+        String creator)
     {
         this.name = name;
         this.descr = descr;
@@ -98,12 +104,18 @@ public class ProjectCalUserData
         this.startPoint = startPoint;
         this.endPoint = endPoint;
         this.isActive = isActive;
+        this.creator = creator;
         this.cTime = System.currentTimeMillis();
     }
 
     public String getColor()
     {
         return color;
+    }
+
+    public String getCreator()
+    {
+        return creator;
     }
 
     public long getcTime()
@@ -208,6 +220,7 @@ public class ProjectCalUserData
         return "ProjectCalUserData[color=" + color + ", cTime=" + cTime
             + ", descr=" + descr + ", fieldType=" + fieldType + ", name="
             + name + ", target=" + target + ", startPoint=" + startPoint
-            + ", endPoint=" + endPoint + ", type=" + type + ", isActive=" + isActive + "]";
+            + ", endPoint=" + endPoint + ", type=" + type + ", isActive=" +
+            isActive + ", creator=" + creator + "]";
     }
 }

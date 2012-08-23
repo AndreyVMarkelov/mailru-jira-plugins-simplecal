@@ -5,9 +5,12 @@
 package ru.mail.jira.plugins;
 
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
+
 import com.atlassian.crowd.embedded.api.Group;
 import com.atlassian.crowd.embedded.api.User;
 import com.atlassian.jira.bc.filter.SearchRequestService;
@@ -150,6 +153,7 @@ public class MailRuCalendarAdmin
             end = endpoint;
         }
 
+        Set<String> userSet = new HashSet<String>();
         if (Utils.isStr(pgadmin))
         {
             UserCalData usrData = mailCfg.getUserData(pgadmin);
@@ -158,8 +162,19 @@ public class MailRuCalendarAdmin
                 usrData = new UserCalData();
             }
 
-            usrData.add(new ProjectCalUserData(calname, caldescr, calcolor, display, mainsel, showfld, start, end, true));
+            usrData.add(new ProjectCalUserData(
+                calname,
+                caldescr,
+                calcolor,
+                display,
+                mainsel,
+                showfld,
+                start,
+                end,
+                true,
+                getLoggedInUser().getName()));
             mailCfg.putUserData(pgadmin, usrData);
+            userSet.add(pgadmin);
         }
 
         if (Utils.isArray(selectedGroups))
@@ -171,14 +186,30 @@ public class MailRuCalendarAdmin
                 {
                     for (User user : users)
                     {
+                        if (userSet.contains(user.getName()))
+                        {
+                            continue;
+                        }
+
                         UserCalData usrData = mailCfg.getUserData(user.getName());
                         if (usrData == null)
                         {
                             usrData = new UserCalData();
                         }
 
-                        usrData.add(new ProjectCalUserData(calname, caldescr, calcolor, display, mainsel, showfld, start, end, true));
+                        usrData.add(new ProjectCalUserData(
+                            calname,
+                            caldescr,
+                            calcolor,
+                            display,
+                            mainsel,
+                            showfld,
+                            start,
+                            end,
+                            true,
+                            getLoggedInUser().getName()));
                         mailCfg.putUserData(user.getName(), usrData);
+                        userSet.add(user.getName());
                     }
                 }
             }

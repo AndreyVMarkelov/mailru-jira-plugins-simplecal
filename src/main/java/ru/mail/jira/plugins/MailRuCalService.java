@@ -48,6 +48,7 @@ import com.atlassian.jira.project.ProjectManager;
 import com.atlassian.jira.security.JiraAuthenticationContext;
 import com.atlassian.jira.security.PermissionManager;
 import com.atlassian.jira.security.Permissions;
+import com.atlassian.jira.user.util.UserUtil;
 import com.atlassian.jira.web.bean.PagerFilter;
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
@@ -98,18 +99,25 @@ public class MailRuCalService
     private final SearchRequestService srMgr;
 
     /**
+     * Utility for work with JIRA users.
+     */
+    private final UserUtil userUtil;
+
+    /**
      * Constructor.
      */
     public MailRuCalService(
         MailRuCalCfg mailCfg,
         PermissionManager permMgr,
         ProjectManager prMgr,
-        SearchRequestService srMgr)
+        SearchRequestService srMgr,
+        UserUtil userUtil)
     {
         this.mailCfg = mailCfg;
         this.permMgr = permMgr;
         this.prMgr = prMgr;
         this.srMgr = srMgr;
+        this.userUtil = userUtil;
         this.sdf = new SimpleDateFormat("yyyy-MM-dd");
     }
 
@@ -191,7 +199,17 @@ public class MailRuCalService
             usrData = new UserCalData();
         }
 
-        usrData.add(new ProjectCalUserData(name, descr, color, display, mainsel, showfld, start, end, true));
+        usrData.add(new ProjectCalUserData(
+            name,
+            descr,
+            color,
+            display,
+            mainsel,
+            showfld,
+            start,
+            end,
+            true,
+            user.getName()));
         mailCfg.putUserData(user.getName(), usrData);
 
         String baseUrl = Utils.getBaseUrl(request);
@@ -806,6 +824,8 @@ public class MailRuCalService
                 params.put("i18n", authCtx.getI18nHelper());
                 params.put("baseUrl", Utils.getBaseUrl(request));
                 params.put("pcud", pcud);
+                params.put("createtime", authCtx.getOutlookDate().format(new Date(pcud.getcTime())));
+                params.put("creator", Utils.getDisplayUser(userUtil, pcud.getCreator()));
                 if (pcud.isProjectType())
                 {
                     params.put("targetName", getProject(Long.valueOf(pcud.getTarget())).getName());

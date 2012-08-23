@@ -70,5 +70,15 @@
         #end
         </td>
     </tr>
+    <tr>
+        <td class="dlgtablekey"><label for="caldescr">$i18n.getText("mailrucal.creationtime")</label></td>
+        <td valign="top"><input type="text" value="$createtime" id="ctimestr" name="ctimestr" disabled="disabled"/></td>
+    </tr>
+    #if($creator)
+    <tr>
+        <td class="dlgtablekey"><label for="caldescr">$i18n.getText("mailrucal.creator")</label></td>
+        <td valign="top"><input type="text" value="$creator" id="creator" name="creator" disabled="disabled"/></td>
+    </tr>
+    #end
   </table>
 </form>

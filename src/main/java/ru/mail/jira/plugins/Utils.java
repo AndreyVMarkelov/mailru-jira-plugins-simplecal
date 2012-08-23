@@ -6,6 +6,9 @@ package ru.mail.jira.plugins;
 
 import javax.servlet.http.HttpServletRequest;
 
+import com.atlassian.crowd.embedded.api.User;
+import com.atlassian.jira.user.util.UserUtil;
+
 /**
  * This class contains utility methods.
  * 
@@ -19,6 +22,22 @@ public class Utils
     public static String getBaseUrl(HttpServletRequest req)
     {
         return (req.getScheme() + "://" + req.getServerName() + ":" + req.getServerPort() + req.getContextPath());
+    }
+
+    /**
+     * Return display name of user if user exists in JIRA.
+     */
+    public static String getDisplayUser(UserUtil userUtil, String user)
+    {
+        User userObj = userUtil.getUserObject(user);
+        if (userObj != null)
+        {
+            return userObj.getDisplayName();
+        }
+        else
+        {
+            return user;
+        }
     }
 
     /**
