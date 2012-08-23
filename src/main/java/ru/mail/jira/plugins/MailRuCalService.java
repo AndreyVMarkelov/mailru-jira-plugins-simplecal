@@ -28,6 +28,7 @@ import javax.ws.rs.core.Response;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.velocity.exception.VelocityException;
+import com.atlassian.crowd.embedded.api.Group;
 import com.atlassian.crowd.embedded.api.User;
 import com.atlassian.jira.ComponentManager;
 import com.atlassian.jira.bc.JiraServiceContext;
@@ -45,6 +46,7 @@ import com.atlassian.jira.project.ProjectManager;
 import com.atlassian.jira.security.JiraAuthenticationContext;
 import com.atlassian.jira.security.PermissionManager;
 import com.atlassian.jira.security.Permissions;
+import com.atlassian.jira.security.groups.GroupManager;
 import com.atlassian.jira.user.util.UserUtil;
 import com.atlassian.jira.web.bean.PagerFilter;
 import com.thoughtworks.xstream.XStream;
@@ -101,6 +103,11 @@ public class MailRuCalService
     private final UserUtil userUtil;
 
     /**
+     * Group manager.
+     */
+    private final GroupManager groupMgr;
+
+    /**
      * Constructor.
      */
     public MailRuCalService(
@@ -108,13 +115,15 @@ public class MailRuCalService
         PermissionManager permMgr,
         ProjectManager prMgr,
         SearchRequestService srMgr,
-        UserUtil userUtil)
+        UserUtil userUtil,
+        GroupManager groupMgr)
     {
         this.mailCfg = mailCfg;
         this.permMgr = permMgr;
         this.prMgr = prMgr;
         this.srMgr = srMgr;
         this.userUtil = userUtil;
+        this.groupMgr = groupMgr;
         this.sdf = new SimpleDateFormat("yyyy-MM-dd");
     }
 
@@ -514,6 +523,14 @@ public class MailRuCalService
         return Response.seeOther(URI.create(baseUrl + "/plugins/servlet/mailrucal/view")).build();
     }
 
+    /**
+     * Get all Jira groups.
+     */
+    private Collection<Group> getAllGroups()
+    {
+        return groupMgr.getAllGroups();
+    }
+
     @GET
     @Produces ({ MediaType.APPLICATION_JSON})
     @Path("/events")
@@ -779,6 +796,7 @@ public class MailRuCalService
         params.put("baseUrl", Utils.getBaseUrl(request));
         params.put("aProj", projPairs);
         params.put("aSearch", filterPairs);
+        params.put("allGroups", getAllGroups());
 
         return Response.ok(new HtmlEntity(ComponentAccessor.getVelocityManager().getBody("templates/", "addcalendar.vm", params))).build();
     }
@@ -827,6 +845,8 @@ public class MailRuCalService
                 params.put("pcud", pcud);
                 params.put("createtime", authCtx.getOutlookDate().format(new Date(pcud.getcTime())));
                 params.put("creator", Utils.getDisplayUser(userUtil, pcud.getCreator()));
+                params.put("allGroups", getAllGroups());
+
                 if (pcud.isProjectType())
                 {
                     params.put("targetName", getProject(Long.valueOf(pcud.getTarget())).getName());
