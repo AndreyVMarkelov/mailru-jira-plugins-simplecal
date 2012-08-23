@@ -4,13 +4,12 @@
  */
 package ru.mail.jira.plugins;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
-import java.util.TreeMap;
-
 import com.atlassian.crowd.embedded.api.Group;
 import com.atlassian.crowd.embedded.api.User;
 import com.atlassian.jira.bc.filter.SearchRequestService;
@@ -330,19 +329,21 @@ public class MailRuCalendarAdmin
         return endpoint;
     }
 
-    public Map<String, String> getFilters()
+    public List<DataPair> getFilters()
     {
-        Map<String, String> aSearch = new TreeMap<String, String>();
+        List<DataPair> filterPairs = new ArrayList<DataPair>();
         Collection<SearchRequest> searches = srMgr.getOwnedFilters(getLoggedInUser());
         if (searches != null)
         {
             for (SearchRequest search : searches)
             {
-                aSearch.put(search.getId().toString(), search.getName());
+                DataPair pair = new DataPair(search.getId(), search.getName());
+                filterPairs.add(pair);
             }
         }
+        Collections.sort(filterPairs);
 
-        return aSearch;
+        return filterPairs;
     }
 
     public String getMainsel()
@@ -355,19 +356,21 @@ public class MailRuCalendarAdmin
         return pgadmin;
     }
 
-    public Map<String, String> getProjects()
+    public List<DataPair> getProjects()
     {
-        Map<String, String> aProj = new TreeMap<String, String>();
+        List<DataPair> projPairs = new ArrayList<DataPair>();
         List<Project> projects = prMgr.getProjectObjects();
         if (projects != null)
         {
             for (Project project : projects)
             {
-                aProj.put(project.getId().toString(), project.getName());
+                DataPair pair = new DataPair(project.getId(), project.getName());
+                projPairs.add(pair);
             }
         }
+        Collections.sort(projPairs);
 
-        return aProj;
+        return projPairs;
     }
 
     public String[] getSelectedGroups()

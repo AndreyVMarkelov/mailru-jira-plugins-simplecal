@@ -10,13 +10,12 @@ import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.TreeMap;
-
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -26,11 +25,9 @@ import javax.ws.rs.core.CacheControl;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.velocity.exception.VelocityException;
-
 import com.atlassian.crowd.embedded.api.User;
 import com.atlassian.jira.ComponentManager;
 import com.atlassian.jira.bc.JiraServiceContext;
@@ -749,7 +746,7 @@ public class MailRuCalService
         }
 
         //--> available projects
-        Map<String, String> aProj = new TreeMap<String, String>();
+        List<DataPair> projPairs = new ArrayList<DataPair>();
         List<Project> projects = prMgr.getProjectObjects();
         if (projects != null)
         {
@@ -757,27 +754,31 @@ public class MailRuCalService
             {
                 if (permMgr.hasPermission(Permissions.BROWSE, project, user))
                 {
-                    aProj.put(project.getId().toString(), project.getName());
+                    DataPair pair = new DataPair(project.getId(), project.getName());
+                    projPairs.add(pair);
                 }
             }
         }
+        Collections.sort(projPairs);
 
         //--> available searches
-        Map<String, String> aSearch = new TreeMap<String, String>();
+        List<DataPair> filterPairs = new ArrayList<DataPair>();
         Collection<SearchRequest> searches = srMgr.getOwnedFilters(user);
         if (searches != null)
         {
             for (SearchRequest search : searches)
             {
-                aSearch.put(search.getId().toString(), search.getName());
+                DataPair pair = new DataPair(search.getId(), search.getName());
+                filterPairs.add(pair);
             }
         }
+        Collections.sort(filterPairs);
 
         Map<String, Object> params = new HashMap<String, Object>();
         params.put("i18n", authCtx.getI18nHelper());
         params.put("baseUrl", Utils.getBaseUrl(request));
-        params.put("aProj", aProj);
-        params.put("aSearch", aSearch);
+        params.put("aProj", projPairs);
+        params.put("aSearch", filterPairs);
 
         return Response.ok(new HtmlEntity(ComponentAccessor.getVelocityManager().getBody("templates/", "addcalendar.vm", params))).build();
     }

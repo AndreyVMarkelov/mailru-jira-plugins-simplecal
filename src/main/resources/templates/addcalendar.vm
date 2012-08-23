@@ -79,18 +79,18 @@
                   <input onclick="fillJcl();" type="radio" id="display" name="display" value="jcl"/><span>$i18n.getText("mailrucal.calfilter")</span>
                 </div>
                 <select id="mainsel" name="mainsel" style="background-color: white;">
-                #foreach($entry in $aProj.entrySet())
-                  <option value="$entry.key">$entry.value</option>
+                #foreach($entry in $aProj)
+                  <option value="$entry.getId()">$entry.getName()</option>
                 #end
                 </select>
                 <select id="projsel" name="projsel" style="display: none;">
-                #foreach($entry in $aProj.entrySet())
-                  <option value="$entry.key">$entry.value</option>
+                #foreach($entry in $aProj)
+                  <option value="$entry.getId()">$entry.getName()</option>
                 #end
                 </select>
                 <select id="jclsel" name="jclsel" style="display: none;">
-                #foreach($entry in $aSearch.entrySet())
-                  <option value="$entry.key">$entry.value</option>
+                #foreach($entry in $aSearch)
+                  <option value="$entry.getId()">$entry.getName()</option>
                 #end
                 </select>
                 </td>
