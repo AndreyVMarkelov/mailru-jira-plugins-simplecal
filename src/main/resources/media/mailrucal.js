@@ -80,7 +80,8 @@ function unblock() {
 }
 
 function changeCalMode(baseUrl, name, ctime) {
-    var mode = AJS.$("#" + name + ctime).attr("checked");
+    var selector = "input[name='" + name + ctime  + "']";
+    var mode = AJS.$(selector).attr("checked");
     jQuery.ajax({
         url: baseUrl + "/rest/mailrucalws/1.0/mailcalsrv/changecalmode",
         type: "POST",
