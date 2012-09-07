@@ -4,6 +4,8 @@
  */
 package ru.mail.jira.plugins;
 
+import java.util.List;
+
 /**
  * This structure keeps information about stored calendar.
  * 
@@ -11,24 +13,29 @@ package ru.mail.jira.plugins;
  */
 public class ProjectCalUserData
 {
-    private static final int PROJECT_TYPE = 0;
-    private static final int JCL_TYPE = 1;
-
     private static final int IDD = 0;
     private static final int DATE_POINT = 1;
     private static final int DATE_RANGE = 2;
-
-    public static final String PROJECT_TYPE_STR = "project";
-    public static final String JCL_TYPE_STR = "jcl";
 
     public static final String IDD_STR = "idd";
     public static final String DATE_POINT_STR = "cdp";
     public static final String DATE_RANGE_STR = "cdr";
 
+    private static final int PROJECT_TYPE = 0;
+    private static final int JCL_TYPE = 1;
+
+    public static final String PROJECT_TYPE_STR = "project";
+    public static final String JCL_TYPE_STR = "jcl";
+
     /**
      * Calendar color.
      */
     private String color;
+
+    /**
+     * Calendar creator.
+     */
+    private String creator;
 
     /**
      * Creation time.
@@ -41,34 +48,19 @@ public class ProjectCalUserData
     private String descr;
 
     /**
-     * Field type.
-     */
-    private int fieldType;
-
-    /**
-     * Calendar name.
-     */
-    private String name;
-
-    /**
-     * Target: project or JCL.
-     */
-    private String target;
-
-    /**
-     * Start custom field.
-     */
-    private String startPoint;
-
-    /**
      * End custom field.
      */
     private String endPoint;
 
     /**
-     * Type.
+     * Field type.
      */
-    private int type;
+    private int fieldType;
+
+    /**
+     * Groups.
+     */
+    private List<String> groups;
 
     /**
      * Is calendar active?
@@ -76,9 +68,24 @@ public class ProjectCalUserData
     private boolean isActive;
 
     /**
-     * Calendar creator.
+     * Calendar name.
      */
-    private String creator;
+    private String name;
+
+    /**
+     * Start custom field.
+     */
+    private String startPoint;
+
+    /**
+     * Target: project or JCL.
+     */
+    private String target;
+
+    /**
+     * Type.
+     */
+    private int type;
 
     /**
      * Constructor.
@@ -93,7 +100,8 @@ public class ProjectCalUserData
         String startPoint,
         String endPoint,
         boolean isActive,
-        String creator)
+        String creator,
+        List<String> groups)
     {
         this.name = name;
         this.descr = descr;
@@ -105,6 +113,7 @@ public class ProjectCalUserData
         this.endPoint = endPoint;
         this.isActive = isActive;
         this.creator = creator;
+        this.groups = groups;
         this.cTime = System.currentTimeMillis();
     }
 
@@ -131,6 +140,11 @@ public class ProjectCalUserData
     public String getEndPoint()
     {
         return endPoint;
+    }
+
+    public List<String> getGroups()
+    {
+        return groups;
     }
 
     public String getName()

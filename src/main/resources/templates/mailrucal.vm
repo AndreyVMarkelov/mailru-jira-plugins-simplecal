@@ -57,6 +57,7 @@
     <script type='text/javascript'>
     AJS.$(document).ready(function() {
         AJS.$('#calendar').fullCalendar({
+            #if($usrPref && $usrPref.getDefaultView())defaultView: '$usrPref.getDefaultView()',#end
             header: {
                 left: 'prev,next today',
                 center: 'title',
@@ -90,6 +91,22 @@
                 week: '$i18n.getText("mailrucal.week")',
                 day: '$i18n.getText("mailrucal.day")'
             },
+            viewDisplay: function(view) {
+                setUserPrefView('$baseUrl', view.name);
+            },
+            dayClick: function(date, allDay, jsEvent, view) {
+                if (allDay) {
+                    alert('Clicked on the entire day: ' + date);
+                }else{
+                    alert('Clicked on the slot: ' + date);
+                }
+
+                alert('Coordinates: ' + jsEvent.pageX + ',' + jsEvent.pageY);
+                alert('Current view: ' + view.name);
+
+                // change the day's background color just for fun
+                $(this).css('background-color', 'red');
+            }
         });
     });
     </script>

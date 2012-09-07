@@ -80,6 +80,7 @@ public class MailRuCalServlet
         parms.put("baseUrl", Utils.getBaseUrl(req));
         parms.put("i18n", ComponentManager.getInstance().getJiraAuthenticationContext().getI18nHelper());
         parms.put("usrData", mailCfg.getUserData(user.getName()));
+        parms.put("usrPref", mailCfg.getUserCalPref(user.getName()));
 
         resp.setContentType("text/html;charset=utf-8");
         renderer.render("/templates/mailrucal.vm", parms, resp.getWriter());

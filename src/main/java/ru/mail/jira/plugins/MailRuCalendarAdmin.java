@@ -171,7 +171,8 @@ public class MailRuCalendarAdmin
                 start,
                 end,
                 true,
-                getLoggedInUser().getName()));
+                getLoggedInUser().getName(),
+                null));
             mailCfg.putUserData(pgadmin, usrData);
             userSet.add(pgadmin);
         }
@@ -206,7 +207,8 @@ public class MailRuCalendarAdmin
                             start,
                             end,
                             true,
-                            getLoggedInUser().getName()));
+                            getLoggedInUser().getName(),
+                            null));
                         mailCfg.putUserData(user.getName(), usrData);
                         userSet.add(user.getName());
                     }

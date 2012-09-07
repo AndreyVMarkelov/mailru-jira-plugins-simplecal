@@ -10,8 +10,8 @@ function addMailRuCalendar(event, baseUrl) {
     }
 
     var md = new AJS.Dialog({
-        width:680,
-        height:520,
+        width:740,
+        height:560,
         id:"add_calendar_dialog",
         closeOnOutsideClick: true
     });
@@ -188,4 +188,39 @@ function setIssueDueDate() {
     AJS.$("#startpoint").enable(false);
     AJS.$("#endpoint").enable(false);
     AJS.$("#cdpinput").enable(false);
+}
+
+function setUserPrefView(baseUrl, view) {
+    jQuery.ajax({
+        url: baseUrl + "/rest/mailrucalws/1.0/mailcalsrv/setuserprefview",
+        type: "POST",
+        dataType: "json",
+        data: {"view": view},
+        error: function(xhr, ajaxOptions, thrownError) {
+            alert(xhr.responseText);
+        }
+    });
+}
+
+//--> share selectors
+function setShareGroup() {
+    jQuery("#share_group").show();
+    jQuery("#share_project").hide();
+}
+
+function setShareProject() {
+    jQuery("#share_group").hide();
+    jQuery("#share_project").show();
+}
+//<--
+
+function addGroup() {
+    var val = jQuery("#groupShare :selected").val();
+    var newElem = "<div id='gr" + val + "'><span>" + val + "</span></div>";
+    jQuery("#share_display_div").append(newElem);
+    jQuery("#share_trash").clone().show().appendTo("#gr" + val);
+}
+
+function removeGroup(event) {
+    
 }

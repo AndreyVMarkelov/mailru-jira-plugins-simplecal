@@ -27,12 +27,36 @@ public class MailRuCalCfgImpl
     private final PluginSettingsFactory pluginSettingsFactory;
 
     /**
+     * XStream.
+     */
+    private XStream xstream;
+
+    /**
      * Constructor.
      */
     public MailRuCalCfgImpl(
         PluginSettingsFactory pluginSettingsFactory)
     {
         this.pluginSettingsFactory = pluginSettingsFactory;
+        this.xstream = new XStream();
+    }
+
+    @Override
+    public UserCalPref getUserCalPref(String user)
+    {
+        String xmlData = (String)pluginSettingsFactory.createSettingsForKey(PLUGIN_KEY).get(prefKey(user));
+        if (xmlData != null && !xmlData.isEmpty())
+        {
+            try
+            {
+                return (UserCalPref)xstream.fromXML(xmlData);
+            }
+            catch (XStreamException xsex)
+            {
+                return null;
+            }
+        }
+        return null;
     }
 
     @Override
@@ -41,7 +65,6 @@ public class MailRuCalCfgImpl
         String xmlData = (String)pluginSettingsFactory.createSettingsForKey(PLUGIN_KEY).get(user);
         if (xmlData != null && !xmlData.isEmpty())
         {
-            XStream xstream = new XStream();
             try
             {
                 return (UserCalData)xstream.fromXML(xmlData);
@@ -54,13 +77,31 @@ public class MailRuCalCfgImpl
         return null;
     }
 
+    /**
+     * Key for preference data.
+     */
+    private String prefKey(String user)
+    {
+        return (user + ".pref");
+    }
+
+    @Override
+    public void putUserCalPref(String user, UserCalPref userPref)
+    {
+        String xmlData = "";
+        if (userPref != null)
+        {
+            xmlData = xstream.toXML(userPref);
+        }
+        pluginSettingsFactory.createSettingsForKey(PLUGIN_KEY).put(prefKey(user), xmlData);
+    }
+
     @Override
     public void putUserData(String user, UserCalData userData)
     {
         String xmlData = "";
         if (userData != null)
         {
-            XStream xstream = new XStream();
             xmlData = xstream.toXML(userData);
         }
         pluginSettingsFactory.createSettingsForKey(PLUGIN_KEY).put(user, xmlData);

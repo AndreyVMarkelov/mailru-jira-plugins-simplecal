@@ -63,14 +63,19 @@ import com.thoughtworks.xstream.io.json.JsonWriter;
 public class MailRuCalService
 {
     /**
+     * Logger.
+     */
+    private static Log log = LogFactory.getLog(MailRuCalService.class);
+
+    /**
      * Max fetch size.
      */
     private static final int MAX_FETCH = 1500;
 
     /**
-     * Logger.
+     * Group manager.
      */
-    private static Log log = LogFactory.getLog(MailRuCalService.class);
+    private final GroupManager groupMgr;
 
     /**
      * Mail.Ru calendar plug-In data.
@@ -101,11 +106,6 @@ public class MailRuCalService
      * Utility for work with JIRA users.
      */
     private final UserUtil userUtil;
-
-    /**
-     * Group manager.
-     */
-    private final GroupManager groupMgr;
 
     /**
      * Constructor.
@@ -215,7 +215,8 @@ public class MailRuCalService
             start,
             end,
             true,
-            user.getName()));
+            user.getName(),
+            null));
         mailCfg.putUserData(user.getName(), usrData);
 
         String baseUrl = Utils.getBaseUrl(request);
@@ -791,6 +792,8 @@ public class MailRuCalService
         }
         Collections.sort(filterPairs);
 
+        
+
         Map<String, Object> params = new HashMap<String, Object>();
         params.put("i18n", authCtx.getI18nHelper());
         params.put("baseUrl", Utils.getBaseUrl(request));
@@ -859,6 +862,45 @@ public class MailRuCalService
                 return Response.ok(new HtmlEntity(ComponentAccessor.getVelocityManager().getBody("templates/", "infocalendar.vm", params))).build();
             }
         }
+
+        return Response.ok().build();
+    }
+
+    private void s()
+    {
+        List<Project> projs = prMgr.getProjectObjects();
+        if (projs != null)
+        {
+            for (Project proj : projs)
+            {
+                Collection<Group> projGroups = permMgr.getAllGroups(Permissions.BROWSE, proj);
+                
+            }
+        }
+    }
+
+    @POST
+    @Produces ({ MediaType.APPLICATION_JSON})
+    @Path("/setuserprefview")
+    public Response setUserPrefView(@Context HttpServletRequest request)
+    {
+        JiraAuthenticationContext authCtx = ComponentManager.getInstance().getJiraAuthenticationContext();
+        User user = authCtx.getLoggedInUser();
+        if (user == null)
+        {
+            log.error("MailRuCalService::setUserPrefView - User is not logged");
+            return Response.status(401).build();
+        }
+
+        String view = request.getParameter("view");
+
+        UserCalPref userPref = mailCfg.getUserCalPref(user.getName());
+        if (userPref == null)
+        {
+            userPref = new UserCalPref();
+        }
+        userPref.setDefaultView(view);
+        mailCfg.putUserCalPref(user.getName(), userPref);
 
         return Response.ok().build();
     }
