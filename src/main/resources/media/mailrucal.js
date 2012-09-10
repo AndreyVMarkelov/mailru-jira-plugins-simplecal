@@ -215,12 +215,75 @@ function setShareProject() {
 //<--
 
 function addGroup() {
-    var val = jQuery("#groupShare :selected").val();
-    var newElem = "<div id='gr" + val + "'><span>" + val + "</span></div>";
+    var sharesObj = jQuery.evalJSON(jQuery("#shares_data").val());
+
+    var group = jQuery("#groupShare :selected");
+    var grId = "group" + jQuery(group).val();
+
+    for (var objId in sharesObj) {
+        if (sharesObj[objId]["id"] == grId) {
+            jQuery("#" + grId).animate({backgroundColor: "red"}, 500, function() { jQuery("#" + grId).animate({backgroundColor: "white"}, 500);});
+            return;
+        }
+    }
+
+    var itemObj = new Object();
+    itemObj["id"] = grId;
+    itemObj["type"] = "G";
+    itemObj["group"] = jQuery(group).val();
+    sharesObj.push(itemObj);
+    jQuery("#shares_data").val(jQuery.toJSON(sharesObj));
+
+    var newElem = "<div id='" + grId + "'><span>" + AJS.format(AJS.I18n.getText("mailrucal.share_project"), jQuery(group).text()) + "</span></div>";
     jQuery("#share_display_div").append(newElem);
-    jQuery("#share_trash").clone().show().appendTo("#gr" + val);
+    jQuery("#share_trash").clone().show().appendTo("#" + grId);
+}
+
+function addProject() {
+    var sharesObj = jQuery.evalJSON(jQuery("#shares_data").val());
+
+    var proj = jQuery("#projectShare-project :selected");
+    var role = jQuery("#projectShare-role :selected");
+    var prId = "project" + jQuery(proj).val() + "role" + jQuery(role).val();
+
+    for (var objId in sharesObj) {
+        if (sharesObj[objId]["id"] == prId) {
+            jQuery("#" + prId).animate({backgroundColor: "red"}, 500, function() { jQuery("#" + prId).animate({backgroundColor: "white"}, 500);});
+            return;
+        }
+    }
+
+    var itemObj = new Object();
+    itemObj["id"] = prId;
+    itemObj["type"] = "P";
+    itemObj["proj"] = jQuery(proj).val();
+    itemObj["role"] = jQuery(role).val();
+    sharesObj.push(itemObj);
+    jQuery("#shares_data").val(jQuery.toJSON(sharesObj));
+
+    var textVal;
+    if (jQuery(role).val()) {
+        textVal = AJS.format(AJS.I18n.getText("mailrucal.share_project_role"), jQuery(proj).text(), jQuery(role).text());
+    } else {
+        textVal = AJS.format(AJS.I18n.getText("mailrucal.share_project"), jQuery(proj).text());
+    }
+
+    var newElem = "<div id='" + prId + "'><span>" + textVal + "</span></div>";
+    jQuery("#share_display_div").append(newElem);
+    jQuery("#share_trash").clone().show().appendTo("#" + prId);
 }
 
 function removeGroup(event) {
-    
+    var source = event.target || event.srcElement;
+    var parent = jQuery(source).parent();
+    var parentId = jQuery(parent).attr("id");
+
+    var sharesObj = jQuery.evalJSON(jQuery("#shares_data").val());
+    for (var objId in sharesObj) {
+        if (sharesObj[objId]["id"] == parentId) {
+            sharesObj.splice(objId, 1);
+        }
+    }
+    jQuery("#shares_data").val(jQuery.toJSON(sharesObj));
+    jQuery(parent).remove();
 }

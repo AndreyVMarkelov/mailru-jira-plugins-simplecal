@@ -169,7 +169,7 @@
                                             <input id="sharesel" name="sharesel" onclick="setShareProject();" type="radio" /><span>$i18n.getText("mailrucal.shareproject")</span>
                                           </div>
                                           <span id="share_group">
-                                            <select id="groupShare" name="groupShare" style="background-color: white;">
+                                            <select id="groupShare" style="background-color: white;">
                                               #foreach($group in $allGroups)
                                               <option value="$group.getName()">$group.getName()</option>
                                               #end
@@ -177,19 +177,21 @@
                                             <span onclick="addGroup();" class="addShare" id="share_add_group"><img src="/jira/images/icons/16add_blue.png"/>Add</span>
                                           </span>
                                           <span id="share_project" style="display:none">
-                                            <select id="projectShare-project" name="projectShare" style="background-color: white;">
-                                              <option roles="[10002,10001,10000]" value="10000">AAA</option>
+                                            <select id="projectShare-project" style="background-color: white;">
+                                            #foreach($entry in $aProj)
+                                              <option roles="$roleProjs.keySet().toString()" value="$entry.getId()">$entry.getName()</option>
+                                            #end
                                             </select>
                                             <img src="/jira/images/icons/hierarchy_arrow.gif" alt="Arrow" width="10px" height="10px"/>
-                                            <select id="projectShare-role" name="roleShare" style="background-color: white;">
+                                            <select id="projectShare-role" style="background-color: white;">
                                               <option value="">All</option>
                                               <optgroup label="Project Roles" id="projectShare-role-group">
-                                                <option value="10002">Administrators</option>
-                                                <option value="10001">Developers</option>
-                                                <option value="10000">Users</option>
+                                                #foreach($entry in $roleProjs.entrySet())
+                                                <option value="$entry.key">$entry.value</option>
+                                                #end
                                               </optgroup>
                                             </select>
-                                            <span class="addShare" id="share_add_project"><img src="/jira/images/icons/16add_blue.png"/>Add</span>
+                                            <span onclick="addProject();" class="addShare" id="share_add_project"><img src="/jira/images/icons/16add_blue.png"/>Add</span>
                                           </span>
                                         </div>
                                       </div>
@@ -203,7 +205,6 @@
         </td>
     </tr>
     </table>
-    <span id="shares_data" style="display:none;">[]</span>
-    <input id="share_type_hidden" name="shareValues" type="hidden"/>
-    <img onclick="removeGroup(event);" id="share_trash" height="16px" width="16px" style="display: none" class="shareTrash" src="/jira/images/icons/trash_16.gif" title="Delete Share" alt="Delete Share"/>
+    <input id="shares_data" name="shares_data" style="display:none;" value="[]"/>
+    <img onclick="removeGroup(event);" id="share_trash" height="16px" width="16px" style="display: none" class="shareTrash" src="/jira/images/icons/trash_16.gif" title="Delete Share" alt="Delete Share"/> <input id="share_type_hidden" name="shareValues" type="hidden"/>
 </form>

@@ -16,6 +16,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -28,6 +29,9 @@ import javax.ws.rs.core.Response;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.velocity.exception.VelocityException;
+import com.atlassian.jira.util.json.JSONArray;
+import com.atlassian.jira.util.json.JSONException;
+import com.atlassian.jira.util.json.JSONObject;
 import com.atlassian.crowd.embedded.api.Group;
 import com.atlassian.crowd.embedded.api.User;
 import com.atlassian.jira.ComponentManager;
@@ -47,6 +51,10 @@ import com.atlassian.jira.security.JiraAuthenticationContext;
 import com.atlassian.jira.security.PermissionManager;
 import com.atlassian.jira.security.Permissions;
 import com.atlassian.jira.security.groups.GroupManager;
+import com.atlassian.jira.security.roles.ProjectRole;
+import com.atlassian.jira.security.roles.ProjectRoleManager;
+import com.atlassian.jira.sharing.SharePermissionUtils;
+import com.atlassian.jira.sharing.SharedEntity.SharePermissions;
 import com.atlassian.jira.user.util.UserUtil;
 import com.atlassian.jira.web.bean.PagerFilter;
 import com.thoughtworks.xstream.XStream;
@@ -108,6 +116,11 @@ public class MailRuCalService
     private final UserUtil userUtil;
 
     /**
+     * Project role manager.
+     */
+    private final ProjectRoleManager projectRoleManager;
+
+    /**
      * Constructor.
      */
     public MailRuCalService(
@@ -116,7 +129,8 @@ public class MailRuCalService
         ProjectManager prMgr,
         SearchRequestService srMgr,
         UserUtil userUtil,
-        GroupManager groupMgr)
+        GroupManager groupMgr,
+        ProjectRoleManager projectRoleManager)
     {
         this.mailCfg = mailCfg;
         this.permMgr = permMgr;
@@ -124,6 +138,7 @@ public class MailRuCalService
         this.srMgr = srMgr;
         this.userUtil = userUtil;
         this.groupMgr = groupMgr;
+        this.projectRoleManager = projectRoleManager;
         this.sdf = new SimpleDateFormat("yyyy-MM-dd");
     }
 
@@ -131,6 +146,7 @@ public class MailRuCalService
     @Produces ({ MediaType.APPLICATION_JSON})
     @Path("/addcalendar")
     public Response addCalendar(@Context HttpServletRequest request)
+    throws Exception
     {
         JiraAuthenticationContext authCtx = ComponentManager.getInstance().getJiraAuthenticationContext();
         User user = authCtx.getLoggedInUser();
@@ -149,6 +165,33 @@ public class MailRuCalService
         String startpoint = request.getParameter("startpoint");
         String endpoint = request.getParameter("endpoint");
         String cdpinput = request.getParameter("cdpinput");
+        String shares_data = request.getParameter("shares_data");
+
+        List<String> groups = new ArrayList<String>();
+        List<Long[]> projRoles = new ArrayList<Long[]>();
+        try
+        {
+            JSONArray jsonObj = new JSONArray(shares_data);
+            for (int i = 0; i < jsonObj.length(); i++)
+            {
+                JSONObject obj = jsonObj.getJSONObject(i);
+                String type = obj.getString("type");
+                if (type.equals("G"))
+                {
+                    groups.add(obj.getString("group"));
+                }
+                else
+                {
+                    Long[] item = {Long.parseLong(obj.getString("proj")), Long.parseLong(obj.getString("role"))};
+                    projRoles.add(item);
+                }
+            }
+        }
+        catch (JSONException e)
+        {
+            log.error("MailRuCalService::addCalendar - Incorrect parameters", e);
+            return Response.status(500).build();
+        }
 
         //--> checks
         if (!Utils.isStr(name) ||
@@ -198,6 +241,34 @@ public class MailRuCalService
             end = endpoint;
         }
         //<--
+
+        if (display.equals(ProjectCalUserData.JCL_TYPE_STR))
+        {
+            JiraServiceContext jsCtx = new JiraServiceContextImpl(user);
+            SearchRequest sr = srMgr.getFilter(jsCtx, Long.parseLong(mainsel));
+
+            JSONArray perms = new JSONArray();
+            for (String group : groups)
+            {
+                JSONObject obj = new JSONObject();
+                obj.put("type", "group");
+                obj.put("param1", group);
+                perms.put(obj);
+            }
+
+            for (Long[] projRole : projRoles)
+            {
+                JSONObject obj = new JSONObject();
+                obj.put("type", "project");
+                obj.put("param1", projRole[0]);
+                obj.put("param2", projRole[1]);
+                perms.put(obj);
+            }
+
+            SharePermissions sharePerms = SharePermissionUtils.fromJsonArray(perms);
+            sr.setPermissions(sharePerms);
+            srMgr.updateFilter(jsCtx, sr);
+        }
 
         UserCalData usrData = mailCfg.getUserData(user.getName());
         if (usrData == null)
@@ -779,6 +850,16 @@ public class MailRuCalService
         }
         Collections.sort(projPairs);
 
+        Map<Long, String> roleProjs = new TreeMap<Long, String>();
+        Collection<ProjectRole> roles = projectRoleManager.getProjectRoles();
+        if (roles != null)
+        {
+            for (ProjectRole role : roles)
+            {
+                roleProjs.put(role.getId(), role.getName());
+            }
+        }
+
         //--> available searches
         List<DataPair> filterPairs = new ArrayList<DataPair>();
         Collection<SearchRequest> searches = srMgr.getOwnedFilters(user);
@@ -792,14 +873,13 @@ public class MailRuCalService
         }
         Collections.sort(filterPairs);
 
-        
-
         Map<String, Object> params = new HashMap<String, Object>();
         params.put("i18n", authCtx.getI18nHelper());
         params.put("baseUrl", Utils.getBaseUrl(request));
         params.put("aProj", projPairs);
         params.put("aSearch", filterPairs);
         params.put("allGroups", getAllGroups());
+        params.put("roleProjs", roleProjs);
 
         return Response.ok(new HtmlEntity(ComponentAccessor.getVelocityManager().getBody("templates/", "addcalendar.vm", params))).build();
     }
@@ -859,24 +939,39 @@ public class MailRuCalService
                     params.put("targetName", getSearchRequest(Long.valueOf(pcud.getTarget()), user).getName());
                 }
 
+                //--> available projects
+                List<DataPair> projPairs = new ArrayList<DataPair>();
+                List<Project> projects = prMgr.getProjectObjects();
+                if (projects != null)
+                {
+                    for (Project project : projects)
+                    {
+                        if (permMgr.hasPermission(Permissions.BROWSE, project, user))
+                        {
+                            DataPair pair = new DataPair(project.getId(), project.getName());
+                            projPairs.add(pair);
+                        }
+                    }
+                }
+                Collections.sort(projPairs);
+
+                Map<Long, String> roleProjs = new TreeMap<Long, String>();
+                Collection<ProjectRole> roles = projectRoleManager.getProjectRoles();
+                if (roles != null)
+                {
+                    for (ProjectRole role : roles)
+                    {
+                        roleProjs.put(role.getId(), role.getName());
+                    }
+                }
+                params.put("roleProjs", roleProjs);
+                params.put("aProj", projPairs);
+
                 return Response.ok(new HtmlEntity(ComponentAccessor.getVelocityManager().getBody("templates/", "infocalendar.vm", params))).build();
             }
         }
 
         return Response.ok().build();
-    }
-
-    private void s()
-    {
-        List<Project> projs = prMgr.getProjectObjects();
-        if (projs != null)
-        {
-            for (Project proj : projs)
-            {
-                Collection<Group> projGroups = permMgr.getAllGroups(Permissions.BROWSE, proj);
-                
-            }
-        }
     }
 
     @POST
@@ -923,6 +1018,33 @@ public class MailRuCalService
         String newname = request.getParameter("calname");
         String descr = request.getParameter("caldescr");
         String color = request.getParameter("calcolor");
+        String shares_data = request.getParameter("shares_data");
+
+        List<String> groups = new ArrayList<String>();
+        List<Long[]> projRoles = new ArrayList<Long[]>();
+        try
+        {
+            JSONArray jsonObj = new JSONArray(shares_data);
+            for (int i = 0; i < jsonObj.length(); i++)
+            {
+                JSONObject obj = jsonObj.getJSONObject(i);
+                String type = obj.getString("type");
+                if (type.equals("G"))
+                {
+                    groups.add(obj.getString("group"));
+                }
+                else
+                {
+                    Long[] item = {Long.parseLong(obj.getString("proj")), Long.parseLong(obj.getString("role"))};
+                    projRoles.add(item);
+                }
+            }
+        }
+        catch (JSONException e)
+        {
+            log.error("MailRuCalService::updateCalendar - Incorrect input parameters", e);
+            return Response.status(500).build();
+        }
 
         Long ctime;
         try
@@ -931,7 +1053,7 @@ public class MailRuCalService
         }
         catch (NumberFormatException nfex)
         {
-            log.error("MailRuCalService::updateCalendar - Incorrect input parameters");
+            log.error("MailRuCalService::updateCalendar - Incorrect input parameters", nfex);
             return Response.status(500).build();
         }
 

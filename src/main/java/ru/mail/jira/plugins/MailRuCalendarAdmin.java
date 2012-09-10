@@ -9,15 +9,27 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
+
 import com.atlassian.crowd.embedded.api.Group;
 import com.atlassian.crowd.embedded.api.User;
+import com.atlassian.jira.bc.JiraServiceContext;
+import com.atlassian.jira.bc.JiraServiceContextImpl;
 import com.atlassian.jira.bc.filter.SearchRequestService;
 import com.atlassian.jira.issue.search.SearchRequest;
 import com.atlassian.jira.project.Project;
 import com.atlassian.jira.project.ProjectManager;
 import com.atlassian.jira.security.Permissions;
 import com.atlassian.jira.security.groups.GroupManager;
+import com.atlassian.jira.security.roles.ProjectRole;
+import com.atlassian.jira.security.roles.ProjectRoleManager;
+import com.atlassian.jira.sharing.SharePermissionUtils;
+import com.atlassian.jira.sharing.SharedEntity.SharePermissions;
+import com.atlassian.jira.util.json.JSONArray;
+import com.atlassian.jira.util.json.JSONException;
+import com.atlassian.jira.util.json.JSONObject;
 import com.atlassian.jira.web.action.JiraWebActionSupport;
 import com.atlassian.sal.api.ApplicationProperties;
 
@@ -38,16 +50,6 @@ public class MailRuCalendarAdmin
      * Application properties.
      */
     private final ApplicationProperties applicationProperties;
-
-    /**
-     * Project manager.
-     */
-    private final ProjectManager prMgr;
-
-    /**
-     * Search request service.
-     */
-    private final SearchRequestService srMgr;
 
     /**
      * Calendar color.
@@ -105,6 +107,21 @@ public class MailRuCalendarAdmin
     private String pgadmin;
 
     /**
+     * Project manager.
+     */
+    private final ProjectManager prMgr;
+
+    /**
+     * Shares data.
+     */
+    private String shares_data;
+
+    /**
+     * Project role manager.
+     */
+    private final ProjectRoleManager projectRoleManager;
+
+    /**
      * Selected groups.
      */
     private String[] selectedGroups;
@@ -113,6 +130,11 @@ public class MailRuCalendarAdmin
      * Field type.
      */
     private String showfld;
+
+    /**
+     * Search request service.
+     */
+    private final SearchRequestService srMgr;
 
     /**
      * Start point.
@@ -127,13 +149,15 @@ public class MailRuCalendarAdmin
         GroupManager groupManager,
         MailRuCalCfg mailCfg,
         SearchRequestService srMgr,
-        ProjectManager prMgr)
+        ProjectManager prMgr,
+        ProjectRoleManager projectRoleManager)
     {
         this.applicationProperties = applicationProperties;
         this.groupManager = groupManager;
         this.mailCfg = mailCfg;
         this.srMgr = srMgr;
         this.prMgr = prMgr;
+        this.projectRoleManager = projectRoleManager;
     }
 
     @Override
@@ -150,6 +174,59 @@ public class MailRuCalendarAdmin
         {
             start = startpoint;
             end = endpoint;
+        }
+
+        List<String> groups = new ArrayList<String>();
+        List<Long[]> projRoles = new ArrayList<Long[]>();
+        try
+        {
+            JSONArray jsonObj = new JSONArray(shares_data);
+            for (int i = 0; i < jsonObj.length(); i++)
+            {
+                JSONObject obj = jsonObj.getJSONObject(i);
+                String type = obj.getString("type");
+                if (type.equals("G"))
+                {
+                    groups.add(obj.getString("group"));
+                }
+                else
+                {
+                    Long[] item = {Long.parseLong(obj.getString("proj")), Long.parseLong(obj.getString("role"))};
+                    projRoles.add(item);
+                }
+            }
+        }
+        catch (JSONException e)
+        {
+            //impossible
+        }
+
+        if (display.equals(ProjectCalUserData.JCL_TYPE_STR))
+        {
+            JiraServiceContext jsCtx = new JiraServiceContextImpl(getLoggedInUser());
+            SearchRequest sr = srMgr.getFilter(jsCtx, Long.parseLong(mainsel));
+
+            JSONArray perms = new JSONArray();
+            for (String group : groups)
+            {
+                JSONObject obj = new JSONObject();
+                obj.put("type", "group");
+                obj.put("param1", group);
+                perms.put(obj);
+            }
+
+            for (Long[] projRole : projRoles)
+            {
+                JSONObject obj = new JSONObject();
+                obj.put("type", "project");
+                obj.put("param1", projRole[0]);
+                obj.put("param2", projRole[1]);
+                perms.put(obj);
+            }
+
+            SharePermissions sharePerms = SharePermissionUtils.fromJsonArray(perms);
+            sr.setPermissions(sharePerms);
+            srMgr.updateFilter(jsCtx, sr);
         }
 
         Set<String> userSet = new HashSet<String>();
@@ -283,6 +360,15 @@ public class MailRuCalendarAdmin
         {
             addErrorMessage(getText("mailrucal.usergroup.error"));
         }
+
+        try
+        {
+            new JSONArray(shares_data);
+        }
+        catch (JSONException e)
+        {
+            addErrorMessage(getText("mailrucal.shares.error"));
+        }
     }
 
     /**
@@ -358,6 +444,21 @@ public class MailRuCalendarAdmin
         return pgadmin;
     }
 
+    public Map<Long, String> getProjectRoles()
+    {
+        Map<Long, String> roleProjs = new TreeMap<Long, String>();
+        Collection<ProjectRole> roles = projectRoleManager.getProjectRoles();
+        if (roles != null)
+        {
+            for (ProjectRole role : roles)
+            {
+                roleProjs.put(role.getId(), role.getName());
+            }
+        }
+
+        return roleProjs;
+    }
+
     public List<DataPair> getProjects()
     {
         List<DataPair> projPairs = new ArrayList<DataPair>();
@@ -378,6 +479,11 @@ public class MailRuCalendarAdmin
     public String[] getSelectedGroups()
     {
         return selectedGroups;
+    }
+
+    public String getShares_data()
+    {
+        return shares_data;
     }
 
     public String getShowfld()
@@ -454,6 +560,11 @@ public class MailRuCalendarAdmin
     public void setSelectedGroups(String[] selectedGroups)
     {
         this.selectedGroups = selectedGroups;
+    }
+
+    public void setShares_data(String shares_data)
+    {
+        this.shares_data = shares_data;
     }
 
     public void setShowfld(String showfld)
