@@ -1,12 +1,12 @@
 ## Created by Andrey Markelov 29-08-2012.
 ## Copyright Mail.Ru Group 2012. All rights reserved.
-<form id="deletecalform" name="deletecalform" action="${baseUrl}/rest/mailrucalws/1.0/mailcalsrv/deletecalendar" method="post">
+<form id="deletecalform" name="deletecalform" action="${baseUrl}/rest/mailrucalws/1.0/mailcalsrv/updatecalendar" method="post">
   <input type="hidden" value="$pcud.getcTime()" id="calctime" name="calctime"/>
   <input type="hidden" value="$pcud.getName()" id="origcalname" name="origcalname"/>
   <table class="dlginfotable">
     <tr>
       <td class="dlgtablekey"><label for="calname">$i18n.getText("mailrucal.calname")*</label></td>
-      <td valign="top"><input type="text" value="$pcud.getName()" id="calname" name="calname"/></td>
+      <td valign="top"><input #if(!$isOwner)disabled="disabled"#end type="text" value="$pcud.getName()" id="calname" name="calname"/></td>
     </tr>
     <tr>
         <td class="dlgtablekey"><label for="caldescr">$i18n.getText("mailrucal.caldescr")</label></td>
@@ -27,10 +27,107 @@
             </select>
         </td>
     </tr>
+    #if($isOwner)
+    <tr>
+        <td class="dlgtablekey"><label>$i18n.getText("mailrucal.caldisplay")*</label></td>
+        <td valign="top">
+          <table class="justtable">
+            <tr>
+              <td valign="top">
+              <table class="justtable">
+                      <tr>
+                        <td valign="top">
+                <div>
+                  <input onclick="fillProj();" type="radio" id="display" name="display" value="project" #if($pcud.isProjectType())checked="checked"#end/><span>$i18n.getText("mailrucal.calproj")</span>&nbsp;&nbsp;
+                  <input onclick="fillJcl();" type="radio" id="display" name="display" value="jcl"/ #if($pcud.isJclType())checked="checked"#end><span>$i18n.getText("mailrucal.calfilter")</span>
+                </div>
+                <select id="mainsel" name="mainsel" style="background-color: white;">
+                #if($pcud.isProjectType())
+                  #foreach($entry in $aProj)
+                    <option #if($targetName == $entry.getName())selected="selected"#end value="$entry.getId()">$entry.getName()</option>
+                  #end
+                #else
+                  #foreach($entry in $aSearch)
+                    <option #if($targetName == $entry.getName())selected="selected"#end value="$entry.getId()">$entry.getName()</option>
+                  #end
+                #end
+                </select>
+                <select id="projsel" name="projsel" style="display: none;">
+                #foreach($entry in $aProj)
+                  <option value="$entry.getId()">$entry.getName()</option>
+                #end
+                </select>
+                <select id="jclsel" name="jclsel" style="display: none;">
+                #foreach($entry in $aSearch)
+                  <option value="$entry.getId()">$entry.getName()</option>
+                #end
+                </select>
+                </td>
+                      </tr>
+                    </table>
+              </td>
+            </tr>
+          </table>
+        </td>
+    </tr>
+    #else
     <tr>
         <td class="dlgtablekey"><label>#if($pcud.isProjectType())$i18n.getText("mailrucal.calproj")#else$i18n.getText("mailrucal.calfilter")#end</label></td>
         <td valign="top"><input disabled="disabled" type="text" id="display" value="$targetName" name="display"/></td>
     </tr>
+    #end
+    #if($isOwner)
+    <tr>
+        <td class="dlgtablekey"><label>$i18n.getText("mailrucal.calshow")*</label></td>
+        <td valign="top">
+            <table class="justtable">
+                <tr>
+                  <td valign="top">
+                    <table class="justtable">
+                      <tr>
+                        <td valign="top">
+                          <input onclick="setIssueDueDate();" type="radio" id="showfld" name="showfld" value="idd" #if($pcud.isIDD())checked="checked"#end/><span>$i18n.getText("mailrucal.calidd")</span>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+                <tr>
+                  <td valign="top">
+                    <table class="justtable">
+                      <tr>
+                        <td valign="top">
+                          <input onclick="setCustomDate();" type="radio" id="showfld" name="showfld" value="cdp"/ #if($pcud.isDatePoint())checked="checked"#end><span>$i18n.getText("mailrucal.customdatepoint")</span>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td valign="top">
+                          <input type="text" size="15" id="cdpinput" name="cdpinput" #if($pcud.isDatePoint())value="$pcud.getStartPoint()"#else disabled="disabled"#end/>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+                <tr>
+                  <td valign="top">
+                    <table class="justtable">
+                      <tr>
+                        <td valign="top">
+                          <input onclick="setRange();" type="radio" id="showfld" name="showfld" value="cdr" #if($pcud.isDateRange())checked="checked"#end/><span>$i18n.getText("mailrucal.daterange")</span>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td valign="top">
+                          <input type="text" size="13" id="startpoint" name="startpoint" #if($pcud.isDateRange())value="$pcud.getStartPoint()"#else disabled="disabled"#end/> - <input type="text" size="13" id="endpoint" name="endpoint" #if($pcud.isDateRange())value="$pcud.getEndPoint()"#else disabled="disabled"#end/>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+            </table>
+        </td>
+    </tr>
+    #else
     <tr>
         <td class="dlgtablekey"><label>$i18n.getText("mailrucal.calshow")</label></td>
         <td valign="top">
@@ -70,6 +167,8 @@
         #end
         </td>
     </tr>
+    #end
+    #if($isOwner)
     <tr>
         <td class="dlgtablekey"><label>$i18n.getText("mailrucal.share")</label></td>
         <td valign="top">
@@ -79,7 +178,24 @@
                         <table class="justtable">
                             <tr>
                                 <td valign="top">
-                                    <div id="share_display_div"></div>
+                                    <div id="share_display_div">
+                                    #foreach($group in $pcud.getGroups())
+                                      <div id="group$group">
+                                        <span>$i18n.getText("mailrucal.share_project", $group)</span>
+                                        <img onclick="removeGroup(event);" id="share_trash" height="16px" width="16px" class="shareTrash" src="/jira/images/icons/trash_16.gif" title="Delete Share" alt="Delete Share"/> <input id="share_type_hidden" name="shareValues" type="hidden"/>
+                                      </div>
+                                    #end
+                                    #foreach($pRole in $pcud.getProjRoles())
+                                      <div id="project$pRole.getProject()role$pRole.getRole()">
+                                        #if($pRole.getRole() != "")
+                                        <span>$i18n.getText("mailrucal.share_project_role", $projMap.get($pRole.getProject()), $roleProjMap.get($pRole.getRole()))</span>
+                                        #else
+                                        <span>$i18n.getText("mailrucal.share_project", $projMap.get($pRole.getProject()))</span>
+                                        #end
+                                        <img onclick="removeGroup(event);" id="share_trash" height="16px" width="16px" class="shareTrash" src="/jira/images/icons/trash_16.gif" title="Delete Share" alt="Delete Share"/> <input id="share_type_hidden" name="shareValues" type="hidden"/>
+                                      </div>
+                                    #end
+                                    </div>
                                     <div id="share_div">
                                       <div id="share_display_component">
                                         <div>
@@ -123,6 +239,7 @@
             </table>
         </td>
     </tr>
+    #end
     <tr>
         <td class="dlgtablekey"><label for="caldescr">$i18n.getText("mailrucal.creationtime")</label></td>
         <td valign="top"><input type="text" value="$createtime" id="ctimestr" name="ctimestr" disabled="disabled"/></td>
@@ -134,6 +251,6 @@
     </tr>
     #end
   </table>
-  <input id="shares_data" name="shares_data" style="display:none;" value="[]"/>
+  <input id="shares_data" name="shares_data" style="display:none;" value='$storedShares'/>
   <img onclick="removeGroup(event);" id="share_trash" height="16px" width="16px" style="display: none" class="shareTrash" src="/jira/images/icons/trash_16.gif" title="Delete Share" alt="Delete Share"/> <input id="share_type_hidden" name="shareValues" type="hidden"/>
 </form>

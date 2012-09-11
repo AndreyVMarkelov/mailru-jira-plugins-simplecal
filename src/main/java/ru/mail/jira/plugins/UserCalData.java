@@ -35,8 +35,37 @@ public class UserCalData
         this.projs.add(projData);
     }
 
+    /**
+     * Get calendar data.
+     */
+    public ProjectCalUserData getProjectCalUserData(
+        String name,
+        long ctime)
+    {
+        for (ProjectCalUserData pcud : projs)
+        {
+            if (pcud.getName().equals(name) && pcud.getcTime() == ctime)
+            {
+                return pcud;
+            }
+        }
+
+        return null;
+    }
+
     public List<ProjectCalUserData> getProjs()
     {
         return projs;
+    }
+
+    /**
+     * Remove calendar data.
+     */
+    public void removeProjectCalUserData(ProjectCalUserData pcud)
+    {
+        if (pcud != null)
+        {
+            projs.remove(pcud);
+        }
     }
 }

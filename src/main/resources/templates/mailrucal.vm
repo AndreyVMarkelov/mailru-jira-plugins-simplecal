@@ -39,6 +39,9 @@
                             <label for="id" class="checkbox">
                                 <input onclick="changeCalMode('$baseUrl', '$proj.getName()', $proj.getcTime())" type="checkbox" id="$proj.getName()$proj.getcTime()" name="$proj.getName()$proj.getcTime()" #if($proj.isActive())checked="checked"#end/>
                                 <a href="#" onclick="actMailRuCalendar(event, '$baseUrl', '$proj.getName()', $proj.getcTime())"><span style="color: $proj.getColor();">$proj.getName()</span></a>
+                                #if($proj.getCreator().equals($user))
+                                <img onclick="deleteMailRuCalendar(event, '$baseUrl', '$proj.getName()', $proj.getcTime());" id="share_trash" height="16px" width="16px" class="shareTrash" src="/jira/images/icons/trash_16.gif" title="Delete Share" alt="Delete Share"/> <input id="share_type_hidden" name="shareValues" type="hidden"/>
+                                #end
                             </label>
                             </td></tr>
                             #end
@@ -95,17 +98,17 @@
                 setUserPrefView('$baseUrl', view.name);
             },
             dayClick: function(date, allDay, jsEvent, view) {
-                if (allDay) {
-                    alert('Clicked on the entire day: ' + date);
-                }else{
-                    alert('Clicked on the slot: ' + date);
-                }
+//                if (allDay) {
+//                    alert('Clicked on the entire day: ' + date);
+//                }else{
+//                    alert('Clicked on the slot: ' + date);
+//                }
 
-                alert('Coordinates: ' + jsEvent.pageX + ',' + jsEvent.pageY);
-                alert('Current view: ' + view.name);
+//                alert('Coordinates: ' + jsEvent.pageX + ',' + jsEvent.pageY);
+//                alert('Current view: ' + view.name);
 
-                // change the day's background color just for fun
-                $(this).css('background-color', 'red');
+//                // change the day's background color just for fun
+//                $(this).css('background-color', 'red');
             }
         });
     });

@@ -21,11 +21,11 @@ public class ProjectCalUserData
     public static final String DATE_POINT_STR = "cdp";
     public static final String DATE_RANGE_STR = "cdr";
 
-    private static final int PROJECT_TYPE = 0;
-    private static final int JCL_TYPE = 1;
-
     public static final String PROJECT_TYPE_STR = "project";
     public static final String JCL_TYPE_STR = "jcl";
+
+    private static final int PROJECT_TYPE = 0;
+    private static final int JCL_TYPE = 1;
 
     /**
      * Calendar color.
@@ -73,6 +73,11 @@ public class ProjectCalUserData
     private String name;
 
     /**
+     * Project roles.
+     */
+    private List<ProjRole> projRoles;
+
+    /**
      * Start custom field.
      */
     private String startPoint;
@@ -101,20 +106,23 @@ public class ProjectCalUserData
         String endPoint,
         boolean isActive,
         String creator,
-        List<String> groups)
+        List<String> groups,
+        List<ProjRole> projRoles,
+        long cTime)
     {
         this.name = name;
         this.descr = descr;
         this.color = color;
-        this.type = type.equals(PROJECT_TYPE_STR) ? PROJECT_TYPE : JCL_TYPE;
+        setType(type);
         this.target = target;
-        initFieldType(fieldType);
+        setFieldType(fieldType);
         this.startPoint = startPoint;
         this.endPoint = endPoint;
         this.isActive = isActive;
         this.creator = creator;
         this.groups = groups;
-        this.cTime = System.currentTimeMillis();
+        this.projRoles = projRoles;
+        this.cTime = cTime;
     }
 
     public String getColor()
@@ -125,6 +133,11 @@ public class ProjectCalUserData
     public String getCreator()
     {
         return creator;
+    }
+
+    public void setType(String type)
+    {
+        this.type = type.equals(PROJECT_TYPE_STR) ? PROJECT_TYPE : JCL_TYPE;
     }
 
     public long getcTime()
@@ -152,6 +165,11 @@ public class ProjectCalUserData
         return name;
     }
 
+    public List<ProjRole> getProjRoles()
+    {
+        return projRoles;
+    }
+
     public String getStartPoint()
     {
         return startPoint;
@@ -162,7 +180,7 @@ public class ProjectCalUserData
         return target;
     }
 
-    private void initFieldType(String fieldType)
+    public void setFieldType(String fieldType)
     {
         if (fieldType.equals(IDD_STR))
         {
@@ -223,9 +241,34 @@ public class ProjectCalUserData
         this.descr = descr;
     }
 
+    public void setEndPoint(String endPoint)
+    {
+        this.endPoint = endPoint;
+    }
+
+    public void setGroups(List<String> groups)
+    {
+        this.groups = groups;
+    }
+
     public void setName(String name)
     {
         this.name = name;
+    }
+
+    public void setProjRoles(List<ProjRole> projRoles)
+    {
+        this.projRoles = projRoles;
+    }
+
+    public void setStartPoint(String startPoint)
+    {
+        this.startPoint = startPoint;
+    }
+
+    public void setTarget(String target)
+    {
+        this.target = target;
     }
 
     @Override
@@ -235,6 +278,6 @@ public class ProjectCalUserData
             + ", descr=" + descr + ", fieldType=" + fieldType + ", name="
             + name + ", target=" + target + ", startPoint=" + startPoint
             + ", endPoint=" + endPoint + ", type=" + type + ", isActive=" +
-            isActive + ", creator=" + creator + "]";
+            isActive + ", creator=" + creator + ", projRoles=" + projRoles  + "]";
     }
 }

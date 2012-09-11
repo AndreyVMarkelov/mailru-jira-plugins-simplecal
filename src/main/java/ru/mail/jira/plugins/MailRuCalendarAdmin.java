@@ -7,12 +7,10 @@ package ru.mail.jira.plugins;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
-
 import com.atlassian.crowd.embedded.api.Group;
 import com.atlassian.crowd.embedded.api.User;
 import com.atlassian.jira.bc.JiraServiceContext;
@@ -102,11 +100,6 @@ public class MailRuCalendarAdmin
     private String mainsel;
 
     /**
-     * User.
-     */
-    private String pgadmin;
-
-    /**
      * Project manager.
      */
     private final ProjectManager prMgr;
@@ -120,11 +113,6 @@ public class MailRuCalendarAdmin
      * Project role manager.
      */
     private final ProjectRoleManager projectRoleManager;
-
-    /**
-     * Selected groups.
-     */
-    private String[] selectedGroups;
 
     /**
      * Field type.
@@ -177,7 +165,7 @@ public class MailRuCalendarAdmin
         }
 
         List<String> groups = new ArrayList<String>();
-        List<Long[]> projRoles = new ArrayList<Long[]>();
+        List<ProjRole> projRoles = new ArrayList<ProjRole>();
         try
         {
             JSONArray jsonObj = new JSONArray(shares_data);
@@ -191,8 +179,8 @@ public class MailRuCalendarAdmin
                 }
                 else
                 {
-                    Long[] item = {Long.parseLong(obj.getString("proj")), Long.parseLong(obj.getString("role"))};
-                    projRoles.add(item);
+                    ProjRole pr = new ProjRole(obj.getString("proj"), obj.getString("role"));;
+                    projRoles.add(pr);
                 }
             }
         }
@@ -215,13 +203,31 @@ public class MailRuCalendarAdmin
                 perms.put(obj);
             }
 
-            for (Long[] projRole : projRoles)
+            for (ProjRole projRole : projRoles)
             {
-                JSONObject obj = new JSONObject();
-                obj.put("type", "project");
-                obj.put("param1", projRole[0]);
-                obj.put("param2", projRole[1]);
-                perms.put(obj);
+                if (projRole.getRole().isEmpty())
+                {
+                    Collection<ProjectRole> roles = projectRoleManager.getProjectRoles();
+                    if (roles != null)
+                    {
+                        for (ProjectRole role : roles)
+                        {
+                            JSONObject obj = new JSONObject();
+                            obj.put("type", "project");
+                            obj.put("param1", projRole.getProject());
+                            obj.put("param2", role.getId());
+                            perms.put(obj);
+                        }
+                    }
+                }
+                else
+                {
+                    JSONObject obj = new JSONObject();
+                    obj.put("type", "project");
+                    obj.put("param1", projRole.getProject());
+                    obj.put("param2", projRole.getRole());
+                    perms.put(obj);
+                }
             }
 
             SharePermissions sharePerms = SharePermissionUtils.fromJsonArray(perms);
@@ -229,15 +235,12 @@ public class MailRuCalendarAdmin
             srMgr.updateFilter(jsCtx, sr);
         }
 
-        Set<String> userSet = new HashSet<String>();
-        if (Utils.isStr(pgadmin))
-        {
-            UserCalData usrData = mailCfg.getUserData(pgadmin);
-            if (usrData == null)
-            {
-                usrData = new UserCalData();
-            }
+        long ctime = Counter.getVal();
 
+        Set<String> shUsers = Utils.getSharedUsers(groups, projRoles, groupManager, prMgr, projectRoleManager, getLoggedInUser().getName());
+        for (String shUser : shUsers)
+        {
+            UserCalData usrData = mailCfg.getUserData(shUser);
             usrData.add(new ProjectCalUserData(
                 calname,
                 caldescr,
@@ -249,48 +252,10 @@ public class MailRuCalendarAdmin
                 end,
                 true,
                 getLoggedInUser().getName(),
-                null));
-            mailCfg.putUserData(pgadmin, usrData);
-            userSet.add(pgadmin);
-        }
-
-        if (Utils.isArray(selectedGroups))
-        {
-            for (String group : selectedGroups)
-            {
-                Collection<User> users = groupManager.getUsersInGroup(group);
-                if (users != null)
-                {
-                    for (User user : users)
-                    {
-                        if (userSet.contains(user.getName()))
-                        {
-                            continue;
-                        }
-
-                        UserCalData usrData = mailCfg.getUserData(user.getName());
-                        if (usrData == null)
-                        {
-                            usrData = new UserCalData();
-                        }
-
-                        usrData.add(new ProjectCalUserData(
-                            calname,
-                            caldescr,
-                            calcolor,
-                            display,
-                            mainsel,
-                            showfld,
-                            start,
-                            end,
-                            true,
-                            getLoggedInUser().getName(),
-                            null));
-                        mailCfg.putUserData(user.getName(), usrData);
-                        userSet.add(user.getName());
-                    }
-                }
-            }
+                groups,
+                projRoles,
+                ctime));
+            mailCfg.putUserData(shUser, usrData);
         }
 
         setSaved(true);
@@ -353,12 +318,6 @@ public class MailRuCalendarAdmin
             {
                 addErrorMessage(getText("mailrucal.daterange.error"));
             }
-        }
-
-        if (!Utils.isArray(selectedGroups) &&
-            !Utils.isStr(pgadmin))
-        {
-            addErrorMessage(getText("mailrucal.usergroup.error"));
         }
 
         try
@@ -439,11 +398,6 @@ public class MailRuCalendarAdmin
         return mainsel;
     }
 
-    public String getPgadmin()
-    {
-        return pgadmin;
-    }
-
     public Map<Long, String> getProjectRoles()
     {
         Map<Long, String> roleProjs = new TreeMap<Long, String>();
@@ -474,11 +428,6 @@ public class MailRuCalendarAdmin
         Collections.sort(projPairs);
 
         return projPairs;
-    }
-
-    public String[] getSelectedGroups()
-    {
-        return selectedGroups;
     }
 
     public String getShares_data()
@@ -547,19 +496,9 @@ public class MailRuCalendarAdmin
         this.mainsel = mainsel;
     }
 
-    public void setPgadmin(String pgadmin)
-    {
-        this.pgadmin = pgadmin;
-    }
-
     public void setSaved(boolean isSaved)
     {
         this.isSaved = isSaved;
-    }
-
-    public void setSelectedGroups(String[] selectedGroups)
-    {
-        this.selectedGroups = selectedGroups;
     }
 
     public void setShares_data(String shares_data)

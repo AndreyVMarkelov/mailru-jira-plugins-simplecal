@@ -71,10 +71,10 @@ public class MailRuCalCfgImpl
             }
             catch (XStreamException xsex)
             {
-                return null;
+                return new UserCalData();
             }
         }
-        return null;
+        return new UserCalData();
     }
 
     /**

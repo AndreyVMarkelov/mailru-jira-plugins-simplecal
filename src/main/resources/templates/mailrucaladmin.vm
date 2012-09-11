@@ -103,55 +103,6 @@
           </td>
         </tr>
         <tr>
-          <td class="dlgtablekey">
-            <label for="pgadmin_container">$action.getText("mailrucal.admin.user")</label>
-          </td>
-          <td valign="top">
-            <table class="justtable">
-              <tr>
-                <td valign="top">
-                  <table class="justtable">
-                    <tr>
-                      <td valign="top">
-                        <div  id="pgadmin_container">
-                          <input type="text" name="pgadmin" id="pgadmin" #if ($pgadmin) value="$pgadmin" #end/>
-                          <a class="popup-trigger" href="#"><img  title='$action.getText("mailrucal.admin.specify.user")' alt='$action.getText("mailrucal.admin.specify.user")' name="assigneeImage" src="$baseUrl/images/icons/filter_public.gif" hspace="0" height="16" width="16" border="0" style="vertical-align:top"></a>
-                          <div id="pgadmin_results" class="ajax_results"></div>
-                          <div class="small">$action.getText("mailrucal.admin.match")</div>
-                        </div>
-                      </td>
-                    </tr>
-                  </table>
-                </td>
-              </tr>
-            </table>
-          </td>
-        </tr>
-        <tr>
-          <td class="dlgtablekey">
-            <label for="pgadmin_container">$action.getText("mailrucal.admin.groups")</label>
-          </td>
-          <td valign="top">
-            <table class="justtable">
-              <tr>
-                <td valign="top">
-                  <table class="justtable">
-                    <tr>
-                      <td valign="top">
-                        <select multiple="" size="10" id="selectedGroups" name="selectedGroups">
-                        #foreach ($group in $allGroups)
-                          <option value="$group.getName()">$group.getName()</option>
-                        #end
-                        </select>
-                      </td>
-                    </tr>
-                  </table>
-                </td>
-              </tr>
-            </table>
-          </td>
-        </tr>
-        <tr>
           <td class="dlgtablekey"><label>$i18n.getText("mailrucal.caldisplay")*</label></td>
           <td valign="top">
             <table class="justtable">

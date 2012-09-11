@@ -16,6 +16,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.GET;
@@ -168,7 +169,7 @@ public class MailRuCalService
         String shares_data = request.getParameter("shares_data");
 
         List<String> groups = new ArrayList<String>();
-        List<Long[]> projRoles = new ArrayList<Long[]>();
+        List<ProjRole> projRoles = new ArrayList<ProjRole>();
         try
         {
             JSONArray jsonObj = new JSONArray(shares_data);
@@ -182,8 +183,8 @@ public class MailRuCalService
                 }
                 else
                 {
-                    Long[] item = {Long.parseLong(obj.getString("proj")), Long.parseLong(obj.getString("role"))};
-                    projRoles.add(item);
+                    ProjRole pr = new ProjRole(obj.getString("proj"), obj.getString("role"));
+                    projRoles.add(pr);
                 }
             }
         }
@@ -256,13 +257,31 @@ public class MailRuCalService
                 perms.put(obj);
             }
 
-            for (Long[] projRole : projRoles)
+            for (ProjRole projRole : projRoles)
             {
-                JSONObject obj = new JSONObject();
-                obj.put("type", "project");
-                obj.put("param1", projRole[0]);
-                obj.put("param2", projRole[1]);
-                perms.put(obj);
+                if (projRole.getRole().isEmpty())
+                {
+                    Collection<ProjectRole> roles = projectRoleManager.getProjectRoles();
+                    if (roles != null)
+                    {
+                        for (ProjectRole role : roles)
+                        {
+                            JSONObject obj = new JSONObject();
+                            obj.put("type", "project");
+                            obj.put("param1", projRole.getProject());
+                            obj.put("param2", role.getId());
+                            perms.put(obj);
+                        }
+                    }
+                }
+                else
+                {
+                    JSONObject obj = new JSONObject();
+                    obj.put("type", "project");
+                    obj.put("param1", projRole.getProject());
+                    obj.put("param2", projRole.getRole());
+                    perms.put(obj);
+                }
             }
 
             SharePermissions sharePerms = SharePermissionUtils.fromJsonArray(perms);
@@ -270,25 +289,28 @@ public class MailRuCalService
             srMgr.updateFilter(jsCtx, sr);
         }
 
-        UserCalData usrData = mailCfg.getUserData(user.getName());
-        if (usrData == null)
-        {
-            usrData = new UserCalData();
-        }
+        long ctime = Counter.getVal();
 
-        usrData.add(new ProjectCalUserData(
-            name,
-            descr,
-            color,
-            display,
-            mainsel,
-            showfld,
-            start,
-            end,
-            true,
-            user.getName(),
-            null));
-        mailCfg.putUserData(user.getName(), usrData);
+        Set<String> shUsers = Utils.getSharedUsers(groups, projRoles, groupMgr, prMgr, projectRoleManager, user.getName());
+        for (String shUser : shUsers)
+        {
+            UserCalData usrData = mailCfg.getUserData(shUser);
+            usrData.add(new ProjectCalUserData(
+                name,
+                descr,
+                color,
+                display,
+                mainsel,
+                showfld,
+                start,
+                end,
+                true,
+                user.getName(),
+                groups,
+                projRoles,
+                ctime));
+            mailCfg.putUserData(shUser, usrData);
+        }
 
         String baseUrl = Utils.getBaseUrl(request);
         return Response.seeOther(URI.create(baseUrl + "/plugins/servlet/mailrucal/view")).build();
@@ -577,22 +599,20 @@ public class MailRuCalService
         }
 
         UserCalData usrData = mailCfg.getUserData(user.getName());
-        if (usrData != null)
+        ProjectCalUserData pcud = usrData.getProjectCalUserData(name, ctime);
+        if (pcud != null)
         {
-            Iterator<ProjectCalUserData> iter = usrData.getProjs().iterator();
-            while (iter.hasNext())
+            Set<String> shUsers = Utils.getSharedUsers(pcud.getGroups(), pcud.getProjRoles(), groupMgr, prMgr, projectRoleManager, user.getName());
+            for (String shUser : shUsers)
             {
-                ProjectCalUserData pcud = iter.next();
-                if (pcud.getName().equals(name) && pcud.getcTime() == ctime.longValue())
-                {
-                    iter.remove();
-                }
+                UserCalData shUsrData = mailCfg.getUserData(shUser);
+                ProjectCalUserData shPcud = shUsrData.getProjectCalUserData(name, ctime);
+                shUsrData.removeProjectCalUserData(shPcud);
+                mailCfg.putUserData(shUser, shUsrData);
             }
-            mailCfg.putUserData(user.getName(), usrData);
         }
 
-        String baseUrl = Utils.getBaseUrl(request);
-        return Response.seeOther(URI.create(baseUrl + "/plugins/servlet/mailrucal/view")).build();
+        return Response.ok().build();
     }
 
     /**
@@ -888,7 +908,7 @@ public class MailRuCalService
     @Produces({ MediaType.APPLICATION_JSON})
     @Path("/infocaldlg")
     public Response initInfoDialog(@Context HttpServletRequest request)
-    throws VelocityException
+    throws VelocityException, JSONException
     {
         JiraAuthenticationContext authCtx = ComponentManager.getInstance().getJiraAuthenticationContext();
         User user = authCtx.getLoggedInUser();
@@ -929,18 +949,55 @@ public class MailRuCalService
                 params.put("createtime", authCtx.getOutlookDate().format(new Date(pcud.getcTime())));
                 params.put("creator", Utils.getDisplayUser(userUtil, pcud.getCreator()));
                 params.put("allGroups", getAllGroups());
+                params.put("isOwner", pcud.getCreator().equals(user.getName()));
 
                 if (pcud.isProjectType())
                 {
-                    params.put("targetName", getProject(Long.valueOf(pcud.getTarget())).getName());
+                    Project proj = getProject(Long.valueOf(pcud.getTarget()));
+                    if (proj == null)
+                    {
+                        return Response.ok(new HtmlEntity("NO_PROJECT")).build();
+                    }
+                    params.put("targetName", proj.getName());
                 }
                 else
                 {
-                    params.put("targetName", getSearchRequest(Long.valueOf(pcud.getTarget()), user).getName());
+                    SearchRequest sr = getSearchRequest(Long.valueOf(pcud.getTarget()), user);
+                    if (sr == null)
+                    {
+                        return Response.ok(new HtmlEntity("NO_FILTER")).build();
+                    }
+                    params.put("targetName", sr.getName());
+                }
+
+                JSONArray storedShares = new JSONArray();
+                if (pcud.getGroups() != null)
+                {
+                    for (String group : pcud.getGroups())
+                    {
+                        JSONObject obj = new JSONObject();
+                        obj.put("id", "group" + group);
+                        obj.put("type", "G");
+                        obj.put("group", group);
+                        storedShares.put(obj);
+                    }
+                }
+                if (pcud.getProjRoles() != null)
+                {
+                    for (ProjRole pr : pcud.getProjRoles())
+                    {
+                        JSONObject obj = new JSONObject();
+                        obj.put("id", "project" + pr.getProject() + "role" + pr.getRole());
+                        obj.put("type", "P");
+                        obj.put("proj", pr.getProject());
+                        obj.put("role", pr.getRole());
+                        storedShares.put(obj);
+                    }
                 }
 
                 //--> available projects
                 List<DataPair> projPairs = new ArrayList<DataPair>();
+                Map<String, String> projMap = new HashMap<String, String>();
                 List<Project> projects = prMgr.getProjectObjects();
                 if (projects != null)
                 {
@@ -949,29 +1006,49 @@ public class MailRuCalService
                         if (permMgr.hasPermission(Permissions.BROWSE, project, user))
                         {
                             DataPair pair = new DataPair(project.getId(), project.getName());
+                            projMap.put(Long.toString(project.getId()), project.getName());
                             projPairs.add(pair);
                         }
                     }
                 }
                 Collections.sort(projPairs);
 
+                //--> available searches
+                List<DataPair> filterPairs = new ArrayList<DataPair>();
+                Collection<SearchRequest> searches = srMgr.getOwnedFilters(user);
+                if (searches != null)
+                {
+                    for (SearchRequest search : searches)
+                    {
+                        DataPair pair = new DataPair(search.getId(), search.getName());
+                        filterPairs.add(pair);
+                    }
+                }
+                Collections.sort(filterPairs);
+
                 Map<Long, String> roleProjs = new TreeMap<Long, String>();
+                Map<String, String> roleProjMap = new TreeMap<String, String>();
                 Collection<ProjectRole> roles = projectRoleManager.getProjectRoles();
                 if (roles != null)
                 {
                     for (ProjectRole role : roles)
                     {
+                        roleProjMap.put(Long.toString(role.getId()), role.getName());
                         roleProjs.put(role.getId(), role.getName());
                     }
                 }
                 params.put("roleProjs", roleProjs);
                 params.put("aProj", projPairs);
+                params.put("aSearch", filterPairs);
+                params.put("projMap", projMap);
+                params.put("roleProjMap", roleProjMap);
+                params.put("storedShares", storedShares.toString());
 
                 return Response.ok(new HtmlEntity(ComponentAccessor.getVelocityManager().getBody("templates/", "infocalendar.vm", params))).build();
             }
         }
 
-        return Response.ok().build();
+        return Response.ok(new HtmlEntity("NO_CALENDAR")).build();
     }
 
     @POST
@@ -1019,9 +1096,15 @@ public class MailRuCalService
         String descr = request.getParameter("caldescr");
         String color = request.getParameter("calcolor");
         String shares_data = request.getParameter("shares_data");
+        String display = request.getParameter("display");
+        String mainsel = request.getParameter("mainsel");
+        String showfld = request.getParameter("showfld");
+        String startpoint = request.getParameter("startpoint");
+        String endpoint = request.getParameter("endpoint");
+        String cdpinput = request.getParameter("cdpinput");
 
         List<String> groups = new ArrayList<String>();
-        List<Long[]> projRoles = new ArrayList<Long[]>();
+        List<ProjRole> projRoles = new ArrayList<ProjRole>();
         try
         {
             JSONArray jsonObj = new JSONArray(shares_data);
@@ -1035,8 +1118,8 @@ public class MailRuCalService
                 }
                 else
                 {
-                    Long[] item = {Long.parseLong(obj.getString("proj")), Long.parseLong(obj.getString("role"))};
-                    projRoles.add(item);
+                    ProjRole pr = new ProjRole(obj.getString("proj"), obj.getString("role"));
+                    projRoles.add(pr);
                 }
             }
         }
@@ -1066,20 +1149,118 @@ public class MailRuCalService
         }
 
         UserCalData usrData = mailCfg.getUserData(user.getName());
-        if (usrData != null)
+        ProjectCalUserData pcud = usrData.getProjectCalUserData(name, ctime);
+        if (pcud != null)
         {
-            Iterator<ProjectCalUserData> iter = usrData.getProjs().iterator();
-            while (iter.hasNext())
+            if (pcud.getCreator().equals(user.getName()))
             {
-                ProjectCalUserData pcud = iter.next();
-                if (pcud.getName().equals(name) && pcud.getcTime() == ctime.longValue())
+                //--> checks
+                if (!Utils.isStr(newname) ||
+                    !Utils.isStr(color) ||
+                    !Utils.isStr(display) ||
+                    !Utils.isStr(mainsel) ||
+                    !Utils.isStr(showfld))
                 {
-                    pcud.setName(newname);
-                    pcud.setDescr(descr);
-                    pcud.setColor(color);
+                    log.error("MailRuCalService::addCalendar - Required parameters are not set");
+                    return Response.status(500).build();
+                }
+
+                if (!display.equals(ProjectCalUserData.PROJECT_TYPE_STR) &&
+                    !display.equals(ProjectCalUserData.JCL_TYPE_STR))
+                {
+                    log.error("MailRuCalService::addCalendar - Incorrect parameters");
+                    return Response.status(500).build();
+                }
+
+                if (!showfld.equals(ProjectCalUserData.IDD_STR) &&
+                    !showfld.equals(ProjectCalUserData.DATE_POINT_STR) &&
+                    !showfld.equals(ProjectCalUserData.DATE_RANGE_STR))
+                {
+                    log.error("MailRuCalService::addCalendar - Incorrect parameters");
+                    return Response.status(500).build();
+                }
+
+                String start = "";
+                String end = "";
+                if (showfld.equals(ProjectCalUserData.DATE_POINT_STR))
+                {
+                    if (!Utils.isStr(cdpinput))
+                    {
+                        log.error("MailRuCalService::addCalendar - Incorrect parameters");
+                        return Response.status(500).build();
+                    }
+                    start = cdpinput;
+                }
+                else if (showfld.equals(ProjectCalUserData.DATE_RANGE_STR))
+                {
+                    if (!Utils.isStr(startpoint) || !Utils.isStr(endpoint))
+                    {
+                        log.error("MailRuCalService::addCalendar - Incorrect parameters");
+                        return Response.status(500).build();
+                    }
+                    start = startpoint;
+                    end = endpoint;
+                }
+                //<--
+
+                Set<String> newShUsers = Utils.getSharedUsers(groups, projRoles, groupMgr, prMgr, projectRoleManager, user.getName());
+                Set<String> shUsers = Utils.getSharedUsers(pcud.getGroups(), pcud.getProjRoles(), groupMgr, prMgr, projectRoleManager, user.getName());
+                for (String shUser : shUsers)
+                {
+                    if (newShUsers.contains(shUser))
+                    {
+                        newShUsers.remove(shUser);
+                        UserCalData shUsrData = mailCfg.getUserData(shUser);
+                        ProjectCalUserData shPcud = shUsrData.getProjectCalUserData(name, ctime);
+                        if (shPcud != null)
+                        {
+                            shPcud.setName(newname);
+                            shPcud.setColor(color);
+                            shPcud.setDescr(descr);
+                            shPcud.setTarget(mainsel);
+                            shPcud.setType(display);
+                            shPcud.setFieldType(showfld);
+                            shPcud.setStartPoint(start);
+                            shPcud.setEndPoint(end);
+                            shPcud.setGroups(groups);
+                            shPcud.setProjRoles(projRoles);
+                            mailCfg.putUserData(shUser, shUsrData);
+                        }
+                    }
+                    else
+                    {
+                        UserCalData shUsrData = mailCfg.getUserData(shUser);
+                        ProjectCalUserData shPcud = shUsrData.getProjectCalUserData(name, ctime);
+                        shUsrData.removeProjectCalUserData(shPcud);
+                        mailCfg.putUserData(shUser, shUsrData);
+                    }
+                }
+
+                for (String newShUser : newShUsers)
+                {
+                    UserCalData shUsrData = mailCfg.getUserData(newShUser);
+                    usrData.add(new ProjectCalUserData(
+                        newname,
+                        descr,
+                        color,
+                        display,
+                        mainsel,
+                        showfld,
+                        start,
+                        end,
+                        true,
+                        user.getName(),
+                        groups,
+                        projRoles,
+                        ctime));
+                    mailCfg.putUserData(newShUser, shUsrData);
                 }
             }
-            mailCfg.putUserData(user.getName(), usrData);
+            else
+            {
+                pcud.setDescr(descr);
+                pcud.setColor(color);
+            }
         }
 
         String baseUrl = Utils.getBaseUrl(request);
