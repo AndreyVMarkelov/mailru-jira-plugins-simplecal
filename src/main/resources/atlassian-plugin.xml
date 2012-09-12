@@ -13,6 +13,7 @@
             <transformer key="jsI18n"/>
         </transformation>
         <resource type="download" name="jquery-ui-1.8.17.custom.min.js" location="media/jquery-ui-1.8.17.custom.min.js"/>
+        <resource type="download" name="jquery.ui.dialog.js" location="media/jquery.ui.dialog.js"/>
         <resource type="download" name="jquery.blockUI.js" location="media/jquery.blockUI.js"/>
         <resource type="download" name="fullcalendar.css" location="media/fullcalendar.css"/>
         <resource type="download" name="fullcalendar.js" location="media/fullcalendar.js"/>

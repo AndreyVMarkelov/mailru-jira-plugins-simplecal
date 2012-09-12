@@ -58,8 +58,8 @@
     </table>
     <div id='loading' style='display:none'>$i18n.getText("mailrucal.loading")</div>
     <script type='text/javascript'>
-    AJS.$(document).ready(function() {
-        AJS.$('#calendar').fullCalendar({
+    jQuery(document).ready(function() {
+        jQuery('#calendar').fullCalendar({
             #if($usrPref && $usrPref.getDefaultView())defaultView: '$usrPref.getDefaultView()',#end
             header: {
                 left: 'prev,next today',
@@ -98,17 +98,7 @@
                 setUserPrefView('$baseUrl', view.name);
             },
             dayClick: function(date, allDay, jsEvent, view) {
-//                if (allDay) {
-//                    alert('Clicked on the entire day: ' + date);
-//                }else{
-//                    alert('Clicked on the slot: ' + date);
-//                }
-
-//                alert('Coordinates: ' + jsEvent.pageX + ',' + jsEvent.pageY);
-//                alert('Current view: ' + view.name);
-
-//                // change the day's background color just for fun
-//                $(this).css('background-color', 'red');
+                createIssue('$baseUrl', date.getTime());
             }
         });
     });

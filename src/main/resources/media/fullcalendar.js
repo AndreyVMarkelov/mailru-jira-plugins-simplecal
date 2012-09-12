@@ -2369,7 +2369,7 @@ function BasicView(element, calendar, viewName) {
 	
 	
 	function dayBind(days) {
-		days.click(dayClick)
+		days.dblclick(dayClick)
 			.mousedown(daySelectionMousedown);
 	}
 	

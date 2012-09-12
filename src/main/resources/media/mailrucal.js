@@ -64,6 +64,32 @@ function initAddCal(baseUrl)
     return res;
 }
 
+function initCreateIssue(baseUrl, date)
+{
+    var res = "";
+    jQuery.ajax({
+        url: baseUrl + "/rest/mailrucalws/1.0/mailcalsrv/initcreatedlg",
+        type: "POST",
+        dataType: "json",
+        data: {"date": date},
+        beforeSend: function() {
+            block();
+        },
+        async: false,
+        error: function(xhr, ajaxOptions, thrownError) {
+            alert(xhr.responseText);
+        },
+        success: function(result) {
+            res = result.html;
+        },
+        complete: function() {
+            unblock();
+        }
+    });
+
+    return res;
+}
+
 function block() {
     jQuery.blockUI({
         message: jQuery('#loading'),
@@ -111,6 +137,46 @@ function deleteMailRuCalendar(event, baseUrl, name, ctime) {
             }
         });
     }
+}
+
+function createIssue(baseUrl, date) {
+    var dialogBody = initCreateIssue(baseUrl, date);
+    if (!dialogBody)
+    {
+        return;
+    }
+
+    var md = new AJS.Dialog({
+        width:740,
+        height:560,
+        id:"init_create_dialog",
+        closeOnOutsideClick: true
+    });
+    md.addHeader(AJS.I18n.getText("mailrucal.createcaltitle"));
+    md.addPanel("load_panel", dialogBody);
+    md.addButton(AJS.I18n.getText("mailrucal.addcalbtn"), function() {
+        var user = jQuery("#user").val();
+        var date = jQuery("#date").val();
+        var prId = jQuery("#prId").val();
+        var trg = jQuery("#trgName").val();
+        var it = jQuery("#its").val();
+
+        var ctx = "?pid=" + prId + "&issuetype=" + it + "&" + trg + "=" + date + "&reporter=" + user;
+        window.location = baseUrl + "/secure/CreateIssueDetails!init.jspa" + ctx;
+    });
+    md.addCancel(AJS.I18n.getText("mailrucal.closebtn"), function() {
+        AJS.$("#createissueform").remove();
+        md.hide();
+    });
+    md.show();
+}
+
+function changeCalItem(event, baseUrl) {
+    var id = jQuery("#projs").val();
+    jQuery("#prName").val(jQuery("#pr" + id).val());
+    jQuery("#prId").val(jQuery("#prid" + id).val());
+    jQuery("#trgName").val(jQuery("#trg" + id).val());
+    jQuery("#its").html(jQuery("#it" + id).html());
 }
 
 function actMailRuCalendar(event, baseUrl, name, ctime) {

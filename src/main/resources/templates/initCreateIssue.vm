@@ -1,0 +1,38 @@
+## Created by Andrey Markelov 29-08-2012.
+## Copyright Mail.Ru Group 2012. All rights reserved.
+<form id="createissueform" name="createissueform">
+  <input id="user" name="user" style="display:none;" value="$user"/>
+  <input id="date" name="date" style="display:none;" value="$date"/>
+  <table class="dlgtable">
+    <tr>
+      <td>
+        <select onchange="changeCalItem(event, '$baseUrl');" id="projs" name="projs" style="background-color: white;">
+        #foreach($pcid in $pcids)
+          <option value="$pcid.getCtime()">$pcid.getCalName()</option>
+        #end
+        </select>
+        <input id="prName" name="prName" type="text" value="$pcids.get(0).getName()"/>
+        <input id="prId" name="prId" type="hidden" value="$pcids.get(0).getProjId()"/>
+        <input id="trgName" name="trgName" type="hidden" value="$pcids.get(0).getTargetName()"/>
+        <select id="its" name="its" style="background-color: white;">
+        #foreach($it in $pcids.get(0).getIssueType().entrySet())
+          <option value="$it.key">$it.value</option>
+        #end
+        </select>
+      </td>
+      <td>
+        #foreach($pcid in $pcids)
+          <input id="pr$pcid.getCtime()" name="pr$pcid.getCtime()" type="hidden" value="$pcid.getName()"/>
+          <input id="prid$pcid.getCtime()" name="prid$pcid.getCtime()" type="hidden" value="$pcid.getProjId()"/>
+          <input id="trg$pcid.getCtime()" name="trg$pcid.getCtime()" type="hidden" value="$pcid.getTargetName()"/>
+          <select style="display: none;" id="it$pcid.getCtime()" name="it$pcid.getCtime()" style="background-color: white;">
+          #foreach($it in $pcid.getIssueType().entrySet())
+            <option value="$it.key">$it.value</option>
+          #end
+          </select>
+        #end
+      </td>
+    </tr>
+  </table>
+  
+</form>

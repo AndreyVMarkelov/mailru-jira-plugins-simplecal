@@ -18,6 +18,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -27,12 +28,11 @@ import javax.ws.rs.core.CacheControl;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.velocity.exception.VelocityException;
-import com.atlassian.jira.util.json.JSONArray;
-import com.atlassian.jira.util.json.JSONException;
-import com.atlassian.jira.util.json.JSONObject;
+
 import com.atlassian.crowd.embedded.api.Group;
 import com.atlassian.crowd.embedded.api.User;
 import com.atlassian.jira.ComponentManager;
@@ -40,8 +40,11 @@ import com.atlassian.jira.bc.JiraServiceContext;
 import com.atlassian.jira.bc.JiraServiceContextImpl;
 import com.atlassian.jira.bc.filter.SearchRequestService;
 import com.atlassian.jira.component.ComponentAccessor;
+import com.atlassian.jira.issue.CustomFieldManager;
 import com.atlassian.jira.issue.Issue;
 import com.atlassian.jira.issue.fields.CustomField;
+import com.atlassian.jira.issue.fields.config.manager.IssueTypeSchemeManager;
+import com.atlassian.jira.issue.issuetype.IssueType;
 import com.atlassian.jira.issue.search.SearchException;
 import com.atlassian.jira.issue.search.SearchRequest;
 import com.atlassian.jira.jql.builder.JqlClauseBuilder;
@@ -57,6 +60,9 @@ import com.atlassian.jira.security.roles.ProjectRoleManager;
 import com.atlassian.jira.sharing.SharePermissionUtils;
 import com.atlassian.jira.sharing.SharedEntity.SharePermissions;
 import com.atlassian.jira.user.util.UserUtil;
+import com.atlassian.jira.util.json.JSONArray;
+import com.atlassian.jira.util.json.JSONException;
+import com.atlassian.jira.util.json.JSONObject;
 import com.atlassian.jira.web.bean.PagerFilter;
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
@@ -122,6 +128,11 @@ public class MailRuCalService
     private final ProjectRoleManager projectRoleManager;
 
     /**
+     * Custom field manager.
+     */
+    private final CustomFieldManager cfMgr;
+
+    /**
      * Constructor.
      */
     public MailRuCalService(
@@ -131,7 +142,8 @@ public class MailRuCalService
         SearchRequestService srMgr,
         UserUtil userUtil,
         GroupManager groupMgr,
-        ProjectRoleManager projectRoleManager)
+        ProjectRoleManager projectRoleManager,
+        CustomFieldManager cfMgr)
     {
         this.mailCfg = mailCfg;
         this.permMgr = permMgr;
@@ -140,7 +152,93 @@ public class MailRuCalService
         this.userUtil = userUtil;
         this.groupMgr = groupMgr;
         this.projectRoleManager = projectRoleManager;
+        this.cfMgr = cfMgr;
         this.sdf = new SimpleDateFormat("yyyy-MM-dd");
+    }
+
+    @POST
+    @Produces ({ MediaType.APPLICATION_JSON})
+    @Path("/initcreatedlg")
+    public Response initCreateDlg(@Context HttpServletRequest request)
+    throws VelocityException
+    {
+        JiraAuthenticationContext authCtx = ComponentManager.getInstance().getJiraAuthenticationContext();
+        User user = authCtx.getLoggedInUser();
+        if (user == null)
+        {
+            log.error("MailRuCalService::initCreateDlg - User is not logged");
+            return Response.status(401).build();
+        }
+
+        String dateStr = request.getParameter("date");
+        long dateLong;
+        try
+        {
+            dateLong = Long.parseLong(dateStr);
+        }
+        catch (NumberFormatException nex)
+        {
+            log.error("MailRuCalService::initCreateDlg - Required parameters are not set");
+            return Response.status(500).build();
+        }
+
+        Map<String, Object> params = new HashMap<String, Object>();
+        params.put("i18n", authCtx.getI18nHelper());
+        params.put("baseUrl", Utils.getBaseUrl(request));
+        params.put("user", user.getName());
+        params.put("date", authCtx.getOutlookDate().formatDatePicker(new Date(dateLong)));
+
+        List<ProjCreateIssueData> pcids = new ArrayList<ProjCreateIssueData>();
+        UserCalData usrData = mailCfg.getUserData(user.getName());
+        for (ProjectCalUserData pcud : usrData.getProjs())
+        {
+            if (!pcud.isProjectType())
+            {
+                continue;
+            }
+
+            Project proj = getProject(Long.valueOf(pcud.getTarget()));
+            if (proj == null)
+            {
+                continue;
+            }
+
+            String target;
+            if (pcud.isIDD())
+            {
+                target = "duedate";
+            }
+            else
+            {
+                CustomField cf = cfMgr.getCustomFieldObjectByName(pcud.getStartPoint());
+                if (cf == null)
+                {
+                    continue;
+                }
+
+                target = cf.getId();
+            }
+
+            ProjCreateIssueData pcid = new ProjCreateIssueData();
+            pcid.setCalName(pcud.getName());
+            pcid.setCtime(pcud.getcTime());
+            pcid.setProjId(proj.getId());
+            pcid.setKey(proj.getKey());
+            pcid.setName(proj.getName());
+            pcid.setTargetName(target);
+
+            IssueTypeSchemeManager issueTypeSchemeManager = ComponentManager.getInstance().getIssueTypeSchemeManager();
+            Collection<IssueType> its = issueTypeSchemeManager.getNonSubTaskIssueTypesForProject(proj);
+            for (IssueType it : its)
+            {
+                pcid.addIssueType(it.getId(), it.getName());
+            }
+
+            pcids.add(pcid);
+        }
+        params.put("pcids", pcids);
+
+        return Response.ok(new HtmlEntity(ComponentAccessor.getVelocityManager().getBody("templates/", "initCreateIssue.vm", params))).build();
     }
 
     @POST
@@ -933,11 +1031,6 @@ public class MailRuCalService
         }
 
         UserCalData usrData = mailCfg.getUserData(user.getName());
-        if (usrData == null)
-        {
-            return Response.ok().build();
-        }
-
         for (ProjectCalUserData pcud : usrData.getProjs())
         {
             if (pcud.getName().equals(name) && pcud.getcTime() == ctime.longValue())
