@@ -182,7 +182,7 @@
                                     #foreach($group in $pcud.getGroups())
                                       <div id="group$group">
                                         <span>$i18n.getText("mailrucal.share_project", $group)</span>
-                                        <img onclick="removeGroup(event);" id="share_trash" height="16px" width="16px" class="shareTrash" src="/jira/images/icons/trash_16.gif" title="Delete Share" alt="Delete Share"/> <input id="share_type_hidden" name="shareValues" type="hidden"/>
+                                        <img onclick="removeGroup(event);" id="share_trash" height="16px" width="16px" class="shareTrash" src="$baseUrl/images/icons/trash_16.gif" title="Delete Share" alt="Delete Share"/> <input id="share_type_hidden" name="shareValues" type="hidden"/>
                                       </div>
                                     #end
                                     #foreach($pRole in $pcud.getProjRoles())
@@ -192,7 +192,7 @@
                                         #else
                                         <span>$i18n.getText("mailrucal.share_project", $projMap.get($pRole.getProject()))</span>
                                         #end
-                                        <img onclick="removeGroup(event);" id="share_trash" height="16px" width="16px" class="shareTrash" src="/jira/images/icons/trash_16.gif" title="Delete Share" alt="Delete Share"/> <input id="share_type_hidden" name="shareValues" type="hidden"/>
+                                        <img onclick="removeGroup(event);" id="share_trash" height="16px" width="16px" class="shareTrash" src="$baseUrl/images/icons/trash_16.gif" title="Delete Share" alt="Delete Share"/> <input id="share_type_hidden" name="shareValues" type="hidden"/>
                                       </div>
                                     #end
                                     </div>
@@ -201,7 +201,7 @@
                                         <div>
                                           <div>
                                             <input id="sharesel" name="sharesel" onclick="setShareGroup();" type="radio" checked="checked"/><span>$i18n.getText("mailrucal.sharegroup")</span>&nbsp;&nbsp;
-                                            <input id="sharesel" name="sharesel" onclick="setShareProject();" type="radio" /><span>$i18n.getText("mailrucal.shareproject")</span>
+                                            <input id="sharesel" name="sharesel" onclick="setShareProject();" type="radio"/><span>$i18n.getText("mailrucal.shareproject")</span>
                                           </div>
                                           <span id="share_group">
                                             <select id="groupShare" style="background-color: white;">
@@ -209,7 +209,7 @@
                                               <option value="$group.getName()">$group.getName()</option>
                                               #end
                                             </select>
-                                            <span onclick="addGroup();" class="addShare" id="share_add_group"><img src="/jira/images/icons/16add_blue.png"/>Add</span>
+                                            <span onclick="addGroup();" class="addShare" id="share_add_group"><img src="$baseUrl/images/icons/16add_blue.png"/>Add</span>
                                           </span>
                                           <span id="share_project" style="display:none">
                                             <select id="projectShare-project" style="background-color: white;">
@@ -226,7 +226,7 @@
                                                 #end
                                               </optgroup>
                                             </select>
-                                            <span onclick="addProject();" class="addShare" id="share_add_project"><img src="/jira/images/icons/16add_blue.png"/>Add</span>
+                                            <span onclick="addProject();" class="addShare" id="share_add_project"><img src="$baseUrl/images/icons/16add_blue.png"/>Add</span>
                                           </span>
                                         </div>
                                       </div>
@@ -252,5 +252,5 @@
     #end
   </table>
   <input id="shares_data" name="shares_data" style="display:none;" value='$storedShares'/>
-  <img onclick="removeGroup(event);" id="share_trash" height="16px" width="16px" style="display: none" class="shareTrash" src="/jira/images/icons/trash_16.gif" title="Delete Share" alt="Delete Share"/> <input id="share_type_hidden" name="shareValues" type="hidden"/>
+  <img onclick="removeGroup(event);" id="share_trash_sh" height="16px" width="16px" style="display: none" class="shareTrash" src="$baseUrl/images/icons/trash_16.gif" title="Delete Share" alt="Delete Share"/> <input id="share_type_hidden" name="shareValues" type="hidden"/>
 </form>

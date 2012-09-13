@@ -1,7 +1,7 @@
 <atlassian-plugin key="ru.mail.jira.plugins.mailrucal" name="Simple Calendar" plugins-version="2">
     <plugin-info>
-        <description>This is the ru.mail.jira.plugins:mailrucal plugin for Atlassian JIRA.</description>
-        <version>1.0.0</version>
+        <description>${project.description}</description>
+        <version>${project.version}</version>
         <vendor name="Mail.Ru Group" url="http://www.mail.ru/" />
     </plugin-info>
 

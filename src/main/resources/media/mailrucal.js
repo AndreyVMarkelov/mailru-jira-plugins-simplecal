@@ -147,14 +147,14 @@ function createIssue(baseUrl, date) {
     }
 
     var md = new AJS.Dialog({
-        width:740,
-        height:560,
+        width:480,
+        height:200,
         id:"init_create_dialog",
         closeOnOutsideClick: true
     });
-    md.addHeader(AJS.I18n.getText("mailrucal.createcaltitle"));
+    md.addHeader(AJS.I18n.getText("mailrucal.createissuetitle"));
     md.addPanel("load_panel", dialogBody);
-    md.addButton(AJS.I18n.getText("mailrucal.addcalbtn"), function() {
+    md.addButton(AJS.I18n.getText("mailrucal.createbtn"), function() {
         var user = jQuery("#user").val();
         var date = jQuery("#date").val();
         var prId = jQuery("#prId").val();
@@ -362,7 +362,7 @@ function addGroup() {
 
     var newElem = "<div id='" + grId + "'><span>" + AJS.format(AJS.I18n.getText("mailrucal.share_project"), jQuery(group).text()) + "</span></div>";
     jQuery("#share_display_div").append(newElem);
-    jQuery("#share_trash").clone().show().appendTo("#" + grId);
+    jQuery("#share_trash_sh").clone().show().appendTo("#" + grId);
 }
 
 function addProject() {
@@ -396,7 +396,7 @@ function addProject() {
 
     var newElem = "<div id='" + prId + "'><span>" + textVal + "</span></div>";
     jQuery("#share_display_div").append(newElem);
-    jQuery("#share_trash").clone().show().appendTo("#" + prId);
+    jQuery("#share_trash_sh").clone().show().appendTo("#" + prId);
 }
 
 function removeGroup(event) {

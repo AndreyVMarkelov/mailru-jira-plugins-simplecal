@@ -211,7 +211,7 @@
                                               <option value="$group.getName()">$group.getName()</option>
                                               #end
                                             </select>
-                                            <span onclick="addGroup();" class="addShare" id="share_add_group"><img src="/jira/images/icons/16add_blue.png"/>Add</span>
+                                            <span onclick="addGroup();" class="addShare" id="share_add_group"><img src="$baseUrl/images/icons/16add_blue.png"/>Add</span>
                                           </span>
                                           <span id="share_project" style="display:none">
                                             <select id="projectShare-project" style="background-color: white;">
@@ -228,7 +228,7 @@
                                                 #end
                                               </optgroup>
                                             </select>
-                                            <span onclick="addProject();" class="addShare" id="share_add_project"><img src="/jira/images/icons/16add_blue.png"/>Add</span>
+                                            <span onclick="addProject();" class="addShare" id="share_add_project"><img src="$baseUrl/images/icons/16add_blue.png"/>Add</span>
                                           </span>
                                         </div>
                                       </div>
@@ -250,7 +250,7 @@
         </tr>
       </table>
       <input id="shares_data" name="shares_data" style="display:none;" value="[]"/>
-      <img onclick="removeGroup(event);" id="share_trash" height="16px" width="16px" style="display: none" class="shareTrash" src="/jira/images/icons/trash_16.gif" title="Delete Share" alt="Delete Share"/> <input id="share_type_hidden" name="shareValues" type="hidden"/>
+      <img onclick="removeGroup(event);" id="share_trash" height="16px" width="16px" style="display: none" class="shareTrash" src="$baseUrl/images/icons/trash_16.gif" title="Delete Share" alt="Delete Share"/> <input id="share_type_hidden" name="shareValues" type="hidden"/>
     </form>
   #else
     <div class="errorArea">$action.getText("mailrucal.admin.access")</div>

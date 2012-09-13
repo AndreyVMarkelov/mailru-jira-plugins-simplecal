@@ -57,6 +57,7 @@ import com.atlassian.jira.security.Permissions;
 import com.atlassian.jira.security.groups.GroupManager;
 import com.atlassian.jira.security.roles.ProjectRole;
 import com.atlassian.jira.security.roles.ProjectRoleManager;
+import com.atlassian.jira.sharing.SharePermission;
 import com.atlassian.jira.sharing.SharePermissionUtils;
 import com.atlassian.jira.sharing.SharedEntity.SharePermissions;
 import com.atlassian.jira.user.util.UserUtil;
@@ -343,10 +344,19 @@ public class MailRuCalService
 
         if (display.equals(ProjectCalUserData.JCL_TYPE_STR))
         {
+            JSONArray perms = new JSONArray();
             JiraServiceContext jsCtx = new JiraServiceContextImpl(user);
             SearchRequest sr = srMgr.getFilter(jsCtx, Long.parseLong(mainsel));
+            SharePermissions oldSharePerms = sr.getPermissions();
+            for (SharePermission sp : oldSharePerms.getPermissionSet())
+            {
+                JSONObject obj = new JSONObject();
+                obj.put("type", sp.getType().get());
+                obj.put("param1", sp.getParam1());
+                obj.put("param2", sp.getParam2());
+                perms.put(obj);
+            }
 
-            JSONArray perms = new JSONArray();
             for (String group : groups)
             {
                 JSONObject obj = new JSONObject();
@@ -1042,7 +1052,14 @@ public class MailRuCalService
                 params.put("createtime", authCtx.getOutlookDate().format(new Date(pcud.getcTime())));
                 params.put("creator", Utils.getDisplayUser(userUtil, pcud.getCreator()));
                 params.put("allGroups", getAllGroups());
-                params.put("isOwner", pcud.getCreator().equals(user.getName()));
+                if (pcud.getCreator() != null && pcud.getCreator().equals(user.getName()))
+                {
+                    params.put("isOwner", pcud.getCreator().equals(user.getName()));
+                }
+                else
+                {
+                    params.put("isOwner", false);
+                }
 
                 if (pcud.isProjectType())
                 {
@@ -1174,6 +1191,7 @@ public class MailRuCalService
     @Produces ({ MediaType.APPLICATION_JSON})
     @Path("/updatecalendar")
     public Response updateCalendar(@Context HttpServletRequest request)
+    throws JSONException
     {
         JiraAuthenticationContext authCtx = ComponentManager.getInstance().getJiraAuthenticationContext();
         User user = authCtx.getLoggedInUser();
@@ -1241,11 +1259,66 @@ public class MailRuCalService
             return Response.status(500).build();
         }
 
+        if (display.equals(ProjectCalUserData.JCL_TYPE_STR))
+        {
+            JSONArray perms = new JSONArray();
+            JiraServiceContext jsCtx = new JiraServiceContextImpl(user);
+            SearchRequest sr = srMgr.getFilter(jsCtx, Long.parseLong(mainsel));
+            SharePermissions oldSharePerms = sr.getPermissions();
+            for (SharePermission sp : oldSharePerms.getPermissionSet())
+            {
+                JSONObject obj = new JSONObject();
+                obj.put("type", sp.getType().get());
+                obj.put("param1", sp.getParam1());
+                obj.put("param2", sp.getParam2());
+                perms.put(obj);
+            }
+
+            for (String group : groups)
+            {
+                JSONObject obj = new JSONObject();
+                obj.put("type", "group");
+                obj.put("param1", group);
+                perms.put(obj);
+            }
+
+            for (ProjRole projRole : projRoles)
+            {
+                if (projRole.getRole().isEmpty())
+                {
+                    Collection<ProjectRole> roles = projectRoleManager.getProjectRoles();
+                    if (roles != null)
+                    {
+                        for (ProjectRole role : roles)
+                        {
+                            JSONObject obj = new JSONObject();
+                            obj.put("type", "project");
+                            obj.put("param1", projRole.getProject());
+                            obj.put("param2", role.getId());
+                            perms.put(obj);
+                        }
+                    }
+                }
+                else
+                {
+                    JSONObject obj = new JSONObject();
+                    obj.put("type", "project");
+                    obj.put("param1", projRole.getProject());
+                    obj.put("param2", projRole.getRole());
+                    perms.put(obj);
+                }
+            }
+
+            SharePermissions sharePerms = SharePermissionUtils.fromJsonArray(perms);
+            sr.setPermissions(sharePerms);
+            srMgr.updateFilter(jsCtx, sr);
+        }
+
         UserCalData usrData = mailCfg.getUserData(user.getName());
         ProjectCalUserData pcud = usrData.getProjectCalUserData(name, ctime);
         if (pcud != null)
         {
-            if (pcud.getCreator().equals(user.getName()))
+            if (pcud.getCreator() != null && pcud.getCreator().equals(user.getName()))
             {
                 //--> checks
                 if (!Utils.isStr(newname) ||
@@ -1353,6 +1426,7 @@ public class MailRuCalService
             {
                 pcud.setDescr(descr);
                 pcud.setColor(color);
+                mailCfg.putUserData(user.getName(), usrData);
             }
         }
 
