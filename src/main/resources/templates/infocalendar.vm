@@ -102,7 +102,11 @@
                       </tr>
                       <tr>
                         <td valign="top">
-                          <input type="text" size="15" id="cdpinput" name="cdpinput" #if($pcud.isDatePoint())value="$pcud.getStartPoint()"#else disabled="disabled"#end/>
+                          <select id="cdpinput" name="cdpinput" #if(!$pcud.isDatePoint())disabled="disabled"#end>
+                            #foreach($cf in $cfs.entrySet())
+                            <option #if($pcud.isDatePoint() && ($cf.key == $pcud.getStartPoint() || $cf.value == $pcud.getStartPoint()))selected="selected"#end value="$cf.key">$cf.value</option>
+                            #end
+                          </select>
                         </td>
                       </tr>
                     </table>
@@ -118,7 +122,15 @@
                       </tr>
                       <tr>
                         <td valign="top">
-                          <input type="text" size="13" id="startpoint" name="startpoint" #if($pcud.isDateRange())value="$pcud.getStartPoint()"#else disabled="disabled"#end/> - <input type="text" size="13" id="endpoint" name="endpoint" #if($pcud.isDateRange())value="$pcud.getEndPoint()"#else disabled="disabled"#end/>
+                        <select id="startpoint" name="startpoint" #if(!$pcud.isDateRange())disabled="disabled"#end>
+                            #foreach($cf in $cfs.entrySet())
+                            <option #if($pcud.isDateRange() && ($cf.key == $pcud.getStartPoint() || $cf.value == $pcud.getStartPoint()))selected="selected"#end value="$cf.key">$cf.value</option>
+                            #end
+                          </select>-<select id="endpoint" name="endpoint" #if(!$pcud.isDateRange())disabled="disabled"#end>
+                            #foreach($cf in $cfs.entrySet())
+                            <option #if($pcud.isDateRange() && ($cf.key == $pcud.getEndPoint() || $cf.value == $pcud.getEndPoint()))selected="selected"#end value="$cf.key">$cf.value</option>
+                            #end
+                          </select>
                         </td>
                       </tr>
                     </table>

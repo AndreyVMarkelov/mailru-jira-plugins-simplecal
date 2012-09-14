@@ -126,7 +126,11 @@
                       </tr>
                       <tr>
                         <td valign="top">
-                          <input type="text" size="15" id="cdpinput" name="cdpinput" disabled="disabled"/>
+                          <select id="cdpinput" name="cdpinput" disabled="disabled">
+                            #foreach($cf in $cfs.entrySet())
+                            <option value="$cf.key">$cf.value</option>
+                            #end
+                          </select>
                         </td>
                       </tr>
                     </table>
@@ -142,7 +146,15 @@
                       </tr>
                       <tr>
                         <td valign="top">
-                          <input type="text" size="13" id="startpoint" name="startpoint" disabled="disabled"/> - <input type="text" size="13" id="endpoint" name="endpoint" disabled="disabled"/>
+                          <select id="startpoint" name="startpoint" disabled="disabled">
+                            #foreach($cf in $cfs.entrySet())
+                            <option value="$cf.key">$cf.value</option>
+                            #end
+                          </select>-<select id="endpoint" name="endpoint" disabled="disabled">
+                            #foreach($cf in $cfs.entrySet())
+                            <option value="$cf.key">$cf.value</option>
+                            #end
+                          </select>
                         </td>
                       </tr>
                     </table>

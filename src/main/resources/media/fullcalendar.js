@@ -17,12 +17,12 @@
  
 (function($, undefined) {
 
-
 var defaults = {
-
-	// display
-	defaultView: 'month',
-	aspectRatio: 1.35,
+    // display
+    priority: 'Priority',
+    assignee: 'Assignee',
+    defaultView: 'month',
+    aspectRatio: 1.35,
 	header: {
 		left: 'title',
 		center: '',
@@ -3914,7 +3914,7 @@ function AgendaEventRenderer() {
 			"</div>" +
 			"<div class='fc-event-content'>" +
 			"<div class='fc-event-title'>" +
-			htmlEscape(event.title) +
+			"<span class='fc-event-issuekey'>" + event.key + "</span>: " + htmlEscape(event.title) + " (" + opt('assignee') + " - " + event.assignee + ")" +
 			"</div>" +
 			"</div>" +
 			"<div class='fc-event-bg'></div>" +
@@ -4662,7 +4662,7 @@ function DayEventRenderer() {
 					"</span>";
 			}
 			html +=
-				"<span class='fc-event-title'>" + htmlEscape(event.title) + "</span>" +
+				"<span class='fc-event-title'>" + "<span class='fc-event-issuekey'>" + event.key + "</span>: " + htmlEscape(event.title) + " (" + opt('assignee') + " - " + event.assignee + ")" + "</span>" +
 				"</div>";
 			if (seg.isEnd && isEventResizable(event)) {
 				html +=

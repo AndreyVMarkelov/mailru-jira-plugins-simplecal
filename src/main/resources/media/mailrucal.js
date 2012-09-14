@@ -46,15 +46,15 @@ function initAddCal(baseUrl)
         url: baseUrl + "/rest/mailrucalws/1.0/mailcalsrv/addcaldlg",
         type: "POST",
         dataType: "json",
-        beforeSend: function() {
-            block();
-        },
         async: false,
         error: function(xhr, ajaxOptions, thrownError) {
             alert(xhr.responseText);
         },
         success: function(result) {
             res = result.html;
+        },
+        beforeSend: function() {
+            block();
         },
         complete: function() {
             unblock();
@@ -96,8 +96,8 @@ function block() {
         css: {
             width: '200px' 
         },
-        fadeOut: 200,
-        fadeIn: 200
+        fadeOut: 0,
+        fadeIn: 0
     });
 }
 
@@ -134,6 +134,12 @@ function deleteMailRuCalendar(event, baseUrl, name, ctime) {
             },
             success: function(result) {
                 window.location.reload();
+            },
+            beforeSend: function() {
+                block();
+            },
+            complete: function() {
+                unblock();
             }
         });
     }
@@ -262,7 +268,7 @@ function actMailRuCalendar(event, baseUrl, name, ctime) {
 function initInfoCal(baseUrl, name, ctime)
 {
     var res = "";
-    JIRA.SmartAjax.makeRequest({
+    jQuery.ajax({
         url: baseUrl + "/rest/mailrucalws/1.0/mailcalsrv/infocaldlg",
         type: "POST",
         dataType: "json",
@@ -273,6 +279,12 @@ function initInfoCal(baseUrl, name, ctime)
         },
         success: function(result) {
             res = result.html;
+        },
+        beforeSend: function() {
+            block();
+        },
+        complete: function() {
+            unblock();
         }
     });
 
@@ -280,40 +292,40 @@ function initInfoCal(baseUrl, name, ctime)
 }
 
 function fillProj() {
-    AJS.$("#mainsel").html(AJS.$("#projsel").html());
+    jQuery("#mainsel").html(AJS.$("#projsel").html());
 }
 
 function fillJcl() {
-    AJS.$("#mainsel").html(AJS.$("#jclsel").html());
+    jQuery("#mainsel").html(jQuery("#jclsel").html());
 }
 
 function changeColor() {
-    var color = AJS.$("#calcolor :selected").val();
-    AJS.$("#calcolor").css("background-color", color);
+    var color = jQuery("#calcolor :selected").val();
+    jQuery("#calcolor").css("background-color", color);
 }
 
 AJS.$(document).ready(function() {
-    AJS.$(window).bind('beforeunload', function() {
+    jQuery(window).bind('beforeunload', function() {
         return null;
     });
 });
 
 function setRange() {
-    AJS.$("#startpoint").enable(true);
-    AJS.$("#endpoint").enable(true);
-    AJS.$("#cdpinput").enable(false);
+    jQuery("#startpoint").enable(true);
+    jQuery("#endpoint").enable(true);
+    jQuery("#cdpinput").enable(false);
 }
 
 function setCustomDate() {
-    AJS.$("#startpoint").enable(false);
-    AJS.$("#endpoint").enable(false);
-    AJS.$("#cdpinput").enable(true);
+    jQuery("#startpoint").enable(false);
+    jQuery("#endpoint").enable(false);
+    jQuery("#cdpinput").enable(true);
 }
 
 function setIssueDueDate() {
-    AJS.$("#startpoint").enable(false);
-    AJS.$("#endpoint").enable(false);
-    AJS.$("#cdpinput").enable(false);
+    jQuery("#startpoint").enable(false);
+    jQuery("#endpoint").enable(false);
+    jQuery("#cdpinput").enable(false);
 }
 
 function setUserPrefView(baseUrl, view) {

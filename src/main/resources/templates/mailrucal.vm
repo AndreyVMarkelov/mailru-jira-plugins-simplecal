@@ -99,7 +99,9 @@
             },
             dayClick: function(date, allDay, jsEvent, view) {
                 createIssue('$baseUrl', date.getTime());
-            }
+            },
+            assignee: '$i18n.getText("mailrucal.assigneeview")',
+            priority: '$i18n.getText("mailrucal.priorityview")'
         });
     });
     </script>

@@ -18,7 +18,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
-
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -28,12 +27,9 @@ import javax.ws.rs.core.CacheControl;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.velocity.exception.VelocityException;
-
-import com.atlassian.crowd.embedded.api.Group;
 import com.atlassian.crowd.embedded.api.User;
 import com.atlassian.jira.ComponentManager;
 import com.atlassian.jira.bc.JiraServiceContext;
@@ -134,6 +130,11 @@ public class MailRuCalService
     private final CustomFieldManager cfMgr;
 
     /**
+     * Xstream.
+     */
+    private XStream xstream;
+
+    /**
      * Constructor.
      */
     public MailRuCalService(
@@ -155,6 +156,13 @@ public class MailRuCalService
         this.projectRoleManager = projectRoleManager;
         this.cfMgr = cfMgr;
         this.sdf = new SimpleDateFormat("yyyy-MM-dd");
+        xstream = new XStream(new JsonHierarchicalStreamDriver()
+        {
+            public HierarchicalStreamWriter createWriter(Writer writer)
+            {
+                return new JsonWriter(writer, JsonWriter.DROP_ROOT_MODE);
+            }
+        });
     }
 
     @POST
@@ -504,6 +512,8 @@ public class MailRuCalService
                     en.setColor(pcud.getColor());
                     en.setAllDay(true);
                     en.setUrl(baseUrl + "/browse/" + issue.getKey());
+                    en.setKey(issue.getKey());
+                    en.setAssignee(issue.getAssigneeUser().getDisplayName());
                     return en;
                 }
             }
@@ -544,6 +554,8 @@ public class MailRuCalService
                     en.setColor(pcud.getColor());
                     en.setAllDay(true);
                     en.setUrl(baseUrl + "/browse/" + issue.getKey());
+                    en.setKey(issue.getKey());
+                    en.setAssignee(issue.getAssigneeUser().getDisplayName());
                     return en;
                 }
             }
@@ -559,6 +571,8 @@ public class MailRuCalService
                     en.setColor(pcud.getColor());
                     en.setAllDay(true);
                     en.setUrl(baseUrl + "/browse/" + issue.getKey());
+                    en.setKey(issue.getKey());
+                    en.setAssignee(issue.getAssigneeUser().getDisplayName());
                     return en;
                 }
             }
@@ -574,6 +588,8 @@ public class MailRuCalService
                     en.setColor(pcud.getColor());
                     en.setAllDay(true);
                     en.setUrl(baseUrl + "/browse/" + issue.getKey());
+                    en.setKey(issue.getKey());
+                    en.setAssignee(issue.getAssigneeUser().getDisplayName());
                     return en;
                 }
             }
@@ -595,6 +611,8 @@ public class MailRuCalService
                         en.setColor(pcud.getColor());
                         en.setAllDay(true);
                         en.setUrl(baseUrl + "/browse/" + issue.getKey());
+                        en.setKey(issue.getKey());
+                        en.setAssignee(issue.getAssigneeUser().getDisplayName());
                         return en;
                     }
                 }
@@ -617,6 +635,8 @@ public class MailRuCalService
                         en.setColor(pcud.getColor());
                         en.setAllDay(true);
                         en.setUrl(baseUrl + "/browse/" + issue.getKey());
+                        en.setKey(issue.getKey());
+                        en.setAssignee(issue.getAssigneeUser().getDisplayName());
                         return en;
                     }
                 }
@@ -635,7 +655,6 @@ public class MailRuCalService
         Date startDate,
         Date endDate,
         String baseUrl,
-        CustomField datePointCf,
         CustomField startCf,
         CustomField endCf)
     {
@@ -645,7 +664,7 @@ public class MailRuCalService
         }
         else if (pcud.isDatePoint())
         {
-            return createDatePointEntity(pcud, issue, startDate, endDate, baseUrl, datePointCf);
+            return createDatePointEntity(pcud, issue, startDate, endDate, baseUrl, startCf);
         }
         else
         {
@@ -673,6 +692,8 @@ public class MailRuCalService
             en.setColor(pcud.getColor());
             en.setAllDay(true);
             en.setUrl(baseUrl + "/browse/" + issue.getKey());
+            en.setKey(issue.getKey());
+            en.setAssignee(issue.getAssigneeUser().getDisplayName());
             return en;
         }
 
@@ -721,14 +742,6 @@ public class MailRuCalService
         }
 
         return Response.ok().build();
-    }
-
-    /**
-     * Get all Jira groups.
-     */
-    private Collection<Group> getAllGroups()
-    {
-        return groupMgr.getAllGroups();
     }
 
     @GET
@@ -804,14 +817,6 @@ public class MailRuCalService
             }
         }
 
-        XStream xstream = new XStream(new JsonHierarchicalStreamDriver()
-        {
-            public HierarchicalStreamWriter createWriter(Writer writer)
-            {
-                return new JsonWriter(writer, JsonWriter.DROP_ROOT_MODE);
-            }
-        });
-
         CacheControl cc = new CacheControl();
         cc.setNoCache(true);
         cc.setNoStore(true);
@@ -837,17 +842,38 @@ public class MailRuCalService
             //--> result
             List<EventEntity> entities = new ArrayList<EventEntity>();
 
-            CustomField datePointCf = null;
             CustomField startCf = null;
             CustomField endCf = null;
             if (pcud.isDatePoint())
             {
-                datePointCf = ComponentManager.getInstance().getCustomFieldManager().getCustomFieldObjectByName(pcud.getStartPoint());
+                if (pcud.getStartPoint().startsWith("customfield_"))
+                {
+                    startCf = cfMgr.getCustomFieldObject(pcud.getStartPoint());
+                }
+                else
+                {
+                    startCf = cfMgr.getCustomFieldObjectByName(pcud.getStartPoint());
+                }
             }
             else if (pcud.isDateRange())
             {
-                startCf = ComponentManager.getInstance().getCustomFieldManager().getCustomFieldObjectByName(pcud.getStartPoint());
-                endCf = ComponentManager.getInstance().getCustomFieldManager().getCustomFieldObjectByName(pcud.getEndPoint());
+                if (pcud.getStartPoint().startsWith("customfield_"))
+                {
+                    startCf = cfMgr.getCustomFieldObject(pcud.getStartPoint());
+                }
+                else
+                {
+                    startCf = cfMgr.getCustomFieldObjectByName(pcud.getStartPoint());
+                }
+
+                if (pcud.getEndPoint().startsWith("customfield_"))
+                {
+                    endCf = cfMgr.getCustomFieldObject(pcud.getEndPoint());
+                }
+                else
+                {
+                    endCf = cfMgr.getCustomFieldObjectByName(pcud.getEndPoint());
+                }
             }
 
             int start = 0;
@@ -861,7 +887,7 @@ public class MailRuCalService
                 start += issues.size();
                 for (Issue issue : issues)
                 {
-                    EventEntity entity = createEventEntity(pcud, issue, startDate, endDate, baseUrl, datePointCf, startCf, endCf);
+                    EventEntity entity = createEventEntity(pcud, issue, startDate, endDate, baseUrl, startCf, endCf);
                     if (entity != null)
                     {
                         entities.add(entity);
@@ -897,17 +923,38 @@ public class MailRuCalService
     {
         List<EventEntity> entities = new ArrayList<EventEntity>();
 
-        CustomField datePointCf = null;
         CustomField startCf = null;
         CustomField endCf = null;
         if (pcud.isDatePoint())
         {
-            datePointCf = ComponentManager.getInstance().getCustomFieldManager().getCustomFieldObjectByName(pcud.getStartPoint());
+            if (pcud.getStartPoint().startsWith("customfield_"))
+            {
+                startCf = cfMgr.getCustomFieldObject(pcud.getStartPoint());
+            }
+            else
+            {
+                startCf = cfMgr.getCustomFieldObjectByName(pcud.getStartPoint());
+            }
         }
         else if (pcud.isDateRange())
         {
-            startCf = ComponentManager.getInstance().getCustomFieldManager().getCustomFieldObjectByName(pcud.getStartPoint());
-            endCf = ComponentManager.getInstance().getCustomFieldManager().getCustomFieldObjectByName(pcud.getEndPoint());
+            if (pcud.getStartPoint().startsWith("customfield_"))
+            {
+                startCf = cfMgr.getCustomFieldObject(pcud.getStartPoint());
+            }
+            else
+            {
+                startCf = cfMgr.getCustomFieldObjectByName(pcud.getStartPoint());
+            }
+
+            if (pcud.getEndPoint().startsWith("customfield_"))
+            {
+                endCf = cfMgr.getCustomFieldObject(pcud.getEndPoint());
+            }
+            else
+            {
+                endCf = cfMgr.getCustomFieldObjectByName(pcud.getEndPoint());
+            }
         }
 
         JqlQueryBuilder builder = JqlQueryBuilder.newBuilder();
@@ -926,7 +973,7 @@ public class MailRuCalService
             start += issues.size();
             for (Issue issue : issues)
             {
-                EventEntity entity = createEventEntity(pcud, issue, startDate, endDate, baseUrl, datePointCf, startCf, endCf);
+                EventEntity entity = createEventEntity(pcud, issue, startDate, endDate, baseUrl, startCf, endCf);
                 if (entity != null)
                 {
                     entities.add(entity);
@@ -988,6 +1035,17 @@ public class MailRuCalService
             }
         }
 
+        Map<String, String> cfs = new TreeMap<String, String>();
+        for (CustomField cf : cfMgr.getCustomFieldObjects())
+        {
+            String key = cf.getCustomFieldType().getKey();
+            if (key.equals("com.atlassian.jira.plugin.system.customfieldtypes:datepicker") ||
+                key.equals("com.atlassian.jira.plugin.system.customfieldtypes:datetime"))
+            {
+                cfs.put(cf.getId(), cf.getName());
+            }
+        }
+
         //--> available searches
         List<DataPair> filterPairs = new ArrayList<DataPair>();
         Collection<SearchRequest> searches = srMgr.getOwnedFilters(user);
@@ -1006,8 +1064,9 @@ public class MailRuCalService
         params.put("baseUrl", Utils.getBaseUrl(request));
         params.put("aProj", projPairs);
         params.put("aSearch", filterPairs);
-        params.put("allGroups", getAllGroups());
+        params.put("allGroups", groupMgr.getGroupsForUser(user.getName()));
         params.put("roleProjs", roleProjs);
+        params.put("cfs", cfs);
 
         return Response.ok(new HtmlEntity(ComponentAccessor.getVelocityManager().getBody("templates/", "addcalendar.vm", params))).build();
     }
@@ -1051,7 +1110,7 @@ public class MailRuCalService
                 params.put("pcud", pcud);
                 params.put("createtime", authCtx.getOutlookDate().format(new Date(pcud.getcTime())));
                 params.put("creator", Utils.getDisplayUser(userUtil, pcud.getCreator()));
-                params.put("allGroups", getAllGroups());
+                params.put("allGroups", groupMgr.getGroupsForUser(user.getName()));
                 if (pcud.getCreator() != null && pcud.getCreator().equals(user.getName()))
                 {
                     params.put("isOwner", pcud.getCreator().equals(user.getName()));
@@ -1147,6 +1206,19 @@ public class MailRuCalService
                         roleProjs.put(role.getId(), role.getName());
                     }
                 }
+
+                Map<String, String> cfs = new TreeMap<String, String>();
+                for (CustomField cf : cfMgr.getCustomFieldObjects())
+                {
+                    String key = cf.getCustomFieldType().getKey();
+                    if (key.equals("com.atlassian.jira.plugin.system.customfieldtypes:datepicker") ||
+                        key.equals("com.atlassian.jira.plugin.system.customfieldtypes:datetime"))
+                    {
+                        cfs.put(cf.getId(), cf.getName());
+                    }
+                }
+
+                params.put("cfs", cfs);
                 params.put("roleProjs", roleProjs);
                 params.put("aProj", projPairs);
                 params.put("aSearch", filterPairs);

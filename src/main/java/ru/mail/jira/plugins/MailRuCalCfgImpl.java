@@ -104,6 +104,10 @@ public class MailRuCalCfgImpl
         {
             xmlData = xstream.toXML(userData);
         }
-        pluginSettingsFactory.createSettingsForKey(PLUGIN_KEY).put(user, xmlData);
+
+        if (xmlData != null)
+        {
+            pluginSettingsFactory.createSettingsForKey(PLUGIN_KEY).put(user, xmlData);
+        }
     }
 }

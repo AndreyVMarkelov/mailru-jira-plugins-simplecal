@@ -13,17 +13,25 @@ public class EventEntity
 {
     private boolean allDay;
 
+    private String assignee;
+
     private String color;
 
     private String end;
 
     private String id;
 
+    private String key;
+
     private String start;
 
     private String title;
 
     private String url;
+
+    public String getAssignee() {
+		return assignee;
+	}
 
     public String getColor()
     {
@@ -40,22 +48,26 @@ public class EventEntity
         return id;
     }
 
-    public String getStart()
+    public String getKey() {
+		return key;
+	}
+
+	public String getStart()
     {
         return start;
     }
 
-    public String getTitle()
+	public String getTitle()
     {
         return title;
     }
 
-    public String getUrl()
+	public String getUrl()
     {
         return url;
     }
 
-    public boolean isAllDay()
+	public boolean isAllDay()
     {
         return allDay;
     }
@@ -64,6 +76,10 @@ public class EventEntity
     {
         this.allDay = allDay;
     }
+
+    public void setAssignee(String assignee) {
+		this.assignee = assignee;
+	}
 
     public void setColor(String color)
     {
@@ -80,6 +96,10 @@ public class EventEntity
         this.id = id;
     }
 
+    public void setKey(String key) {
+		this.key = key;
+	}
+
     public void setStart(String start)
     {
         this.start = start;
@@ -93,13 +113,5 @@ public class EventEntity
     public void setUrl(String url)
     {
         this.url = url;
-    }
-
-    @Override
-    public String toString()
-    {
-        return "EventEntity[allDay=" + allDay + ", color=" + color + ", end="
-            + end + ", id=" + id + ", start=" + start + ", title=" + title
-            + ", url=" + url + "]";
     }
 }
