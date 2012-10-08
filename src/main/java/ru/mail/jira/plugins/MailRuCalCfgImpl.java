@@ -44,12 +44,20 @@ public class MailRuCalCfgImpl
     @Override
     public UserCalPref getUserCalPref(String user)
     {
+        UserCalPref ucp = Starter.getUserCache().get(user);
+        if (ucp != null)
+        {
+            return ucp;
+        }
+
         String xmlData = (String)pluginSettingsFactory.createSettingsForKey(PLUGIN_KEY).get(prefKey(user));
         if (xmlData != null && !xmlData.isEmpty())
         {
             try
             {
-                return (UserCalPref)xstream.fromXML(xmlData);
+                ucp = (UserCalPref)xstream.fromXML(xmlData);
+                Starter.getUserCache().put(user, ucp);
+                return ucp;
             }
             catch (XStreamException xsex)
             {
@@ -62,12 +70,20 @@ public class MailRuCalCfgImpl
     @Override
     public UserCalData getUserData(String user)
     {
+        UserCalData ucd = Starter.getCache().get(user);
+        if (ucd != null)
+        {
+            return ucd;
+        }
+
         String xmlData = (String)pluginSettingsFactory.createSettingsForKey(PLUGIN_KEY).get(user);
         if (xmlData != null && !xmlData.isEmpty())
         {
             try
             {
-                return (UserCalData)xstream.fromXML(xmlData);
+                ucd = (UserCalData)xstream.fromXML(xmlData);
+                Starter.getCache().put(user, ucd);
+                return ucd;
             }
             catch (XStreamException xsex)
             {
@@ -93,7 +109,12 @@ public class MailRuCalCfgImpl
         {
             xmlData = xstream.toXML(userPref);
         }
-        pluginSettingsFactory.createSettingsForKey(PLUGIN_KEY).put(prefKey(user), xmlData);
+
+        if (xmlData != null)
+        {
+            Starter.getUserCache().put(user, userPref);
+            pluginSettingsFactory.createSettingsForKey(PLUGIN_KEY).put(prefKey(user), xmlData);
+        }
     }
 
     @Override
@@ -107,6 +128,7 @@ public class MailRuCalCfgImpl
 
         if (xmlData != null)
         {
+            Starter.getCache().put(user, userData);
             pluginSettingsFactory.createSettingsForKey(PLUGIN_KEY).put(user, xmlData);
         }
     }

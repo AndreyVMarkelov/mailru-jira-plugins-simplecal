@@ -876,13 +876,39 @@ public class MailRuCalService
                 }
             }
 
+            JqlQueryBuilder builder = JqlQueryBuilder.newBuilder(search.getQuery());
+            JqlClauseBuilder jcb = JqlQueryBuilder.newClauseBuilder();
+            if (pcud.isIDD())
+            {
+                jcb.and().dueBetween(startDate, endDate);
+            }
+            else if (pcud.isDatePoint())
+            {
+                JqlClauseBuilder jcb2 = JqlQueryBuilder.newClauseBuilder();
+                jcb2.customField(startCf.getIdAsLong()).gtEq(startDate).and().customField(startCf.getIdAsLong()).ltEq(endDate);
+                jcb.and().addClause(jcb2.buildClause());
+            }
+            else if (pcud.isDateRange())
+            {
+                if (startCf != null && endCf != null)
+                {
+                    JqlClauseBuilder jcb2 = JqlQueryBuilder.newClauseBuilder();
+                    JqlClauseBuilder jcb3 = JqlQueryBuilder.newClauseBuilder().not().addClause(JqlQueryBuilder.newClauseBuilder().customField(startCf.getIdAsLong()).gt(endDate).buildClause());
+                    JqlClauseBuilder jcb4 = JqlQueryBuilder.newClauseBuilder().not().addClause(JqlQueryBuilder.newClauseBuilder().customField(endCf.getIdAsLong()).lt(startDate).buildClause());
+                    jcb3.and().addClause(jcb4.buildClause());
+                    jcb2.addClause(jcb3.buildClause());
+                    jcb.and().addClause(jcb2.buildClause());
+                }
+            }
+            builder.where().and().addClause(jcb.buildClause());
+
             int start = 0;
-            int count = (int)ComponentManager.getInstance().getSearchService().searchCount(user, search.getQuery());
+            int count = (int)ComponentManager.getInstance().getSearchService().searchCount(user, builder.buildQuery());
             while (start < count)
             {
                 List<Issue> issues = ComponentManager.getInstance().getSearchService().search(
                     user,
-                    search.getQuery(),
+                    builder.buildQuery(),
                     PagerFilter.newPageAlignedFilter(start, MAX_FETCH)).getIssues();
                 start += issues.size();
                 for (Issue issue : issues)
@@ -960,6 +986,28 @@ public class MailRuCalService
         JqlQueryBuilder builder = JqlQueryBuilder.newBuilder();
         JqlClauseBuilder jcb = JqlQueryBuilder.newClauseBuilder();
         jcb.project(prId);
+        if (pcud.isIDD())
+        {
+            jcb.and().dueBetween(startDate, endDate);
+        }
+        else if (pcud.isDatePoint())
+        {
+            JqlClauseBuilder jcb2 = JqlQueryBuilder.newClauseBuilder();
+            jcb2.customField(startCf.getIdAsLong()).gtEq(startDate).and().customField(startCf.getIdAsLong()).ltEq(endDate);
+            jcb.and().addClause(jcb2.buildClause());
+        }
+        else if (pcud.isDateRange())
+        {
+            if (startCf != null && endCf != null)
+            {
+                JqlClauseBuilder jcb2 = JqlQueryBuilder.newClauseBuilder();
+                JqlClauseBuilder jcb3 = JqlQueryBuilder.newClauseBuilder().not().addClause(JqlQueryBuilder.newClauseBuilder().customField(startCf.getIdAsLong()).gt(endDate).buildClause());
+                JqlClauseBuilder jcb4 = JqlQueryBuilder.newClauseBuilder().not().addClause(JqlQueryBuilder.newClauseBuilder().customField(endCf.getIdAsLong()).lt(startDate).buildClause());
+                jcb3.and().addClause(jcb4.buildClause());
+                jcb2.addClause(jcb3.buildClause());
+                jcb.and().addClause(jcb2.buildClause());
+            }
+        }
         builder.where().addClause(jcb.buildClause());
 
         int start = 0;
