@@ -73,7 +73,7 @@
     #else
     <tr>
         <td class="dlgtablekey"><label>#if($pcud.isProjectType())$i18n.getText("mailrucal.calproj")#else$i18n.getText("mailrucal.calfilter")#end</label></td>
-        <td valign="top"><input disabled="disabled" type="text" id="display" value="$targetName" name="display"/></td>
+        <td valign="top"><input readonly="readonly" type="text" id="display" value="$targetName" name="display"/></td>
     </tr>
     #end
     #if($isOwner)
