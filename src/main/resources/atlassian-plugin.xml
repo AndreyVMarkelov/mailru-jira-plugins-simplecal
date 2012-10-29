@@ -2,7 +2,7 @@
     <plugin-info>
         <description>${project.description}</description>
         <version>${project.version}</version>
-        <vendor name="Mail.Ru Group" url="http://www.mail.ru/" />
+        <vendor name="${project.organization.name}" url="${project.organization.url}" />
         <param name="plugin-logo">/media/mcal.png</param>
         <param name="plugin-icon">/media/mcal.png</param>
         <param name="vendor-icon">/media/icon.png</param>

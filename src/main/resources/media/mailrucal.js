@@ -36,7 +36,7 @@ function addMailRuCalendar(event, baseUrl) {
     md.addHeader(AJS.I18n.getText("mailrucal.createcaltitle"));
     md.addPanel("load_panel", dialogBody);
     md.addButton(AJS.I18n.getText("mailrucal.addcalbtn"), function() {
-        if (!AJS.$("#calname").val() ||
+        if (!jQuery.trim(AJS.$("#calname").val()) ||
             !AJS.$("#calcolor :selected").val() ||
             !AJS.$("#mainsel :selected").val()) {
             alert(AJS.I18n.getText("mailrucal.addcalerror"));
@@ -255,7 +255,7 @@ function actMailRuCalendar(event, baseUrl, ctime) {
     md.addHeader(AJS.I18n.getText("mailrucal.infocaltitle"));
     md.addPanel("load_panel", dialogBody);
     md.addButton(AJS.I18n.getText("mailrucal.updatecalbtn"), function() {
-        if (!AJS.$("#calname").val() || !AJS.$("#calcolor :selected").val()) {
+        if (!jQuery.trim(AJS.$("#calname").val()) || !AJS.$("#calcolor :selected").val()) {
             alert(AJS.I18n.getText("mailrucal.addcalerror"));
         } else {
             AJS.$("#deletecalform").submit();
