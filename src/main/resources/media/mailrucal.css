@@ -75,3 +75,20 @@ label.checkbox {
     font-size: 14px;
     font-weight: bold;
 }
+
+.progress {
+    background: rgba(0, 0, 0, 0.75);
+    color:white;
+    border-radius:5px;
+    position: absolute;
+    width: 200px;
+    height: 60px;
+    display: table;
+}
+
+.progress_p {
+    display: table-cell;
+    vertical-align: middle;
+    text-align: center;
+    font-size:28px;
+}

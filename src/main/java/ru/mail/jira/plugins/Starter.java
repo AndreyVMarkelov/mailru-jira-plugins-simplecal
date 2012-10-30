@@ -1,25 +1,29 @@
 package ru.mail.jira.plugins;
 
 import java.util.concurrent.ConcurrentMap;
-import com.googlecode.concurrentlinkedhashmap.ConcurrentLinkedHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 import com.atlassian.sal.api.lifecycle.LifecycleAware;
+import com.googlecode.concurrentlinkedhashmap.ConcurrentLinkedHashMap;
 
 public class Starter
     implements LifecycleAware
 {
     /**
-     * Calendar cache.
+     * Calendars.
      */
-    private static ConcurrentMap<String, UserCalData> cache = new ConcurrentLinkedHashMap.Builder<String, UserCalData>().maximumWeightedCapacity(1000).build();
+    private static CopyOnWriteArrayList<Long> calendars = new CopyOnWriteArrayList<Long>();
 
     /**
      * User cache.
      */
     private static ConcurrentMap<String, UserCalPref> userCache = new ConcurrentLinkedHashMap.Builder<String, UserCalPref>().maximumWeightedCapacity(1000).build();
 
-    public static ConcurrentMap<String, UserCalData> getCache()
+    /**
+     * Get calendars.
+     */
+    public synchronized static CopyOnWriteArrayList<Long> getCalendars()
     {
-        return cache;
+        return calendars;
     }
 
     public static ConcurrentMap<String, UserCalPref> getUserCache()
@@ -27,9 +31,23 @@ public class Starter
         return userCache;
     }
 
+    /**
+     * Calendar manager.
+     */
+    private final MailRuCalCfg calMrg;
+
+    /**
+     * Constructor.
+     */
+    public Starter(
+        MailRuCalCfg calMrg)
+    {
+        this.calMrg = calMrg;
+    }
+
     @Override
     public void onStart()
     {
-        //--> nothing
+        calendars.addAll(calMrg.getCalendars());
     }
 }

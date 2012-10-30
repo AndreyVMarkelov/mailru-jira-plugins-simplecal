@@ -7,6 +7,8 @@ package ru.mail.jira.plugins;
 import java.io.IOException;
 import java.net.URI;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -14,7 +16,10 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import com.atlassian.crowd.embedded.api.User;
 import com.atlassian.jira.ComponentManager;
+import com.atlassian.jira.project.ProjectManager;
 import com.atlassian.jira.security.JiraAuthenticationContext;
+import com.atlassian.jira.security.groups.GroupManager;
+import com.atlassian.jira.security.roles.ProjectRoleManager;
 import com.atlassian.sal.api.auth.LoginUriProvider;
 import com.atlassian.templaterenderer.TemplateRenderer;
 
@@ -32,6 +37,11 @@ public class MailRuCalServlet
     private static final long serialVersionUID = 1896097245308399163L;
 
     /**
+     * Group manager.
+     */
+    private final GroupManager grMgr;
+
+    /**
      * Login URI provider.
      */
     private final LoginUriProvider loginUriProvider;
@@ -40,6 +50,16 @@ public class MailRuCalServlet
      * Mail.Ru calendar plug-In data.
      */
     private final MailRuCalCfg mailCfg;
+
+    /**
+     * Project manager.
+     */
+    private final ProjectManager prMgr;
+
+    /**
+     * Project role manager.
+     */
+    private final ProjectRoleManager projectRoleManager;
 
     /**
      * Template renderer.
@@ -52,11 +72,17 @@ public class MailRuCalServlet
     public MailRuCalServlet(
         MailRuCalCfg mailCfg,
         LoginUriProvider loginUriProvider,
-        TemplateRenderer renderer)
+        TemplateRenderer renderer,
+        GroupManager grMgr,
+        ProjectManager prMgr,
+        ProjectRoleManager projectRoleManager)
     {
         this.mailCfg = mailCfg;
         this.loginUriProvider = loginUriProvider;
         this.renderer = renderer;
+        this.grMgr = grMgr;
+        this.prMgr = prMgr;
+        this.projectRoleManager = projectRoleManager;
     }
 
     @Override
@@ -75,11 +101,23 @@ public class MailRuCalServlet
             return;
         }
 
+        List<ProjectCalUserData> datas = mailCfg.getCalendarsData();
+        Iterator<ProjectCalUserData> iter = datas.iterator();
+        while (iter.hasNext())
+        {
+            ProjectCalUserData pcud = iter.next();
+
+            if (!Utils.isCalendarVisiable(pcud, user, grMgr, prMgr, projectRoleManager))
+            {
+                iter.remove();
+            }
+        }
+
         Map<String, Object> parms = new HashMap<String, Object>();
         parms.put("lang", req.getLocale().getLanguage());
         parms.put("baseUrl", Utils.getBaseUrl(req));
         parms.put("i18n", ComponentManager.getInstance().getJiraAuthenticationContext().getI18nHelper());
-        parms.put("usrData", mailCfg.getUserData(user.getName()));
+        parms.put("usrData", datas);
         parms.put("usrPref", mailCfg.getUserCalPref(user.getName()));
         parms.put("user", user.getName());
 

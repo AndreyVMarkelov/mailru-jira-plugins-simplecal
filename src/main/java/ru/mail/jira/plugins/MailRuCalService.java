@@ -16,7 +16,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.TreeMap;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.GET;
@@ -85,6 +84,11 @@ public class MailRuCalService
     private static final int MAX_FETCH = 1500;
 
     /**
+     * Custom field manager.
+     */
+    private final CustomFieldManager cfMgr;
+
+    /**
      * Group manager.
      */
     private final GroupManager groupMgr;
@@ -105,6 +109,11 @@ public class MailRuCalService
     private final ProjectManager prMgr;
 
     /**
+     * Project role manager.
+     */
+    private final ProjectRoleManager projectRoleManager;
+
+    /**
      * Date formatter.
      */
     private final SimpleDateFormat sdf;
@@ -118,16 +127,6 @@ public class MailRuCalService
      * Utility for work with JIRA users.
      */
     private final UserUtil userUtil;
-
-    /**
-     * Project role manager.
-     */
-    private final ProjectRoleManager projectRoleManager;
-
-    /**
-     * Custom field manager.
-     */
-    private final CustomFieldManager cfMgr;
 
     /**
      * Xstream.
@@ -163,91 +162,6 @@ public class MailRuCalService
                 return new JsonWriter(writer, JsonWriter.DROP_ROOT_MODE);
             }
         });
-    }
-
-    @POST
-    @Produces ({ MediaType.APPLICATION_JSON})
-    @Path("/initcreatedlg")
-    public Response initCreateDlg(@Context HttpServletRequest request)
-    throws VelocityException
-    {
-        JiraAuthenticationContext authCtx = ComponentManager.getInstance().getJiraAuthenticationContext();
-        User user = authCtx.getLoggedInUser();
-        if (user == null)
-        {
-            log.error("MailRuCalService::initCreateDlg - User is not logged");
-            return Response.status(401).build();
-        }
-
-        String dateStr = request.getParameter("date");
-        long dateLong;
-        try
-        {
-            dateLong = Long.parseLong(dateStr);
-        }
-        catch (NumberFormatException nex)
-        {
-            log.error("MailRuCalService::initCreateDlg - Required parameters are not set");
-            return Response.status(500).build();
-        }
-
-        Map<String, Object> params = new HashMap<String, Object>();
-        params.put("i18n", authCtx.getI18nHelper());
-        params.put("baseUrl", Utils.getBaseUrl(request));
-        params.put("user", user.getName());
-        params.put("date", authCtx.getOutlookDate().formatDatePicker(new Date(dateLong)));
-
-        List<ProjCreateIssueData> pcids = new ArrayList<ProjCreateIssueData>();
-        UserCalData usrData = mailCfg.getUserData(user.getName());
-        for (ProjectCalUserData pcud : usrData.getProjs())
-        {
-            if (!pcud.isProjectType())
-            {
-                continue;
-            }
-
-            Project proj = getProject(Long.valueOf(pcud.getTarget()));
-            if (proj == null)
-            {
-                continue;
-            }
-
-            String target;
-            if (pcud.isIDD())
-            {
-                target = "duedate";
-            }
-            else
-            {
-                CustomField cf = cfMgr.getCustomFieldObjectByName(pcud.getStartPoint());
-                if (cf == null)
-                {
-                    continue;
-                }
-
-                target = cf.getId();
-            }
-
-            ProjCreateIssueData pcid = new ProjCreateIssueData();
-            pcid.setCalName(pcud.getName());
-            pcid.setCtime(pcud.getcTime());
-            pcid.setProjId(proj.getId());
-            pcid.setKey(proj.getKey());
-            pcid.setName(proj.getName());
-            pcid.setTargetName(target);
-
-            IssueTypeSchemeManager issueTypeSchemeManager = ComponentManager.getInstance().getIssueTypeSchemeManager();
-            Collection<IssueType> its = issueTypeSchemeManager.getNonSubTaskIssueTypesForProject(proj);
-            for (IssueType it : its)
-            {
-                pcid.addIssueType(it.getId(), it.getName());
-            }
-
-            pcids.add(pcid);
-        }
-        params.put("pcids", pcids);
-
-        return Response.ok(new HtmlEntity(ComponentAccessor.getVelocityManager().getBody("templates/", "initCreateIssue.vm", params))).build();
     }
 
     @POST
@@ -407,11 +321,7 @@ public class MailRuCalService
 
         long ctime = Counter.getVal();
 
-        Set<String> shUsers = Utils.getSharedUsers(groups, projRoles, groupMgr, prMgr, projectRoleManager, user.getName());
-        for (String shUser : shUsers)
-        {
-            UserCalData usrData = mailCfg.getUserData(shUser);
-            usrData.add(new ProjectCalUserData(
+        ProjectCalUserData pcud = new ProjectCalUserData(
                 name,
                 descr,
                 color,
@@ -424,9 +334,8 @@ public class MailRuCalService
                 user.getName(),
                 groups,
                 projRoles,
-                ctime));
-            mailCfg.putUserData(shUser, usrData);
-        }
+                ctime);
+        mailCfg.storeProjectCalUserData(pcud);
 
         String baseUrl = Utils.getBaseUrl(request);
         return Response.seeOther(URI.create(baseUrl + "/plugins/servlet/mailrucal/view")).build();
@@ -468,20 +377,21 @@ public class MailRuCalService
             return Response.status(500).build();
         }
 
-        UserCalData usrData = mailCfg.getUserData(user.getName());
-        if (usrData != null)
+        UserCalPref userPref = mailCfg.getUserCalPref(user.getName());
+        if (userPref == null)
         {
-            Iterator<ProjectCalUserData> iter = usrData.getProjs().iterator();
-            while (iter.hasNext())
-            {
-                ProjectCalUserData pcud = iter.next();
-                if (pcud.getName().equals(name) && pcud.getcTime() == ctime.longValue())
-                {
-                    pcud.setActive(Boolean.parseBoolean(mode));
-                }
-            }
-            mailCfg.putUserData(user.getName(), usrData);
+            userPref = new UserCalPref();
         }
+
+        if (!Boolean.parseBoolean(mode))
+        {
+            userPref.addshadowCalendar(ctime);
+        }
+        else
+        {
+            userPref.removeshadowCalendar(ctime);
+        }
+        mailCfg.putUserCalPref(user.getName(), userPref);
 
         return Response.ok().build();
     }
@@ -513,7 +423,10 @@ public class MailRuCalService
                     en.setAllDay(true);
                     en.setUrl(baseUrl + "/browse/" + issue.getKey());
                     en.setKey(issue.getKey());
-                    en.setAssignee(issue.getAssigneeUser().getDisplayName());
+                    if (issue.getAssigneeUser() != null)
+                    {
+                        en.setAssignee(issue.getAssigneeUser().getDisplayName());
+                    }
                     return en;
                 }
             }
@@ -555,7 +468,10 @@ public class MailRuCalService
                     en.setAllDay(true);
                     en.setUrl(baseUrl + "/browse/" + issue.getKey());
                     en.setKey(issue.getKey());
-                    en.setAssignee(issue.getAssigneeUser().getDisplayName());
+                    if (issue.getAssigneeUser() != null)
+                    {
+                        en.setAssignee(issue.getAssigneeUser().getDisplayName());
+                    }
                     return en;
                 }
             }
@@ -572,7 +488,10 @@ public class MailRuCalService
                     en.setAllDay(true);
                     en.setUrl(baseUrl + "/browse/" + issue.getKey());
                     en.setKey(issue.getKey());
-                    en.setAssignee(issue.getAssigneeUser().getDisplayName());
+                    if (issue.getAssigneeUser() != null)
+                    {
+                        en.setAssignee(issue.getAssigneeUser().getDisplayName());
+                    }
                     return en;
                 }
             }
@@ -589,7 +508,10 @@ public class MailRuCalService
                     en.setAllDay(true);
                     en.setUrl(baseUrl + "/browse/" + issue.getKey());
                     en.setKey(issue.getKey());
-                    en.setAssignee(issue.getAssigneeUser().getDisplayName());
+                    if (issue.getAssigneeUser() != null)
+                    {
+                        en.setAssignee(issue.getAssigneeUser().getDisplayName());
+                    }
                     return en;
                 }
             }
@@ -612,7 +534,10 @@ public class MailRuCalService
                         en.setAllDay(true);
                         en.setUrl(baseUrl + "/browse/" + issue.getKey());
                         en.setKey(issue.getKey());
-                        en.setAssignee(issue.getAssigneeUser().getDisplayName());
+                        if (issue.getAssigneeUser() != null)
+                        {
+                            en.setAssignee(issue.getAssigneeUser().getDisplayName());
+                        }
                         return en;
                     }
                 }
@@ -636,7 +561,10 @@ public class MailRuCalService
                         en.setAllDay(true);
                         en.setUrl(baseUrl + "/browse/" + issue.getKey());
                         en.setKey(issue.getKey());
-                        en.setAssignee(issue.getAssigneeUser().getDisplayName());
+                        if (issue.getAssigneeUser() != null)
+                        {
+                            en.setAssignee(issue.getAssigneeUser().getDisplayName());
+                        }
                         return en;
                     }
                 }
@@ -693,7 +621,10 @@ public class MailRuCalService
             en.setAllDay(true);
             en.setUrl(baseUrl + "/browse/" + issue.getKey());
             en.setKey(issue.getKey());
-            en.setAssignee(issue.getAssigneeUser().getDisplayName());
+            if (issue.getAssigneeUser() != null)
+            {
+                en.setAssignee(issue.getAssigneeUser().getDisplayName());
+            }
             return en;
         }
 
@@ -713,7 +644,6 @@ public class MailRuCalService
             return Response.status(401).build();
         }
 
-        String name = request.getParameter("origcalname");
         String ctimestr = request.getParameter("calctime");
 
         Long ctime;
@@ -727,19 +657,7 @@ public class MailRuCalService
             return Response.status(500).build();
         }
 
-        UserCalData usrData = mailCfg.getUserData(user.getName());
-        ProjectCalUserData pcud = usrData.getProjectCalUserData(name, ctime);
-        if (pcud != null)
-        {
-            Set<String> shUsers = Utils.getSharedUsers(pcud.getGroups(), pcud.getProjRoles(), groupMgr, prMgr, projectRoleManager, user.getName());
-            for (String shUser : shUsers)
-            {
-                UserCalData shUsrData = mailCfg.getUserData(shUser);
-                ProjectCalUserData shPcud = shUsrData.getProjectCalUserData(name, ctime);
-                shUsrData.removeProjectCalUserData(shPcud);
-                mailCfg.putUserData(shUser, shUsrData);
-            }
-        }
+        mailCfg.deleteCalendar(ctime);
 
         return Response.ok().build();
     }
@@ -777,16 +695,28 @@ public class MailRuCalService
         Date startDate = new Date(startLong);
         Date endDate = new Date(endLong);
 
-        UserCalData usrData = mailCfg.getUserData(user.getName());
-        if (usrData == null)
+        List<ProjectCalUserData> datas = mailCfg.getCalendarsData();
+        Iterator<ProjectCalUserData> iter = datas.iterator();
+        while (iter.hasNext())
         {
-            return Response.ok().build();
+            ProjectCalUserData pcud = iter.next();
+
+            if (!Utils.isCalendarVisiable(pcud, user, groupMgr, prMgr, projectRoleManager))
+            {
+                iter.remove();
+            }
+        }
+
+        UserCalPref userPref = mailCfg.getUserCalPref(user.getName());
+        if (userPref == null)
+        {
+            userPref = new UserCalPref();
         }
 
         List<EventEntity> eventObjs = new ArrayList<EventEntity>();
-        for (ProjectCalUserData pcud : usrData.getProjs())
+        for (ProjectCalUserData pcud : datas)
         {
-            if (!pcud.isActive())
+            if (!userPref.isCalendarShadow(pcud.getcTime()))
             {
                 continue;
             }
@@ -1120,6 +1050,102 @@ public class MailRuCalService
     }
 
     @POST
+    @Produces ({ MediaType.APPLICATION_JSON})
+    @Path("/initcreatedlg")
+    public Response initCreateDlg(@Context HttpServletRequest request)
+    throws VelocityException
+    {
+        JiraAuthenticationContext authCtx = ComponentManager.getInstance().getJiraAuthenticationContext();
+        User user = authCtx.getLoggedInUser();
+        if (user == null)
+        {
+            log.error("MailRuCalService::initCreateDlg - User is not logged");
+            return Response.status(401).build();
+        }
+
+        String dateStr = request.getParameter("date");
+        long dateLong;
+        try
+        {
+            dateLong = Long.parseLong(dateStr);
+        }
+        catch (NumberFormatException nex)
+        {
+            log.error("MailRuCalService::initCreateDlg - Required parameters are not set");
+            return Response.status(500).build();
+        }
+
+        Map<String, Object> params = new HashMap<String, Object>();
+        params.put("i18n", authCtx.getI18nHelper());
+        params.put("baseUrl", Utils.getBaseUrl(request));
+        params.put("user", user.getName());
+        params.put("date", authCtx.getOutlookDate().formatDatePicker(new Date(dateLong)));
+
+        List<ProjectCalUserData> datas = mailCfg.getCalendarsData();
+        Iterator<ProjectCalUserData> iter = datas.iterator();
+        while (iter.hasNext())
+        {
+            ProjectCalUserData pcud = iter.next();
+
+            if (!Utils.isCalendarVisiable(pcud, user, groupMgr, prMgr, projectRoleManager))
+            {
+                iter.remove();
+            }
+        }
+
+        List<ProjCreateIssueData> pcids = new ArrayList<ProjCreateIssueData>();
+        for (ProjectCalUserData pcud : datas)
+        {
+            if (!pcud.isProjectType())
+            {
+                continue;
+            }
+
+            Project proj = getProject(Long.valueOf(pcud.getTarget()));
+            if (proj == null)
+            {
+                continue;
+            }
+
+            String target;
+            if (pcud.isIDD())
+            {
+                target = "duedate";
+            }
+            else
+            {
+                CustomField cf = cfMgr.getCustomFieldObjectByName(pcud.getStartPoint());
+                if (cf == null)
+                {
+                    continue;
+                }
+
+                target = cf.getId();
+            }
+
+            ProjCreateIssueData pcid = new ProjCreateIssueData();
+            pcid.setCalName(pcud.getName());
+            pcid.setCtime(pcud.getcTime());
+            pcid.setProjId(proj.getId());
+            pcid.setKey(proj.getKey());
+            pcid.setName(proj.getName());
+            pcid.setTargetName(target);
+
+            IssueTypeSchemeManager issueTypeSchemeManager = ComponentManager.getInstance().getIssueTypeSchemeManager();
+            Collection<IssueType> its = issueTypeSchemeManager.getNonSubTaskIssueTypesForProject(proj);
+            for (IssueType it : its)
+            {
+                pcid.addIssueType(it.getId(), it.getName());
+            }
+
+            pcids.add(pcid);
+        }
+        params.put("pcids", pcids);
+
+        return Response.ok(new HtmlEntity(ComponentAccessor.getVelocityManager().getBody("templates/", "initCreateIssue.vm", params))).build();
+    }
+
+    @POST
     @Produces({ MediaType.APPLICATION_JSON})
     @Path("/infocaldlg")
     public Response initInfoDialog(@Context HttpServletRequest request)
@@ -1133,7 +1159,6 @@ public class MailRuCalService
             return Response.status(401).build();
         }
 
-        String name = request.getParameter("name");
         String ctimestr = request.getParameter("ctime");
 
         Long ctime;
@@ -1147,135 +1172,132 @@ public class MailRuCalService
             return Response.status(500).build();
         }
 
-        UserCalData usrData = mailCfg.getUserData(user.getName());
-        for (ProjectCalUserData pcud : usrData.getProjs())
+        ProjectCalUserData pcud = mailCfg.getCalendarData(ctime);
+        if (pcud != null && Utils.isCalendarVisiable(pcud, user, groupMgr, prMgr, projectRoleManager))
         {
-            if (pcud.getName().equals(name) && pcud.getcTime() == ctime.longValue())
+            Map<String, Object> params = new HashMap<String, Object>();
+            params.put("i18n", authCtx.getI18nHelper());
+            params.put("baseUrl", Utils.getBaseUrl(request));
+            params.put("pcud", pcud);
+            params.put("createtime", authCtx.getOutlookDate().format(new Date(pcud.getcTime())));
+            params.put("creator", Utils.getDisplayUser(userUtil, pcud.getCreator()));
+            params.put("allGroups", groupMgr.getGroupsForUser(user.getName()));
+            if (pcud.getCreator() != null && pcud.getCreator().equals(user.getName()))
             {
-                Map<String, Object> params = new HashMap<String, Object>();
-                params.put("i18n", authCtx.getI18nHelper());
-                params.put("baseUrl", Utils.getBaseUrl(request));
-                params.put("pcud", pcud);
-                params.put("createtime", authCtx.getOutlookDate().format(new Date(pcud.getcTime())));
-                params.put("creator", Utils.getDisplayUser(userUtil, pcud.getCreator()));
-                params.put("allGroups", groupMgr.getGroupsForUser(user.getName()));
-                if (pcud.getCreator() != null && pcud.getCreator().equals(user.getName()))
-                {
-                    params.put("isOwner", pcud.getCreator().equals(user.getName()));
-                }
-                else
-                {
-                    params.put("isOwner", false);
-                }
-
-                if (pcud.isProjectType())
-                {
-                    Project proj = getProject(Long.valueOf(pcud.getTarget()));
-                    if (proj == null)
-                    {
-                        return Response.ok(new HtmlEntity("NO_PROJECT")).build();
-                    }
-                    params.put("targetName", proj.getName());
-                }
-                else
-                {
-                    SearchRequest sr = getSearchRequest(Long.valueOf(pcud.getTarget()), user);
-                    if (sr == null)
-                    {
-                        return Response.ok(new HtmlEntity("NO_FILTER")).build();
-                    }
-                    params.put("targetName", sr.getName());
-                }
-
-                JSONArray storedShares = new JSONArray();
-                if (pcud.getGroups() != null)
-                {
-                    for (String group : pcud.getGroups())
-                    {
-                        JSONObject obj = new JSONObject();
-                        obj.put("id", "group" + group);
-                        obj.put("type", "G");
-                        obj.put("group", group);
-                        storedShares.put(obj);
-                    }
-                }
-                if (pcud.getProjRoles() != null)
-                {
-                    for (ProjRole pr : pcud.getProjRoles())
-                    {
-                        JSONObject obj = new JSONObject();
-                        obj.put("id", "project" + pr.getProject() + "role" + pr.getRole());
-                        obj.put("type", "P");
-                        obj.put("proj", pr.getProject());
-                        obj.put("role", pr.getRole());
-                        storedShares.put(obj);
-                    }
-                }
-
-                //--> available projects
-                List<DataPair> projPairs = new ArrayList<DataPair>();
-                Map<String, String> projMap = new HashMap<String, String>();
-                List<Project> projects = prMgr.getProjectObjects();
-                if (projects != null)
-                {
-                    for (Project project : projects)
-                    {
-                        if (permMgr.hasPermission(Permissions.BROWSE, project, user))
-                        {
-                            DataPair pair = new DataPair(project.getId(), project.getName());
-                            projMap.put(Long.toString(project.getId()), project.getName());
-                            projPairs.add(pair);
-                        }
-                    }
-                }
-                Collections.sort(projPairs);
-
-                //--> available searches
-                List<DataPair> filterPairs = new ArrayList<DataPair>();
-                Collection<SearchRequest> searches = srMgr.getOwnedFilters(user);
-                if (searches != null)
-                {
-                    for (SearchRequest search : searches)
-                    {
-                        DataPair pair = new DataPair(search.getId(), search.getName());
-                        filterPairs.add(pair);
-                    }
-                }
-                Collections.sort(filterPairs);
-
-                Map<Long, String> roleProjs = new TreeMap<Long, String>();
-                Map<String, String> roleProjMap = new TreeMap<String, String>();
-                Collection<ProjectRole> roles = projectRoleManager.getProjectRoles();
-                if (roles != null)
-                {
-                    for (ProjectRole role : roles)
-                    {
-                        roleProjMap.put(Long.toString(role.getId()), role.getName());
-                        roleProjs.put(role.getId(), role.getName());
-                    }
-                }
-
-                Map<String, String> cfs = new TreeMap<String, String>();
-                for (CustomField cf : cfMgr.getCustomFieldObjects())
-                {
-                    String key = cf.getCustomFieldType().getKey();
-                    if (key.equals("com.atlassian.jira.plugin.system.customfieldtypes:datepicker") ||
-                        key.equals("com.atlassian.jira.plugin.system.customfieldtypes:datetime"))
-                    {
-                        cfs.put(cf.getId(), cf.getName());
-                    }
-                }
-
-                params.put("cfs", cfs);
-                params.put("roleProjs", roleProjs);
-                params.put("aProj", projPairs);
-                params.put("aSearch", filterPairs);
-                params.put("projMap", projMap);
-                params.put("roleProjMap", roleProjMap);
-                params.put("storedShares", storedShares.toString());
-
-                return Response.ok(new HtmlEntity(ComponentAccessor.getVelocityManager().getBody("templates/", "infocalendar.vm", params))).build();
+                params.put("isOwner", pcud.getCreator().equals(user.getName()));
             }
+            else
+            {
+                params.put("isOwner", false);
+            }
+
+            if (pcud.isProjectType())
+            {
+                Project proj = getProject(Long.valueOf(pcud.getTarget()));
+                if (proj == null)
+                {
+                    return Response.ok(new HtmlEntity("NO_PROJECT")).build();
+                }
+                params.put("targetName", proj.getName());
+            }
+            else
+            {
+                SearchRequest sr = getSearchRequest(Long.valueOf(pcud.getTarget()), user);
+                if (sr == null)
+                {
+                    return Response.ok(new HtmlEntity("NO_FILTER")).build();
+                }
+                params.put("targetName", sr.getName());
+            }
+
+            JSONArray storedShares = new JSONArray();
+            if (pcud.getGroups() != null)
+            {
+                for (String group : pcud.getGroups())
+                {
+                    JSONObject obj = new JSONObject();
+                    obj.put("id", "group" + group);
+                    obj.put("type", "G");
+                    obj.put("group", group);
+                    storedShares.put(obj);
+                }
+            }
+            if (pcud.getProjRoles() != null)
+            {
+                for (ProjRole pr : pcud.getProjRoles())
+                {
+                    JSONObject obj = new JSONObject();
+                    obj.put("id", "project" + pr.getProject() + "role" + pr.getRole());
+                    obj.put("type", "P");
+                    obj.put("proj", pr.getProject());
+                    obj.put("role", pr.getRole());
+                    storedShares.put(obj);
+                }
+            }
+
+            //--> available projects
+            List<DataPair> projPairs = new ArrayList<DataPair>();
+            Map<String, String> projMap = new HashMap<String, String>();
+            List<Project> projects = prMgr.getProjectObjects();
+            if (projects != null)
+            {
+                for (Project project : projects)
+                {
+                    if (permMgr.hasPermission(Permissions.BROWSE, project, user))
+                    {
+                        DataPair pair = new DataPair(project.getId(), project.getName());
+                        projMap.put(Long.toString(project.getId()), project.getName());
+                        projPairs.add(pair);
+                    }
+                }
+            }
+            Collections.sort(projPairs);
+
+            //--> available searches
+            List<DataPair> filterPairs = new ArrayList<DataPair>();
+            Collection<SearchRequest> searches = srMgr.getOwnedFilters(user);
+            if (searches != null)
+            {
+                for (SearchRequest search : searches)
+                {
+                    DataPair pair = new DataPair(search.getId(), search.getName());
+                    filterPairs.add(pair);
+                }
+            }
+            Collections.sort(filterPairs);
+
+            Map<Long, String> roleProjs = new TreeMap<Long, String>();
+            Map<String, String> roleProjMap = new TreeMap<String, String>();
+            Collection<ProjectRole> roles = projectRoleManager.getProjectRoles();
+            if (roles != null)
+            {
+                for (ProjectRole role : roles)
+                {
+                    roleProjMap.put(Long.toString(role.getId()), role.getName());
+                    roleProjs.put(role.getId(), role.getName());
+                }
+            }
+
+            Map<String, String> cfs = new TreeMap<String, String>();
+            for (CustomField cf : cfMgr.getCustomFieldObjects())
+            {
+                String key = cf.getCustomFieldType().getKey();
+                if (key.equals("com.atlassian.jira.plugin.system.customfieldtypes:datepicker") ||
+                    key.equals("com.atlassian.jira.plugin.system.customfieldtypes:datetime"))
+                {
+                    cfs.put(cf.getId(), cf.getName());
+                }
+            }
+
+            params.put("cfs", cfs);
+            params.put("roleProjs", roleProjs);
+            params.put("aProj", projPairs);
+            params.put("aSearch", filterPairs);
+            params.put("projMap", projMap);
+            params.put("roleProjMap", roleProjMap);
+            params.put("storedShares", storedShares.toString());
+
+            return Response.ok(new HtmlEntity(ComponentAccessor.getVelocityManager().getBody("templates/", "infocalendar.vm", params))).build();
         }
 
         return Response.ok(new HtmlEntity("NO_CALENDAR")).build();
@@ -1434,11 +1456,10 @@ public class MailRuCalService
             srMgr.updateFilter(jsCtx, sr);
         }
 
-        UserCalData usrData = mailCfg.getUserData(user.getName());
-        ProjectCalUserData pcud = usrData.getProjectCalUserData(name, ctime);
-        if (pcud != null)
+        ProjectCalUserData pcud = mailCfg.getCalendarData(ctime);
+        if (pcud != null && Utils.isCalendarVisiable(pcud, user, groupMgr, prMgr, projectRoleManager))
         {
-            if (pcud.getCreator() != null && pcud.getCreator().equals(user.getName()))
+            if (pcud.getCreator().equals(user.getName()))
             {
                 //--> checks
                 if (!Utils.isStr(newname) ||
@@ -1489,64 +1510,23 @@ public class MailRuCalService
                 }
                 //<--
 
-                Set<String> newShUsers = Utils.getSharedUsers(groups, projRoles, groupMgr, prMgr, projectRoleManager, user.getName());
-                Set<String> shUsers = Utils.getSharedUsers(pcud.getGroups(), pcud.getProjRoles(), groupMgr, prMgr, projectRoleManager, user.getName());
-                for (String shUser : shUsers)
-                {
-                    if (newShUsers.contains(shUser))
-                    {
-                        newShUsers.remove(shUser);
-                        UserCalData shUsrData = mailCfg.getUserData(shUser);
-                        ProjectCalUserData shPcud = shUsrData.getProjectCalUserData(name, ctime);
-                        if (shPcud != null)
-                        {
-                            shPcud.setName(newname);
-                            shPcud.setColor(color);
-                            shPcud.setDescr(descr);
-                            shPcud.setTarget(mainsel);
-                            shPcud.setType(display);
-                            shPcud.setFieldType(showfld);
-                            shPcud.setStartPoint(start);
-                            shPcud.setEndPoint(end);
-                            shPcud.setGroups(groups);
-                            shPcud.setProjRoles(projRoles);
-                            mailCfg.putUserData(shUser, shUsrData);
-                        }
-                    }
-                    else
-                    {
-                        UserCalData shUsrData = mailCfg.getUserData(shUser);
-                        ProjectCalUserData shPcud = shUsrData.getProjectCalUserData(name, ctime);
-                        shUsrData.removeProjectCalUserData(shPcud);
-                        mailCfg.putUserData(shUser, shUsrData);
-                    }
-                }
-
-                for (String newShUser : newShUsers)
-                {
-                    UserCalData shUsrData = mailCfg.getUserData(newShUser);
-                    usrData.add(new ProjectCalUserData(
-                        newname,
-                        descr,
-                        color,
-                        display,
-                        mainsel,
-                        showfld,
-                        start,
-                        end,
-                        true,
-                        user.getName(),
-                        groups,
-                        projRoles,
-                        ctime));
-                    mailCfg.putUserData(newShUser, shUsrData);
-                }
+                pcud.setName(newname);
+                pcud.setColor(color);
+                pcud.setDescr(descr);
+                pcud.setTarget(mainsel);
+                pcud.setType(display);
+                pcud.setFieldType(showfld);
+                pcud.setStartPoint(start);
+                pcud.setEndPoint(end);
+                pcud.setGroups(groups);
+                pcud.setProjRoles(projRoles);
+                mailCfg.storeProjectCalUserData(pcud);
             }
             else
             {
                 pcud.setDescr(descr);
                 pcud.setColor(color);
-                mailCfg.putUserData(user.getName(), usrData);
+                mailCfg.storeProjectCalUserData(pcud);
             }
         }
 

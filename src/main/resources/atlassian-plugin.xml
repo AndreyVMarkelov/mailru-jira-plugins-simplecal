@@ -14,7 +14,6 @@
         </transformation>
         <resource type="download" name="jquery-ui-1.8.17.custom.min.js" location="media/jquery-ui-1.8.17.custom.min.js"/>
         <resource type="download" name="jquery.ui.dialog.js" location="media/jquery.ui.dialog.js"/>
-        <resource type="download" name="jquery.blockUI.js" location="media/jquery.blockUI.js"/>
         <resource type="download" name="fullcalendar.css" location="media/fullcalendar.css"/>
         <resource type="download" name="fullcalendar.js" location="media/fullcalendar.js"/>
         <resource type="download" name="jquery.json-2.3.js" location="media/jquery.json-2.3.js"/>
@@ -52,22 +51,6 @@
         <condition class="com.atlassian.jira.plugin.webfragment.conditions.UserLoggedInCondition"/>
         <link linkId="mailrucal-links-link-item">/plugins/servlet/mailrucal/view</link>
     </web-item>
-    <web-item key="mailrucal-configuration" name="Mail.Ru Calendar link on administrators page" section="system.admin/globalsettings" weight="95">
-        <label key="mailrucal.settingstitle"/>
-        <condition class="com.atlassian.jira.plugin.webfragment.conditions.JiraGlobalPermissionCondition">
-            <param name="permission">admin</param>
-        </condition>
-        <link linkId="god-events-configuration">/secure/ViewMailRuCalendarAdmin!default.jspa</link>
-    </web-item>
-
-    <webwork1 key="MailRuCalendarAdminAction" name="Mail.Ru Calendar Administration Action" class="java.lang.Object">
-        <actions>
-            <action name="ru.mail.jira.plugins.MailRuCalendarAdmin" alias="ViewMailRuCalendarAdmin">
-                <view name="input">/templates/mailrucaladmin.vm</view>
-                <view name="success">/templates/mailrucaladmin.vm</view>
-            </action>
-        </actions>
-    </webwork1>
     <!-- End sections -->
 
     <!-- Rest resources -->

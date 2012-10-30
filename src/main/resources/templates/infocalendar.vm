@@ -193,7 +193,7 @@
                                     <div id="share_display_div">
                                     #foreach($group in $pcud.getGroups())
                                       <div id="group$group">
-                                        <span>$i18n.getText("mailrucal.share_project", $group)</span>
+                                        <span>$i18n.getText("mailrucal.share_group", $group)</span>
                                         <img onclick="removeGroup(event);" id="share_trash" height="16px" width="16px" class="shareTrash" src="$baseUrl/images/icons/trash_16.gif" title="Delete Share" alt="Delete Share"/> <input id="share_type_hidden" name="shareValues" type="hidden"/>
                                       </div>
                                     #end

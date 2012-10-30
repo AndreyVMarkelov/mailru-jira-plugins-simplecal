@@ -1,5 +1,25 @@
 // Created by Andrey Markelov 29-08-2012.
 // Copyright Mail.Ru Group 2012. All rights reserved.
+
+AJS.InlineDialog(AJS.$("#popupLink"), 1, "templates/inline-dialog-content.html");
+
+jQuery(document).ready(function () {
+    jQuery(document).ajaxStart(function () { showProgress() }).ajaxStop(function () { hideProgress() });
+});
+function showProgress() {
+    jQuery('body').append('<div id="progress" class="progress"><p class="progress_p">Loading...</p></div>');
+    jQuery('#progress').center();
+}
+function hideProgress() {
+    jQuery('#progress').remove();
+}
+jQuery.fn.center = function () {
+    this.css("position", "absolute");
+    this.css("top", (jQuery(window).height() - this.height()) / 2 + jQuery(window).scrollTop() + "px");
+    this.css("left", (jQuery(window).width() - this.width()) / 2 + jQuery(window).scrollLeft() + "px");
+    return this;
+}
+
 function addMailRuCalendar(event, baseUrl) {
     event.preventDefault();
 
@@ -52,12 +72,6 @@ function initAddCal(baseUrl)
         },
         success: function(result) {
             res = result.html;
-        },
-        beforeSend: function() {
-            block();
-        },
-        complete: function() {
-            unblock();
         }
     });
 
@@ -72,37 +86,16 @@ function initCreateIssue(baseUrl, date)
         type: "POST",
         dataType: "json",
         data: {"date": date},
-        beforeSend: function() {
-            block();
-        },
         async: false,
         error: function(xhr, ajaxOptions, thrownError) {
             alert(xhr.responseText);
         },
         success: function(result) {
             res = result.html;
-        },
-        complete: function() {
-            unblock();
         }
     });
 
     return res;
-}
-
-function block() {
-    jQuery.blockUI({
-        message: jQuery('#loading'),
-        css: {
-            width: '200px' 
-        },
-        fadeOut: 0,
-        fadeIn: 0
-    });
-}
-
-function unblock() {
-    jQuery.unblockUI();
 }
 
 function changeCalMode(baseUrl, name, ctime) {
@@ -112,6 +105,7 @@ function changeCalMode(baseUrl, name, ctime) {
         url: baseUrl + "/rest/mailrucalws/1.0/mailcalsrv/changecalmode",
         type: "POST",
         dataType: "json",
+        async: false,
         data: {"mode": mode, "name": name, "ctime": ctime},
         error: function(xhr, ajaxOptions, thrownError) {
             alert(xhr.responseText);
@@ -128,18 +122,13 @@ function deleteMailRuCalendar(event, baseUrl, name, ctime) {
             url: baseUrl + "/rest/mailrucalws/1.0/mailcalsrv/deletecalendar",
             type: "POST",
             dataType: "json",
+            async: false,
             data: {"origcalname": name, "calctime": ctime},
             error: function(xhr, ajaxOptions, thrownError) {
                 alert(xhr.responseText);
             },
             success: function(result) {
                 window.location.reload();
-            },
-            beforeSend: function() {
-                block();
-            },
-            complete: function() {
-                unblock();
             }
         });
     }
@@ -279,12 +268,6 @@ function initInfoCal(baseUrl, name, ctime)
         },
         success: function(result) {
             res = result.html;
-        },
-        beforeSend: function() {
-            block();
-        },
-        complete: function() {
-            unblock();
         }
     });
 
@@ -372,7 +355,7 @@ function addGroup() {
     sharesObj.push(itemObj);
     jQuery("#shares_data").val(jQuery.toJSON(sharesObj));
 
-    var newElem = "<div id='" + grId + "'><span>" + AJS.format(AJS.I18n.getText("mailrucal.share_project"), jQuery(group).text()) + "</span></div>";
+    var newElem = "<div id='" + grId + "'><span>" + AJS.format(AJS.I18n.getText("mailrucal.share_group"), jQuery(group).text()) + "</span></div>";
     jQuery("#share_display_div").append(newElem);
     jQuery("#share_trash_sh").clone().show().appendTo("#" + grId);
 }

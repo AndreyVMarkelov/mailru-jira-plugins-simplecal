@@ -4,6 +4,8 @@
  */
 package ru.mail.jira.plugins;
 
+import java.util.List;
+
 /**
  * Plug-In data interface.
  * 
@@ -12,14 +14,29 @@ package ru.mail.jira.plugins;
 public interface MailRuCalCfg
 {
     /**
+     * Delete calendar.
+     */
+    void deleteCalendar(Long id);
+
+    /**
+     * Get calendar data.
+     */
+    ProjectCalUserData getCalendarData(Long id);
+
+    /**
+     * Get list of all stored calendars.
+     */
+    List<Long> getCalendars();
+
+    /**
+     * Get calendars data.
+     */
+    List<ProjectCalUserData> getCalendarsData();
+
+    /**
      * Get user preferences.
      */
     UserCalPref getUserCalPref(String user);
-
-    /**
-     * Get stored user data.
-     */
-    UserCalData getUserData(String user);
 
     /**
      * Put user preferences.
@@ -27,7 +44,12 @@ public interface MailRuCalCfg
     void putUserCalPref(String user, UserCalPref userPref);
 
     /**
-     * Put user data.
+     * Store all calendars.
      */
-    void putUserData(String user, UserCalData userData);
+    void saveCalendars(List<Long> cals);
+
+    /**
+     * Store calendar.
+     */
+    void storeProjectCalUserData(ProjectCalUserData pcud);
 }

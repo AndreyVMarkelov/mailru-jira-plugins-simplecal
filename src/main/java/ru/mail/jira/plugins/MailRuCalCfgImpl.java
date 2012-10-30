@@ -4,6 +4,8 @@
  */
 package ru.mail.jira.plugins;
 
+import java.util.ArrayList;
+import java.util.List;
 import com.atlassian.sal.api.pluginsettings.PluginSettingsFactory;
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.XStreamException;
@@ -17,9 +19,14 @@ public class MailRuCalCfgImpl
     implements MailRuCalCfg
 {
     /**
+     * Calendars.
+     */
+    private final String CALENDARS = "calendars";
+
+    /**
      * Plug-In Jira db key.
      */
-    private final String PLUGIN_KEY = "MailRuCalendar";
+    private final String PLUGIN_KEY = "SimpleCalendar";
 
     /**
      * Plug-In settings factory.
@@ -39,6 +46,45 @@ public class MailRuCalCfgImpl
     {
         this.pluginSettingsFactory = pluginSettingsFactory;
         this.xstream = new XStream();
+    }
+
+    @Override
+    public void deleteCalendar(Long id)
+    {
+        List<Long> longs = getCalendars();
+        longs.remove(id);
+        saveCalendars(longs);
+        pluginSettingsFactory.createSettingsForKey(PLUGIN_KEY).remove(id + ".data");
+    }
+
+    @Override
+    public List<Long> getCalendars()
+    {
+        return Utils.strToListLongs((String)pluginSettingsFactory.createSettingsForKey(PLUGIN_KEY).get(CALENDARS));
+    }
+
+    @Override
+    public List<ProjectCalUserData> getCalendarsData()
+    {
+        List<ProjectCalUserData> datas = new ArrayList<ProjectCalUserData>();
+
+        for (Long l : getCalendars())
+        {
+            String xmlData = (String)pluginSettingsFactory.createSettingsForKey(PLUGIN_KEY).get(l + ".data");
+            if (xmlData != null && !xmlData.isEmpty())
+            {
+                try
+                {
+                    ProjectCalUserData ucd = (ProjectCalUserData)xstream.fromXML(xmlData);
+                    datas.add(ucd);
+                }
+                catch (XStreamException xsex)
+                {
+                    //
+                }
+            }
+        }
+        return datas;
     }
 
     @Override
@@ -67,32 +113,6 @@ public class MailRuCalCfgImpl
         return null;
     }
 
-    @Override
-    public UserCalData getUserData(String user)
-    {
-        UserCalData ucd = Starter.getCache().get(user);
-        if (ucd != null)
-        {
-            return ucd;
-        }
-
-        String xmlData = (String)pluginSettingsFactory.createSettingsForKey(PLUGIN_KEY).get(user);
-        if (xmlData != null && !xmlData.isEmpty())
-        {
-            try
-            {
-                ucd = (UserCalData)xstream.fromXML(xmlData);
-                Starter.getCache().put(user, ucd);
-                return ucd;
-            }
-            catch (XStreamException xsex)
-            {
-                return new UserCalData();
-            }
-        }
-        return new UserCalData();
-    }
-
     /**
      * Key for preference data.
      */
@@ -118,18 +138,48 @@ public class MailRuCalCfgImpl
     }
 
     @Override
-    public void putUserData(String user, UserCalData userData)
+    public void saveCalendars(List<Long> cals)
+    {
+        pluginSettingsFactory.createSettingsForKey(PLUGIN_KEY).put(CALENDARS, Utils.listLongsToStr(cals));
+    }
+
+    @Override
+    public void storeProjectCalUserData(ProjectCalUserData pcud)
     {
         String xmlData = "";
-        if (userData != null)
+        if (pcud != null)
         {
-            xmlData = xstream.toXML(userData);
+            xmlData = xstream.toXML(pcud);
         }
 
         if (xmlData != null)
         {
-            Starter.getCache().put(user, userData);
-            pluginSettingsFactory.createSettingsForKey(PLUGIN_KEY).put(user, xmlData);
+            List<Long> longs = getCalendars();
+            if (!longs.contains(pcud.getcTime()))
+            {
+                longs.add(pcud.getcTime());
+            }
+            saveCalendars(longs);
+            pluginSettingsFactory.createSettingsForKey(PLUGIN_KEY).put(pcud.getcTime() + ".data", xmlData);
         }
+    }
+
+    @Override
+    public ProjectCalUserData getCalendarData(Long id)
+    {
+        String xmlData = (String)pluginSettingsFactory.createSettingsForKey(PLUGIN_KEY).get(id + ".data");
+        if (xmlData != null && !xmlData.isEmpty())
+        {
+            try
+            {
+                return (ProjectCalUserData)xstream.fromXML(xmlData);
+            }
+            catch (XStreamException xsex)
+            {
+                return null;
+            }
+        }
+
+        return null;
     }
 }
