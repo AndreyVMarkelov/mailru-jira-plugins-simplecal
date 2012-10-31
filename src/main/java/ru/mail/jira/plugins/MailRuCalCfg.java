@@ -5,6 +5,7 @@
 package ru.mail.jira.plugins;
 
 import java.util.List;
+import java.util.Set;
 
 /**
  * Plug-In data interface.
@@ -26,7 +27,7 @@ public interface MailRuCalCfg
     /**
      * Get list of all stored calendars.
      */
-    List<Long> getCalendars();
+    Set<Long> getCalendars();
 
     /**
      * Get calendars data.
@@ -46,10 +47,15 @@ public interface MailRuCalCfg
     /**
      * Store all calendars.
      */
-    void saveCalendars(List<Long> cals);
+    void saveCalendars(Set<Long> cals);
 
     /**
      * Store calendar.
      */
     void storeProjectCalUserData(ProjectCalUserData pcud);
+
+    /**
+     * Update calendar.
+     */
+    void updateProjectCalUserData(ProjectCalUserData pcud);
 }

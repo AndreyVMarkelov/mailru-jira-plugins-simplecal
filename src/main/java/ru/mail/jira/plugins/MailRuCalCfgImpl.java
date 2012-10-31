@@ -6,6 +6,8 @@ package ru.mail.jira.plugins;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import com.atlassian.sal.api.pluginsettings.PluginSettings;
 import com.atlassian.sal.api.pluginsettings.PluginSettingsFactory;
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.XStreamException;
@@ -29,9 +31,9 @@ public class MailRuCalCfgImpl
     private final String PLUGIN_KEY = "SimpleCalendar";
 
     /**
-     * Plug-In settings factory.
+     * Plug-In settings.
      */
-    private final PluginSettingsFactory pluginSettingsFactory;
+    private final PluginSettings pluginSettings;
 
     /**
      * XStream.
@@ -44,23 +46,58 @@ public class MailRuCalCfgImpl
     public MailRuCalCfgImpl(
         PluginSettingsFactory pluginSettingsFactory)
     {
-        this.pluginSettingsFactory = pluginSettingsFactory;
+        this.pluginSettings = pluginSettingsFactory.createSettingsForKey(PLUGIN_KEY);
         this.xstream = new XStream();
     }
 
-    @Override
-    public void deleteCalendar(Long id)
+    /**
+     * Key for calendar.
+     */
+    private String calKey(Long calId)
     {
-        List<Long> longs = getCalendars();
-        longs.remove(id);
-        saveCalendars(longs);
-        pluginSettingsFactory.createSettingsForKey(PLUGIN_KEY).remove(id + ".data");
+        return (calId + ".data");
     }
 
     @Override
-    public List<Long> getCalendars()
+    public void deleteCalendar(
+        Long id)
     {
-        return Utils.strToListLongs((String)pluginSettingsFactory.createSettingsForKey(PLUGIN_KEY).get(CALENDARS));
+        Set<Long> longs = getCalendars();
+        longs.remove(id);
+        saveCalendars(longs);
+        getPluginSettings().remove(calKey(id));
+        Starter.getCalendarsData().remove(id);
+    }
+
+    @Override
+    public ProjectCalUserData getCalendarData(
+        Long id)
+    {
+        if (Starter.getCalendarsData().containsKey(id))
+        {
+            return Starter.getCalendarsData().get(id);
+        }
+
+        String xmlData = (String)getPluginSettings().get(calKey(id));
+        if (xmlData != null && !xmlData.isEmpty())
+        {
+            try
+            {
+                return (ProjectCalUserData)xstream.fromXML(xmlData);
+            }
+            catch (XStreamException xsex)
+            {
+                return null;
+            }
+        }
+
+        return null;
+    }
+
+    @Override
+    public Set<Long> getCalendars()
+    {
+        return Utils.strToListLongs((String)getPluginSettings().get(CALENDARS));
     }
 
     @Override
@@ -68,9 +105,15 @@ public class MailRuCalCfgImpl
     {
         List<ProjectCalUserData> datas = new ArrayList<ProjectCalUserData>();
 
-        for (Long l : getCalendars())
+        for (Long id : getCalendars())
         {
-            String xmlData = (String)pluginSettingsFactory.createSettingsForKey(PLUGIN_KEY).get(l + ".data");
+            if (Starter.getCalendarsData().containsKey(id))
+            {
+                datas.add(Starter.getCalendarsData().get(id));
+                continue;
+            }
+
+            String xmlData = (String)getPluginSettings().get(calKey(id));
             if (xmlData != null && !xmlData.isEmpty())
             {
                 try
@@ -87,8 +130,14 @@ public class MailRuCalCfgImpl
         return datas;
     }
 
+    private synchronized PluginSettings getPluginSettings()
+    {
+        return pluginSettings;
+    }
+
     @Override
-    public UserCalPref getUserCalPref(String user)
+    public UserCalPref getUserCalPref(
+        String user)
     {
         UserCalPref ucp = Starter.getUserCache().get(user);
         if (ucp != null)
@@ -96,7 +145,7 @@ public class MailRuCalCfgImpl
             return ucp;
         }
 
-        String xmlData = (String)pluginSettingsFactory.createSettingsForKey(PLUGIN_KEY).get(prefKey(user));
+        String xmlData = (String)getPluginSettings().get(prefKey(user));
         if (xmlData != null && !xmlData.isEmpty())
         {
             try
@@ -133,14 +182,14 @@ public class MailRuCalCfgImpl
         if (xmlData != null)
         {
             Starter.getUserCache().put(user, userPref);
-            pluginSettingsFactory.createSettingsForKey(PLUGIN_KEY).put(prefKey(user), xmlData);
+            getPluginSettings().put(prefKey(user), xmlData);
         }
     }
 
     @Override
-    public void saveCalendars(List<Long> cals)
+    public void saveCalendars(Set<Long> cals)
     {
-        pluginSettingsFactory.createSettingsForKey(PLUGIN_KEY).put(CALENDARS, Utils.listLongsToStr(cals));
+        getPluginSettings().put(CALENDARS, Utils.listLongsToStr(cals));
     }
 
     @Override
@@ -154,32 +203,27 @@ public class MailRuCalCfgImpl
 
         if (xmlData != null)
         {
-            List<Long> longs = getCalendars();
-            if (!longs.contains(pcud.getcTime()))
-            {
-                longs.add(pcud.getcTime());
-            }
+            Set<Long> longs = getCalendars();
+            longs.add(pcud.getCalId());
             saveCalendars(longs);
-            pluginSettingsFactory.createSettingsForKey(PLUGIN_KEY).put(pcud.getcTime() + ".data", xmlData);
+            getPluginSettings().put(calKey(pcud.getCalId()), xmlData);
+            Starter.getCalendarsData().put(pcud.getCalId(), pcud);
         }
     }
 
     @Override
-    public ProjectCalUserData getCalendarData(Long id)
+    public void updateProjectCalUserData(ProjectCalUserData pcud)
     {
-        String xmlData = (String)pluginSettingsFactory.createSettingsForKey(PLUGIN_KEY).get(id + ".data");
-        if (xmlData != null && !xmlData.isEmpty())
+        String xmlData = "";
+        if (pcud != null)
         {
-            try
-            {
-                return (ProjectCalUserData)xstream.fromXML(xmlData);
-            }
-            catch (XStreamException xsex)
-            {
-                return null;
-            }
+            xmlData = xstream.toXML(pcud);
         }
 
-        return null;
+        if (xmlData != null)
+        {
+            getPluginSettings().put(calKey(pcud.getCalId()), xmlData);
+            Starter.getCalendarsData().put(pcud.getCalId(), pcud);
+        }
     }
 }

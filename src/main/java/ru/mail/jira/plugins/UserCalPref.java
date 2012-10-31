@@ -8,7 +8,8 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * User preferences.
+ * User preferences. This structure contains information about hide calendars
+ *  and preferred calendar view.
  * 
  * @author Andrey Markelov
  */
@@ -29,6 +30,9 @@ public class UserCalPref
      */
     public UserCalPref() {}
 
+    /**
+     * Hide calendar for user.
+     */
     public void addshadowCalendar(Long calId)
     {
         if (shadowCalendars == null)
@@ -38,25 +42,37 @@ public class UserCalPref
         shadowCalendars.add(calId);
     }
 
+    /**
+     * Get default calendar view: week, month or day.
+     */
     public String getDefaultView()
     {
         return defaultView;
     }
 
+    /**
+     * Get set of hide calendars.
+     */
     public Set<Long> getShadowCalendars()
     {
         return shadowCalendars;
     }
 
+    /**
+     * Check if calendar is hide for user.
+     */
     public boolean isCalendarShadow(Long calId)
     {
         if (shadowCalendars == null)
         {
             return false;
         }
-        return !shadowCalendars.contains(calId);
+        return shadowCalendars.contains(calId);
     }
 
+    /**
+     * Show calendar.
+     */
     public void removeshadowCalendar(Long calId)
     {
         if (shadowCalendars == null)
@@ -66,11 +82,17 @@ public class UserCalPref
         shadowCalendars.remove(calId);
     }
 
+    /**
+     * Set default calendar view.
+     */
     public void setDefaultView(String defaultView)
     {
         this.defaultView = defaultView;
     }
 
+    /**
+     * Set hide calendars.
+     */
     public void setShadowCalendars(Set<Long> shadowCalendars)
     {
         this.shadowCalendars = shadowCalendars;

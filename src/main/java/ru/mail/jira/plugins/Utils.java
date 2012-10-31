@@ -4,8 +4,8 @@
  */
 package ru.mail.jira.plugins;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.StringTokenizer;
 import javax.servlet.http.HttpServletRequest;
 import com.atlassian.crowd.embedded.api.Group;
@@ -62,19 +62,6 @@ public class Utils
     }
 
     /**
-     * Check that string is not null and is not empty.
-     */
-    public static boolean isStr(String str)
-    {
-        if (str == null || str.length() == 0)
-        {
-            return false;
-        }
-
-        return true;
-    }
-
-    /**
      * Check if calendar is visible for user.
      */
     public static boolean isCalendarVisiable(
@@ -123,9 +110,22 @@ public class Utils
     }
 
     /**
+     * Check that string is not null and is not empty.
+     */
+    public static boolean isStr(String str)
+    {
+        if (str == null || str.length() == 0)
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
      * Convert list of long to string.
      */
-    public static String listLongsToStr(List<Long> list)
+    public static String listLongsToStr(Set<Long> list)
     {
         StringBuilder sb = new StringBuilder();
 
@@ -143,9 +143,9 @@ public class Utils
     /**
      * Convert string to long list.
      */
-    public static List<Long> strToListLongs(String str)
+    public static Set<Long> strToListLongs(String str)
     {
-        List<Long> list = new ArrayList<Long>();
+        Set<Long> list = new HashSet<Long>();
 
         if (str == null || str.isEmpty())
         {

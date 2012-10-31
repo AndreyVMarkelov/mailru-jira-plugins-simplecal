@@ -98,15 +98,15 @@ function initCreateIssue(baseUrl, date)
     return res;
 }
 
-function changeCalMode(baseUrl, name, ctime) {
-    var selector = "input[name='" + name + ctime  + "']";
+function changeCalMode(baseUrl, ctime) {
+    var selector = "input[name='" + ctime  + "']";
     var mode = AJS.$(selector).attr("checked");
     jQuery.ajax({
         url: baseUrl + "/rest/mailrucalws/1.0/mailcalsrv/changecalmode",
         type: "POST",
         dataType: "json",
         async: false,
-        data: {"mode": mode, "name": name, "ctime": ctime},
+        data: {"mode": mode, "ctime": ctime},
         error: function(xhr, ajaxOptions, thrownError) {
             alert(xhr.responseText);
         },
@@ -116,14 +116,14 @@ function changeCalMode(baseUrl, name, ctime) {
     });
 }
 
-function deleteMailRuCalendar(event, baseUrl, name, ctime) {
+function deleteMailRuCalendar(event, baseUrl, ctime) {
     if(confirm(AJS.I18n.getText("mailrucal.confirmdelete"))) {
         jQuery.ajax({
             url: baseUrl + "/rest/mailrucalws/1.0/mailcalsrv/deletecalendar",
             type: "POST",
             dataType: "json",
             async: false,
-            data: {"origcalname": name, "calctime": ctime},
+            data: {"calctime": ctime},
             error: function(xhr, ajaxOptions, thrownError) {
                 alert(xhr.responseText);
             },
@@ -174,10 +174,10 @@ function changeCalItem(event, baseUrl) {
     jQuery("#its").html(jQuery("#it" + id).html());
 }
 
-function actMailRuCalendar(event, baseUrl, name, ctime) {
+function actMailRuCalendar(event, baseUrl, ctime) {
     event.preventDefault();
 
-    var dialogBody = initInfoCal(baseUrl, name, ctime);
+    var dialogBody = initInfoCal(baseUrl, ctime);
     if (!dialogBody)
     {
         return;
@@ -254,7 +254,7 @@ function actMailRuCalendar(event, baseUrl, name, ctime) {
     md.show();
 }
 
-function initInfoCal(baseUrl, name, ctime)
+function initInfoCal(baseUrl, ctime)
 {
     var res = "";
     jQuery.ajax({
@@ -262,7 +262,7 @@ function initInfoCal(baseUrl, name, ctime)
         type: "POST",
         dataType: "json",
         async: false,
-        data: {"name": name, "ctime": ctime},
+        data: {"ctime": ctime},
         error: function(xhr, ajaxOptions, thrownError) {
             alert(xhr.responseText);
         },

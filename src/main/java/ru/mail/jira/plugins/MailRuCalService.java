@@ -319,22 +319,22 @@ public class MailRuCalService
             srMgr.updateFilter(jsCtx, sr);
         }
 
-        long ctime = Counter.getVal();
+        long calId = Counter.getVal();
 
         ProjectCalUserData pcud = new ProjectCalUserData(
-                name,
-                descr,
-                color,
-                display,
-                mainsel,
-                showfld,
-                start,
-                end,
-                true,
-                user.getName(),
-                groups,
-                projRoles,
-                ctime);
+            calId,
+            name,
+            descr,
+            color,
+            display,
+            mainsel,
+            showfld,
+            start,
+            end,
+            user.getName(),
+            groups,
+            projRoles,
+            System.currentTimeMillis());
         mailCfg.storeProjectCalUserData(pcud);
 
         String baseUrl = Utils.getBaseUrl(request);
@@ -354,13 +354,11 @@ public class MailRuCalService
             return Response.status(401).build();
         }
 
-        String name = request.getParameter("name");
         String ctimestr = request.getParameter("ctime");
         String mode = request.getParameter("mode");
 
         //--> checks
-        if (!Utils.isStr(name) ||
-            !Utils.isStr(mode))
+        if (!Utils.isStr(mode))
         {
             log.error("MailRuCalService::changeCalendarMode - Required parameters are not set");
             return Response.status(500).build();
@@ -459,20 +457,7 @@ public class MailRuCalService
                 Timestamp endTs = (Timestamp)endVal;
                 if (endTs.after(startDate) && startTs.before(endDate))
                 {
-                    EventEntity en= new EventEntity();
-                    en.setId(issue.getKey());
-                    en.setTitle(issue.getSummary());
-                    en.setStart(sdf.format(startTs));
-                    en.setEnd(sdf.format(endTs));
-                    en.setColor(pcud.getColor());
-                    en.setAllDay(true);
-                    en.setUrl(baseUrl + "/browse/" + issue.getKey());
-                    en.setKey(issue.getKey());
-                    if (issue.getAssigneeUser() != null)
-                    {
-                        en.setAssignee(issue.getAssigneeUser().getDisplayName());
-                    }
-                    return en;
+                    return createEventEntityObj(issue, baseUrl, pcud.getColor(), sdf.format(startTs), sdf.format(endTs));
                 }
             }
             else if (startVal != null && startVal instanceof Timestamp)
@@ -480,19 +465,7 @@ public class MailRuCalService
                 Timestamp ts = (Timestamp)startVal;
                 if (ts.after(startDate) && ts.before(endDate))
                 {
-                    EventEntity en= new EventEntity();
-                    en.setId(issue.getKey());
-                    en.setTitle(issue.getSummary());
-                    en.setStart(sdf.format(ts));
-                    en.setColor(pcud.getColor());
-                    en.setAllDay(true);
-                    en.setUrl(baseUrl + "/browse/" + issue.getKey());
-                    en.setKey(issue.getKey());
-                    if (issue.getAssigneeUser() != null)
-                    {
-                        en.setAssignee(issue.getAssigneeUser().getDisplayName());
-                    }
-                    return en;
+                    return createEventEntityObj(issue, baseUrl, pcud.getColor(), sdf.format(ts), null);
                 }
             }
             else if (endVal != null && endVal instanceof Timestamp)
@@ -500,19 +473,7 @@ public class MailRuCalService
                 Timestamp ts = (Timestamp)endVal;
                 if (ts.after(startDate) && ts.before(endDate))
                 {
-                    EventEntity en= new EventEntity();
-                    en.setId(issue.getKey());
-                    en.setTitle(issue.getSummary());
-                    en.setStart(sdf.format(ts));
-                    en.setColor(pcud.getColor());
-                    en.setAllDay(true);
-                    en.setUrl(baseUrl + "/browse/" + issue.getKey());
-                    en.setKey(issue.getKey());
-                    if (issue.getAssigneeUser() != null)
-                    {
-                        en.setAssignee(issue.getAssigneeUser().getDisplayName());
-                    }
-                    return en;
+                    return createEventEntityObj(issue, baseUrl, pcud.getColor(), sdf.format(ts), null);
                 }
             }
         }
@@ -526,19 +487,7 @@ public class MailRuCalService
                     Timestamp ts = (Timestamp)val;
                     if (ts.after(startDate) && ts.before(endDate))
                     {
-                        EventEntity en= new EventEntity();
-                        en.setId(issue.getKey());
-                        en.setTitle(issue.getSummary());
-                        en.setStart(sdf.format(ts));
-                        en.setColor(pcud.getColor());
-                        en.setAllDay(true);
-                        en.setUrl(baseUrl + "/browse/" + issue.getKey());
-                        en.setKey(issue.getKey());
-                        if (issue.getAssigneeUser() != null)
-                        {
-                            en.setAssignee(issue.getAssigneeUser().getDisplayName());
-                        }
-                        return en;
+                        return createEventEntityObj(issue, baseUrl, pcud.getColor(), sdf.format(ts), null);
                     }
                 }
             }
@@ -553,25 +502,40 @@ public class MailRuCalService
                     Timestamp ts = (Timestamp)val;
                     if (ts.after(startDate) && ts.before(endDate))
                     {
-                        EventEntity en= new EventEntity();
-                        en.setId(issue.getKey());
-                        en.setTitle(issue.getSummary());
-                        en.setStart(sdf.format(ts));
-                        en.setColor(pcud.getColor());
-                        en.setAllDay(true);
-                        en.setUrl(baseUrl + "/browse/" + issue.getKey());
-                        en.setKey(issue.getKey());
-                        if (issue.getAssigneeUser() != null)
-                        {
-                            en.setAssignee(issue.getAssigneeUser().getDisplayName());
-                        }
-                        return en;
+                        return createEventEntityObj(issue, baseUrl, pcud.getColor(), sdf.format(ts), null);
                     }
                 }
             }
         }
 
         return null;
+    }
+
+    /**
+     * Create entity object.
+     */
+    private EventEntity createEventEntityObj(
+        Issue issue,
+        String baseUrl,
+        String color,
+        String start,
+        String end)
+    {
+        EventEntity en= new EventEntity();
+        en.setId(issue.getKey());
+        en.setTitle(issue.getSummary());
+        en.setStart(start);
+        en.setEnd(end);
+        en.setColor(color);
+        en.setAllDay(true);
+        en.setUrl(baseUrl + "/browse/" + issue.getKey());
+        en.setKey(issue.getKey());
+        en.setStatus(issue.getStatusObject().getName());
+        if (issue.getAssigneeUser() != null)
+        {
+            en.setAssignee(issue.getAssigneeUser().getDisplayName());
+        }
+        return en;
     }
 
     /**
@@ -613,19 +577,7 @@ public class MailRuCalService
         Timestamp dueDate = issue.getDueDate();
         if (dueDate != null && dueDate.after(startDate) && dueDate.before(endDate))
         {
-            EventEntity en= new EventEntity();
-            en.setId(issue.getKey());
-            en.setTitle(issue.getSummary());
-            en.setStart(sdf.format(dueDate));
-            en.setColor(pcud.getColor());
-            en.setAllDay(true);
-            en.setUrl(baseUrl + "/browse/" + issue.getKey());
-            en.setKey(issue.getKey());
-            if (issue.getAssigneeUser() != null)
-            {
-                en.setAssignee(issue.getAssigneeUser().getDisplayName());
-            }
-            return en;
+            return createEventEntityObj(issue, baseUrl, pcud.getColor(), sdf.format(dueDate), null);
         }
 
         return null;
@@ -716,7 +668,7 @@ public class MailRuCalService
         List<EventEntity> eventObjs = new ArrayList<EventEntity>();
         for (ProjectCalUserData pcud : datas)
         {
-            if (!userPref.isCalendarShadow(pcud.getcTime()))
+            if (userPref.isCalendarShadow(pcud.getCalId()))
             {
                 continue;
             }
@@ -1125,7 +1077,7 @@ public class MailRuCalService
 
             ProjCreateIssueData pcid = new ProjCreateIssueData();
             pcid.setCalName(pcud.getName());
-            pcid.setCtime(pcud.getcTime());
+            pcid.setCtime(pcud.getCalId());
             pcid.setProjId(proj.getId());
             pcid.setKey(proj.getKey());
             pcid.setName(proj.getName());
@@ -1179,7 +1131,7 @@ public class MailRuCalService
             params.put("i18n", authCtx.getI18nHelper());
             params.put("baseUrl", Utils.getBaseUrl(request));
             params.put("pcud", pcud);
-            params.put("createtime", authCtx.getOutlookDate().format(new Date(pcud.getcTime())));
+            params.put("createtime", authCtx.getOutlookDate().format(new Date(pcud.getCalId())));
             params.put("creator", Utils.getDisplayUser(userUtil, pcud.getCreator()));
             params.put("allGroups", groupMgr.getGroupsForUser(user.getName()));
             if (pcud.getCreator() != null && pcud.getCreator().equals(user.getName()))

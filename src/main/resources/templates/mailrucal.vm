@@ -10,55 +10,59 @@
         $webResourceManager.requireResource("ru.mail.jira.plugins.mailrucal:jcalendar")
     </head>
     <body class="aui">
-      <table width="100%">
-      <tr>
-        <td width="80%">
-          <div id='calendar'></div>
-        </td>
-        <td width="20%" valign="top">
-          <div class="rightbox">
-              <div class="optionbox">
-                <p>
-                  <img src="$baseUrl/images/icons/bullet_creme.gif" height="8" align="absmiddle" border="0" width="8">
-                  <strong><a id="addMailRuCalendarBtn" name="addMailRuCalendarBtn" href="#" class="addact" onclick="addMailRuCalendar(event, '$baseUrl')">$i18n.getText("mailrucal.addcal")</a></strong>
-                </p>
-              </div>
-              <hr class="linemargin"/>
-              <div class="optionbox">
-                <table width="100%">
-                  <tr>
-                    <td class="jiraformheader"><span class="formtitle">$i18n.getText("mailrucal.allcals")</span></td>
-                  </tr>
-                  <tr>
-                    <td>
-                      <ul>
-                        #if($usrData)
-                            <table>
-                            #foreach($proj in $usrData)
-                            <tr><td>
-                            <label for="id" class="checkbox">
-                                <input onclick="changeCalMode('$baseUrl', '$proj.getName()', $proj.getcTime())" type="checkbox" id="$proj.getName()$proj.getcTime()" name="$proj.getName()$proj.getcTime()" #if($usrPref.isCalendarShadow($proj.getcTime()))checked="checked"#end/>
-                                <a href="#" onclick="actMailRuCalendar(event, '$baseUrl', '$proj.getName()', $proj.getcTime())"><span style="color: $proj.getColor();">$proj.getName()</span></a>
-                                #if(!$proj.getCreator() || $proj.getCreator().equals($user))
-                                <img onclick="deleteMailRuCalendar(event, '$baseUrl', '$proj.getName()', $proj.getcTime());" id="share_trash" height="16px" width="16px" class="shareTrash" src="$baseUrl/images/icons/trash_16.gif" title="Delete Share" alt="Delete Share"/> <input id="share_type_hidden" name="shareValues" type="hidden"/>
+        <table width="100%">
+            <tr>
+                <td width="80%">
+                    <div id='calendar'></div>
+                </td>
+                <td width="20%" valign="top">
+                    <div class="rightbox">
+                        <div class="optionbox">
+                        <p>
+                            <img src="$baseUrl/images/icons/bullet_creme.gif" height="8" align="absmiddle" border="0" width="8">
+                            <strong><a id="addMailRuCalendarBtn" name="addMailRuCalendarBtn" href="#" class="addact" onclick="addMailRuCalendar(event, '$baseUrl')">$i18n.getText("mailrucal.addcal")</a></strong>
+                        </p>
+                        </div>
+                        <hr class="linemargin"/>
+                        <div class="optionbox">
+                        <table width="100%">
+                        <tr>
+                            <td class="jiraformheader"><span class="formtitle">$i18n.getText("mailrucal.allcals")</span></td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <table>
+                                #foreach($proj in $usrData)
+                                <tr>
+                                    <td>
+                                        <input type="checkbox" onclick="changeCalMode('$baseUrl', $proj.getCalId())" id="$proj.getCalId()" name="$proj.getCalId()"/>
+                                        <a href="#" onclick="actMailRuCalendar(event, '$baseUrl', $proj.getCalId())"><span style="color: $proj.getColor();">$proj.getName()</span></a>
+                                        #if(!$proj.getCreator() || $proj.getCreator().equals($user))
+                                        <img onclick="deleteMailRuCalendar(event, '$baseUrl', $proj.getcTime());" id="share_trash" height="16px" width="16px" class="shareTrash" src="$baseUrl/images/icons/trash_16.gif" title="Delete Share" alt="Delete Share"/> <input id="share_type_hidden" name="shareValues" type="hidden"/>
+                                        #end
+                                    </td>
+                                </tr>
                                 #end
-                            </label>
-                            </td></tr>
-                            #end
-                            </table>
-                        #end
-                      </ul>
-                    </td>
-                  </tr>
-                </table>
-              </div>
-          </div>
-        </td>
-      </tr>
+                                </table>
+                            </td>
+                        </tr>
+                        </table>
+                    </div>
+                </div>
+            </td>
+        </tr>
     </table>
     <div id='loading' style='display:none;'>$i18n.getText("mailrucal.loading")</div>
     <script type='text/javascript'>
     jQuery(document).ready(function() {
+        #foreach($proj in $usrData)
+        #if($usrPref.isCalendarShadow($proj.getCalId()))
+        jQuery('#$proj.getCalId()').attr('checked', false);
+        #else
+        jQuery('#$proj.getCalId()').attr('checked', true);
+        #end
+        #end
+
         jQuery('#calendar').fullCalendar({
             #if($usrPref && $usrPref.getDefaultView())defaultView: '$usrPref.getDefaultView()',#end
             header: {
@@ -94,7 +98,8 @@
                 createIssue('$baseUrl', date.getTime());
             },
             assignee: '$i18n.getText("mailrucal.assigneeview")',
-            priority: '$i18n.getText("mailrucal.priorityview")'
+            priority: '$i18n.getText("mailrucal.priorityview")',
+            issuestatus: '$i18n.getText("mailrucal.statusview")'
         });
     });
     </script>

@@ -21,6 +21,7 @@ var defaults = {
     // display
     priority: 'Priority',
     assignee: 'Assignee',
+    issuestatus: 'Status',
     defaultView: 'month',
     aspectRatio: 1.35,
     header: {
@@ -3914,8 +3915,9 @@ function AgendaEventRenderer() {
 			"</div>" +
 			"<div class='fc-event-content'>" +
 			"<div class='fc-event-title'>" +
-			"<span class='fc-event-issuekey'>" + event.key + "</span>: " + htmlEscape(event.title) + " (" + opt('assignee') + " - " + event.assignee + ")" +
-			"</div>" +
+            "<span class='fc-event-issuekey'>" + event.key + "</span>: " + htmlEscape(event.title) +
+            " (" + opt('assignee') + " - " + event.assignee + ", " + opt('issuestatus') + " - " + event.status + ")" +
+            "</div>" +
 			"</div>" +
 			"<div class='fc-event-bg'></div>" +
 			"</div>"; // close inner
@@ -3927,8 +3929,7 @@ function AgendaEventRenderer() {
 			"</" + (url ? "a" : "div") + ">";
 		return html;
 	}
-	
-	
+
 	function bindDaySeg(event, eventElement, seg) {
 		if (isEventDraggable(event)) {
 			draggableDayEvent(event, eventElement, seg.isStart);
@@ -4661,9 +4662,10 @@ function DayEventRenderer() {
 					htmlEscape(formatDates(event.start, event.end, opt('timeFormat'))) +
 					"</span>";
 			}
-			html +=
-				"<span class='fc-event-title'>" + "<span class='fc-event-issuekey'>" + event.key + "</span>: " + htmlEscape(event.title) + " (" + opt('assignee') + " - " + event.assignee + ")" + "</span>" +
-				"</div>";
+            html +=
+                "<span class='fc-event-title'>" + "<span class='fc-event-issuekey'>" + event.key + "</span>: " + htmlEscape(event.title) +
+                " (" + opt('assignee') + " - " + event.assignee + ", " + opt('issuestatus') + " - " + event.status + ")" + "</span>" +
+                "</div>";
 			if (seg.isEnd && isEventResizable(event)) {
 				html +=
 					"<div class='ui-resizable-handle ui-resizable-" + (rtl ? 'w' : 'e') + "'>" +

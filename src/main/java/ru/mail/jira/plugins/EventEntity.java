@@ -25,13 +25,21 @@ public class EventEntity
 
     private String start;
 
+    private String status;
+
     private String title;
 
     private String url;
 
-    public String getAssignee() {
-		return assignee;
-	}
+    /**
+     * Constructor.
+     */
+    public EventEntity() {}
+
+    public String getAssignee()
+    {
+        return assignee;
+    }
 
     public String getColor()
     {
@@ -48,16 +56,22 @@ public class EventEntity
         return id;
     }
 
-    public String getKey() {
-		return key;
-	}
+    public String getKey()
+    {
+        return key;
+    }
 
-	public String getStart()
+    public String getStart()
     {
         return start;
     }
 
-	public String getTitle()
+    public String getStatus()
+    {
+        return status;
+    }
+
+    public String getTitle()
     {
         return title;
     }
@@ -72,14 +86,15 @@ public class EventEntity
         return allDay;
     }
 
-    public void setAllDay(boolean allDay)
+	public void setAllDay(boolean allDay)
     {
         this.allDay = allDay;
     }
 
-    public void setAssignee(String assignee) {
-		this.assignee = assignee;
-	}
+    public void setAssignee(String assignee)
+    {
+        this.assignee = assignee;
+    }
 
     public void setColor(String color)
     {
@@ -96,13 +111,19 @@ public class EventEntity
         this.id = id;
     }
 
-    public void setKey(String key) {
-		this.key = key;
-	}
+    public void setKey(String key)
+    {
+        this.key = key;
+    }
 
     public void setStart(String start)
     {
         this.start = start;
+    }
+
+    public void setStatus(String status)
+    {
+        this.status = status;
     }
 
     public void setTitle(String title)
@@ -113,5 +134,14 @@ public class EventEntity
     public void setUrl(String url)
     {
         this.url = url;
+    }
+
+    @Override
+    public String toString()
+    {
+        return "EventEntity[allDay=" + allDay + ", assignee=" + assignee
+            + ", color=" + color + ", end=" + end + ", id=" + id + ", key="
+            + key + ", start=" + start + ", title=" + title + ", url="
+            + url + ", status=" + status + "]";
     }
 }

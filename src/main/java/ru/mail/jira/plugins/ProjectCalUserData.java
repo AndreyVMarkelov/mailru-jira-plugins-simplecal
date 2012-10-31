@@ -21,11 +21,16 @@ public class ProjectCalUserData
     public static final String DATE_POINT_STR = "cdp";
     public static final String DATE_RANGE_STR = "cdr";
 
+    private static final int PROJECT_TYPE = 0;
+    private static final int JCL_TYPE = 1;
+
     public static final String PROJECT_TYPE_STR = "project";
     public static final String JCL_TYPE_STR = "jcl";
 
-    private static final int PROJECT_TYPE = 0;
-    private static final int JCL_TYPE = 1;
+    /**
+     * Calendar ID.
+     */
+    private long calId;
 
     /**
      * Calendar color.
@@ -63,11 +68,6 @@ public class ProjectCalUserData
     private List<String> groups;
 
     /**
-     * Is calendar active?
-     */
-    private boolean isActive;
-
-    /**
      * Calendar name.
      */
     private String name;
@@ -96,6 +96,7 @@ public class ProjectCalUserData
      * Constructor.
      */
     public ProjectCalUserData(
+        long calId,
         String name,
         String descr,
         String color,
@@ -104,12 +105,12 @@ public class ProjectCalUserData
         String fieldType,
         String startPoint,
         String endPoint,
-        boolean isActive,
         String creator,
         List<String> groups,
         List<ProjRole> projRoles,
         long cTime)
     {
+        this.calId = calId;
         this.name = name;
         this.descr = descr;
         this.color = color;
@@ -118,11 +119,15 @@ public class ProjectCalUserData
         setFieldType(fieldType);
         this.startPoint = startPoint;
         this.endPoint = endPoint;
-        this.isActive = isActive;
         this.creator = creator;
         this.groups = groups;
         this.projRoles = projRoles;
         this.cTime = cTime;
+    }
+
+    public long getCalId()
+    {
+        return calId;
     }
 
     public String getColor()
@@ -135,12 +140,7 @@ public class ProjectCalUserData
         return creator;
     }
 
-    public void setType(String type)
-    {
-        this.type = type.equals(PROJECT_TYPE_STR) ? PROJECT_TYPE : JCL_TYPE;
-    }
-
-    public long getcTime()
+    public long getCTime()
     {
         return cTime;
     }
@@ -180,27 +180,6 @@ public class ProjectCalUserData
         return target;
     }
 
-    public void setFieldType(String fieldType)
-    {
-        if (fieldType.equals(IDD_STR))
-        {
-            this.fieldType = IDD;
-        }
-        else if (fieldType.equals(DATE_POINT_STR))
-        {
-            this.fieldType = DATE_POINT;
-        }
-        else
-        {
-            this.fieldType = DATE_RANGE;
-        }
-    }
-
-    public boolean isActive()
-    {
-        return isActive;
-    }
-
     public boolean isDatePoint()
     {
     	return fieldType == DATE_POINT;
@@ -226,11 +205,6 @@ public class ProjectCalUserData
         return type == PROJECT_TYPE;
     }
 
-    public void setActive(boolean isActive)
-    {
-        this.isActive = isActive;
-    }
-
     public void setColor(String color)
     {
         this.color = color;
@@ -244,6 +218,22 @@ public class ProjectCalUserData
     public void setEndPoint(String endPoint)
     {
         this.endPoint = endPoint;
+    }
+
+    public void setFieldType(String fieldType)
+    {
+        if (fieldType.equals(IDD_STR))
+        {
+            this.fieldType = IDD;
+        }
+        else if (fieldType.equals(DATE_POINT_STR))
+        {
+            this.fieldType = DATE_POINT;
+        }
+        else
+        {
+            this.fieldType = DATE_RANGE;
+        }
     }
 
     public void setGroups(List<String> groups)
@@ -271,13 +261,18 @@ public class ProjectCalUserData
         this.target = target;
     }
 
+    public void setType(String type)
+    {
+        this.type = type.equals(PROJECT_TYPE_STR) ? PROJECT_TYPE : JCL_TYPE;
+    }
+
     @Override
     public String toString()
     {
         return "ProjectCalUserData[color=" + color + ", cTime=" + cTime
             + ", descr=" + descr + ", fieldType=" + fieldType + ", name="
             + name + ", target=" + target + ", startPoint=" + startPoint
-            + ", endPoint=" + endPoint + ", type=" + type + ", isActive=" +
-            isActive + ", creator=" + creator + ", projRoles=" + projRoles  + "]";
+            + ", endPoint=" + endPoint + ", type=" + type + ", calId=" +
+            calId + ", creator=" + creator + ", projRoles=" + projRoles  + "]";
     }
 }
