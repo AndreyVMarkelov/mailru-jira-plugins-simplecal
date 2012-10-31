@@ -36,7 +36,9 @@
                                 <tr>
                                     <td>
                                         <input type="checkbox" onclick="changeCalMode('$baseUrl', $proj.getCalId())" id="$proj.getCalId()" name="$proj.getCalId()"/>
-                                        <a href="#" onclick="actMailRuCalendar(event, '$baseUrl', $proj.getCalId())"><span style="color: $proj.getColor();">$proj.getName()</span></a>
+                                        <a href="#" onclick="actMailRuCalendar(event, '$baseUrl', $proj.getCalId())">
+                                            <span #if($usrPref.isUserColor($proj.getCalId()))style="color: $usrPref.getUserColor($proj.getCalId());"#else style="color: $proj.getColor();"#end>$proj.getName()</span>
+                                        </a>
                                         #if(!$proj.getCreator() || $proj.getCreator().equals($user))
                                         <img onclick="deleteMailRuCalendar(event, '$baseUrl', $proj.getCalId());" id="share_trash" height="16px" width="16px" class="shareTrash" src="$baseUrl/images/icons/trash_16.gif" title="Delete Share" alt="Delete Share"/> <input id="share_type_hidden" name="shareValues" type="hidden"/>
                                         #end

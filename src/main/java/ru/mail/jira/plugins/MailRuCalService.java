@@ -404,7 +404,8 @@ public class MailRuCalService
         Date startDate,
         Date endDate,
         String baseUrl,
-        CustomField datePointCf)
+        CustomField datePointCf,
+        String color)
     {
         if (datePointCf != null)
         {
@@ -414,19 +415,7 @@ public class MailRuCalService
                 Timestamp ts = (Timestamp)val;
                 if (ts.after(startDate) && ts.before(endDate))
                 {
-                    EventEntity en= new EventEntity();
-                    en.setId(issue.getKey());
-                    en.setTitle(issue.getSummary());
-                    en.setStart(sdf.format(ts));
-                    en.setColor(pcud.getColor());
-                    en.setAllDay(true);
-                    en.setUrl(baseUrl + "/browse/" + issue.getKey());
-                    en.setKey(issue.getKey());
-                    if (issue.getAssigneeUser() != null)
-                    {
-                        en.setAssignee(issue.getAssigneeUser().getDisplayName());
-                    }
-                    return en;
+                    return createEventEntityObj(issue, baseUrl, color, sdf.format(ts), null);
                 }
             }
         }
@@ -444,7 +433,8 @@ public class MailRuCalService
         Date endDate,
         String baseUrl,
         CustomField startCf,
-        CustomField endCf)
+        CustomField endCf,
+        String color)
     {
         if (startCf != null && endCf != null)
         {
@@ -458,7 +448,7 @@ public class MailRuCalService
                 Timestamp endTs = (Timestamp)endVal;
                 if (endTs.after(startDate) && startTs.before(endDate))
                 {
-                    return createEventEntityObj(issue, baseUrl, pcud.getColor(), sdf.format(startTs), sdf.format(endTs));
+                    return createEventEntityObj(issue, baseUrl, color, sdf.format(startTs), sdf.format(endTs));
                 }
             }
             else if (startVal != null && startVal instanceof Timestamp)
@@ -466,7 +456,7 @@ public class MailRuCalService
                 Timestamp ts = (Timestamp)startVal;
                 if (ts.after(startDate) && ts.before(endDate))
                 {
-                    return createEventEntityObj(issue, baseUrl, pcud.getColor(), sdf.format(ts), null);
+                    return createEventEntityObj(issue, baseUrl, color, sdf.format(ts), null);
                 }
             }
             else if (endVal != null && endVal instanceof Timestamp)
@@ -474,7 +464,7 @@ public class MailRuCalService
                 Timestamp ts = (Timestamp)endVal;
                 if (ts.after(startDate) && ts.before(endDate))
                 {
-                    return createEventEntityObj(issue, baseUrl, pcud.getColor(), sdf.format(ts), null);
+                    return createEventEntityObj(issue, baseUrl, color, sdf.format(ts), null);
                 }
             }
         }
@@ -488,7 +478,7 @@ public class MailRuCalService
                     Timestamp ts = (Timestamp)val;
                     if (ts.after(startDate) && ts.before(endDate))
                     {
-                        return createEventEntityObj(issue, baseUrl, pcud.getColor(), sdf.format(ts), null);
+                        return createEventEntityObj(issue, baseUrl, color, sdf.format(ts), null);
                     }
                 }
             }
@@ -503,13 +493,40 @@ public class MailRuCalService
                     Timestamp ts = (Timestamp)val;
                     if (ts.after(startDate) && ts.before(endDate))
                     {
-                        return createEventEntityObj(issue, baseUrl, pcud.getColor(), sdf.format(ts), null);
+                        return createEventEntityObj(issue, baseUrl, color, sdf.format(ts), null);
                     }
                 }
             }
         }
 
         return null;
+    }
+
+    /**
+     * Create event entity.
+     */
+    private EventEntity createEventEntity(
+        ProjectCalUserData pcud,
+        Issue issue,
+        Date startDate,
+        Date endDate,
+        String baseUrl,
+        CustomField startCf,
+        CustomField endCf,
+        String color)
+    {
+        if (pcud.isIDD())
+        {
+            return createIddEvent(pcud, issue, startDate, endDate, baseUrl, color);
+        }
+        else if (pcud.isDatePoint())
+        {
+            return createDatePointEntity(pcud, issue, startDate, endDate, baseUrl, startCf, color);
+        }
+        else
+        {
+            return createDateRangeEntity(pcud, issue, startDate, endDate, baseUrl, startCf, endCf, color);
+        }
     }
 
     /**
@@ -540,32 +557,6 @@ public class MailRuCalService
     }
 
     /**
-     * Create event entity.
-     */
-    private EventEntity createEventEntity(
-        ProjectCalUserData pcud,
-        Issue issue,
-        Date startDate,
-        Date endDate,
-        String baseUrl,
-        CustomField startCf,
-        CustomField endCf)
-    {
-        if (pcud.isIDD())
-        {
-            return createIddEvent(pcud, issue, startDate, endDate, baseUrl);
-        }
-        else if (pcud.isDatePoint())
-        {
-            return createDatePointEntity(pcud, issue, startDate, endDate, baseUrl, startCf);
-        }
-        else
-        {
-            return createDateRangeEntity(pcud, issue, startDate, endDate, baseUrl, startCf, endCf);
-        }
-    }
-
-    /**
      * Create "Issue Due Date" entity.
      */
     private EventEntity createIddEvent(
@@ -573,12 +564,13 @@ public class MailRuCalService
         Issue issue,
         Date startDate,
         Date endDate,
-        String baseUrl)
+        String baseUrl,
+        String color)
     {
         Timestamp dueDate = issue.getDueDate();
         if (dueDate != null && dueDate.after(startDate) && dueDate.before(endDate))
         {
-            return createEventEntityObj(issue, baseUrl, pcud.getColor(), sdf.format(dueDate), null);
+            return createEventEntityObj(issue, baseUrl, color, sdf.format(dueDate), null);
         }
 
         return null;
@@ -674,6 +666,13 @@ public class MailRuCalService
                 continue;
             }
 
+            //--> set user color
+            String color = pcud.getColor();
+            if (userPref.isUserColor(pcud.getCalId()))
+            {
+                color = userPref.getUserColor(pcud.getCalId());
+            }
+
             Long id;
             try
             {
@@ -687,11 +686,11 @@ public class MailRuCalService
             List<EventEntity> localeventObjs = null;
             if (pcud.isProjectType())
             {
-                localeventObjs = getProjectIssues(id, user, startDate, endDate, pcud, Utils.getBaseUrl(request));
+                localeventObjs = getProjectIssues(id, user, startDate, endDate, pcud, Utils.getBaseUrl(request), color);
             }
             else
             {
-                localeventObjs = getJclIssues(id, user, startDate, endDate, pcud, Utils.getBaseUrl(request));
+                localeventObjs = getJclIssues(id, user, startDate, endDate, pcud, Utils.getBaseUrl(request), color);
             }
 
             if (localeventObjs != null && !localeventObjs.isEmpty())
@@ -716,7 +715,8 @@ public class MailRuCalService
         Date startDate,
         Date endDate,
         ProjectCalUserData pcud,
-        String baseUrl)
+        String baseUrl,
+        String color)
     throws SearchException
     {
         SearchRequest search = getSearchRequest(fltId, user);
@@ -796,7 +796,7 @@ public class MailRuCalService
                 start += issues.size();
                 for (Issue issue : issues)
                 {
-                    EventEntity entity = createEventEntity(pcud, issue, startDate, endDate, baseUrl, startCf, endCf);
+                    EventEntity entity = createEventEntity(pcud, issue, startDate, endDate, baseUrl, startCf, endCf, color);
                     if (entity != null)
                     {
                         entities.add(entity);
@@ -827,7 +827,8 @@ public class MailRuCalService
         Date startDate,
         Date endDate,
         ProjectCalUserData pcud,
-        String baseUrl)
+        String baseUrl,
+        String color)
     throws SearchException
     {
         List<EventEntity> entities = new ArrayList<EventEntity>();
@@ -904,7 +905,7 @@ public class MailRuCalService
             start += issues.size();
             for (Issue issue : issues)
             {
-                EventEntity entity = createEventEntity(pcud, issue, startDate, endDate, baseUrl, startCf, endCf);
+                EventEntity entity = createEventEntity(pcud, issue, startDate, endDate, baseUrl, startCf, endCf, color);
                 if (entity != null)
                 {
                     entities.add(entity);
@@ -1135,6 +1136,20 @@ public class MailRuCalService
             params.put("createtime", authCtx.getOutlookDate().format(new Date(pcud.getCalId())));
             params.put("creator", Utils.getDisplayUser(userUtil, pcud.getCreator()));
             params.put("allGroups", groupMgr.getGroupsForUser(user.getName()));
+
+            //--> set user color
+            UserCalPref userPref = mailCfg.getUserCalPref(user.getName());
+            if (userPref == null)
+            {
+                userPref = new UserCalPref();
+            }
+            String color = pcud.getColor();
+            if (userPref.isUserColor(pcud.getCalId()))
+            {
+                color = userPref.getUserColor(pcud.getCalId());
+            }
+            params.put("usercolor", color);
+
             if (pcud.getCreator() != null && pcud.getCreator().equals(user.getName()))
             {
                 params.put("isOwner", pcud.getCreator().equals(user.getName()));
@@ -1477,9 +1492,13 @@ public class MailRuCalService
             }
             else
             {
-                pcud.setDescr(descr);
-                pcud.setColor(color);
-                mailCfg.storeProjectCalUserData(pcud);
+                UserCalPref userPref = mailCfg.getUserCalPref(user.getName());
+                if (userPref == null)
+                {
+                    userPref = new UserCalPref();
+                }
+                userPref.storeUserColor(pcud.getCalId(), color);
+                mailCfg.putUserCalPref(user.getName(), userPref);
             }
         }
 

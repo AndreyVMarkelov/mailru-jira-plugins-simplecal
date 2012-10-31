@@ -4,7 +4,9 @@
  */
 package ru.mail.jira.plugins;
 
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -15,6 +17,11 @@ import java.util.Set;
  */
 public class UserCalPref
 {
+    /**
+     * User colors for calendars.
+     */
+    private Map<Long, String> colors;
+
     /**
      * Default view screen.
      */
@@ -43,6 +50,14 @@ public class UserCalPref
     }
 
     /**
+     * Get user colors.
+     */
+    public Map<Long, String> getColors()
+    {
+        return colors;
+    }
+
+    /**
      * Get default calendar view: week, month or day.
      */
     public String getDefaultView()
@@ -59,6 +74,14 @@ public class UserCalPref
     }
 
     /**
+     * Get user color for calendar.
+     */
+    public String getUserColor(Long calId)
+    {
+        return colors.get(calId);
+    }
+
+    /**
      * Check if calendar is hide for user.
      */
     public boolean isCalendarShadow(Long calId)
@@ -71,6 +94,18 @@ public class UserCalPref
     }
 
     /**
+     * Is user color for calendar?
+     */
+    public boolean isUserColor(Long calId)
+    {
+        if (colors == null)
+        {
+            return false;
+        }
+        return colors.containsKey(calId);
+    }
+
+    /**
      * Show calendar.
      */
     public void removeshadowCalendar(Long calId)
@@ -80,6 +115,14 @@ public class UserCalPref
             return;
         }
         shadowCalendars.remove(calId);
+    }
+
+    /**
+     * Set user colors.
+     */
+    public void setColors(Map<Long, String> colors)
+    {
+        this.colors = colors;
     }
 
     /**
@@ -98,9 +141,22 @@ public class UserCalPref
         this.shadowCalendars = shadowCalendars;
     }
 
+    /**
+     * Add user color for calendar.
+     */
+    public void storeUserColor(Long calId, String color)
+    {
+        if (colors == null)
+        {
+            colors = new HashMap<Long, String>();
+        }
+        colors.put(calId, color);
+    }
+
     @Override
     public String toString()
     {
-        return "UserCalPref[defaultView=" + defaultView + ", shadowCalendars=" + shadowCalendars + "]";
+        return "UserCalPref[defaultView=" + defaultView + ", shadowCalendars=" +
+            shadowCalendars + ", colors=" + colors + "]";
     }
 }

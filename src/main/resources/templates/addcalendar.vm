@@ -48,14 +48,24 @@
                       <tr>
                         <td valign="top">
             <select id="calcolor" name="calcolor" style="background-color: #efe381; color: white;" onchange="changeColor();" onkeydown="changeColor();" onkeyup="changeColor();">
-                <option style="background-color: #efe381;" value="#efe381">Yellow</option>
-                <option style="background-color: #008B8B;" value="#008B8B">Dark Cyan</option>
-                <option style="background-color: #f4a36d;" value="#f4a36d">Orange</option>
-                <option style="background-color: #696969;" value="#696969">Dim Gray</option>
-                <option style="background-color: #FFD700;" value="#FFD700">Gold</option>
-                <option style="background-color: #FF0000;" value="#FF0000">Red</option>
-                <option style="background-color: #0000FF;" value="#0000FF">Blue</option>
-                <option style="background-color: #FFC0CB;" value="#FFC0CB">Pink</option>
+                <option value="#808080" style="background-color: Gray;">Gray</option>
+                <option value="#A9A9A9" style="background-color: DarkGray;">DarkGray</option>
+                <option value="#D3D3D3" style="background-color: LightGrey;">LightGray</option>
+                <option value="#7FFFD4" style="background-color: Aquamarine;">Aquamarine</option>
+                <option value="#0000FF" style="background-color: Blue;">Blue</option>
+                <option value="#800080" style="background-color: Purple;color: #FFFFFF;">Purple</option>
+                <option value="#FF1493" style="background-color: DeepPink;">DeepPink</option>
+                <option value="#EE82EE" style="background-color: Violet;">Violet</option>
+                <option value="#FFC0CB" style="background-color: Pink;">Pink</option>
+                <option value="#006400" style="background-color: DarkGreen;color: #FFFFFF;">DarkGreen</option>
+                <option value="#008000" style="background-color: Green;color: #FFFFFF;">Green</option>
+                <option value="#9ACD32" style="background-color: YellowGreen;">YellowGreen</option>
+                <option value="#FFFF00" style="background-color: Yellow;">Yellow</option>
+                <option value="#FFA500" style="background-color: Orange;">Orange</option>
+                <option value="#FF0000" style="background-color: Red;">Red</option>
+                <option value="#A52A2A" style="background-color: Brown;">Brown</option>
+                <option value="#DEB887" style="background-color: BurlyWood;">BurlyWood</option>
+                <option value="#F5F5DC" style="background-color: Beige;">Beige</option>
             </select>
             </td>
                       </tr>

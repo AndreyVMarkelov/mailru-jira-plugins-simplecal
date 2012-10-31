@@ -6,24 +6,34 @@
   <table class="dlginfotable">
     <tr>
       <td class="dlgtablekey"><label for="calname">$i18n.getText("mailrucal.calname")*</label></td>
-      <td valign="top"><input #if(!$isOwner)disabled="disabled"#end type="text" value="$pcud.getName()" id="calname" name="calname"/></td>
+      <td valign="top"><input #if(!$isOwner)readonly="readonly"#end type="text" value="$pcud.getName()" id="calname" name="calname"/></td>
     </tr>
     <tr>
         <td class="dlgtablekey"><label for="caldescr">$i18n.getText("mailrucal.caldescr")</label></td>
-        <td valign="top"><textarea rows="3" cols="30" id="caldescr" name="caldescr">$pcud.getDescr()</textarea></td>
+        <td valign="top"><textarea #if(!$isOwner)readonly="readonly"#end rows="3" cols="30" id="caldescr" name="caldescr">$pcud.getDescr()</textarea></td>
     </tr>
     <tr>
         <td class="dlgtablekey"><label for="calcolor">$i18n.getText("mailrucal.calcolor")*</label></td>
         <td valign="top">
-            <select id="calcolor" name="calcolor" style="background-color: $pcud.getColor(); color: white;" onchange="changeColor();" onkeydown="changeColor();" onkeyup="changeColor();">
-                <option #if($pcud.getColor() == "#efe381")selected#end style="background-color: #efe381;" value="#efe381">Yellow</option>
-                <option #if($pcud.getColor() == "#008B8B")selected#end style="background-color: #008B8B;" value="#008B8B">Dark Cyan</option>
-                <option #if($pcud.getColor() == "#f4a36d")selected#end style="background-color: #f4a36d;" value="#f4a36d">Orange</option>
-                <option #if($pcud.getColor() == "#696969")selected#end style="background-color: #696969;" value="#696969">Dim Gray</option>
-                <option #if($pcud.getColor() == "#FFD700")selected#end style="background-color: #FFD700;" value="#FFD700">Gold</option>
-                <option #if($pcud.getColor() == "#FF0000")selected#end style="background-color: #FF0000;" value="#FF0000">Red</option>
-                <option #if($pcud.getColor() == "#0000FF")selected#end style="background-color: #0000FF;" value="#0000FF">Blue</option>
-                <option #if($pcud.getColor() == "#FFC0CB")selected#end style="background-color: #FFC0CB;" value="#FFC0CB">Pink</option>
+            <select id="calcolor" name="calcolor" style="background-color: $usercolor; color: white;" onchange="changeColor();" onkeydown="changeColor();" onkeyup="changeColor();">
+                <option #if($usercolor == "#808080")selected#end value="#808080" style="background-color: Gray;">Gray</option>
+                <option #if($usercolor == "#A9A9A9")selected#end value="#A9A9A9" style="background-color: DarkGray;">DarkGray</option>
+                <option #if($usercolor == "#D3D3D3")selected#end value="#D3D3D3" style="background-color: LightGrey;">LightGray</option>
+                <option #if($usercolor == "#7FFFD4")selected#end value="#7FFFD4" style="background-color: Aquamarine;">Aquamarine</option>
+                <option #if($usercolor == "#0000FF")selected#end value="#0000FF" style="background-color: Blue;">Blue</option>
+                <option #if($usercolor == "#800080")selected#end value="#800080" style="background-color: Purple;color: #FFFFFF;">Purple</option>
+                <option #if($usercolor == "#FF1493")selected#end value="#FF1493" style="background-color: DeepPink;">DeepPink</option>
+                <option #if($usercolor == "#EE82EE")selected#end value="#EE82EE" style="background-color: Violet;">Violet</option>
+                <option #if($usercolor == "#FFC0CB")selected#end value="#FFC0CB" style="background-color: Pink;">Pink</option>
+                <option #if($usercolor == "#006400")selected#end value="#006400" style="background-color: DarkGreen;color: #FFFFFF;">DarkGreen</option>
+                <option #if($usercolor == "#008000")selected#end value="#008000" style="background-color: Green;color: #FFFFFF;">Green</option>
+                <option #if($usercolor == "#9ACD32")selected#end value="#9ACD32" style="background-color: YellowGreen;">YellowGreen</option>
+                <option #if($usercolor == "#FFFF00")selected#end value="#FFFF00" style="background-color: Yellow;">Yellow</option>
+                <option #if($usercolor == "#FFA500")selected#end value="#FFA500" style="background-color: Orange;">Orange</option>
+                <option #if($usercolor == "#FF0000")selected#end value="#FF0000" style="background-color: Red;">Red</option>
+                <option #if($usercolor == "#A52A2A")selected#end value="#A52A2A" style="background-color: Brown;">Brown</option>
+                <option #if($usercolor == "#DEB887")selected#end value="#DEB887" style="background-color: BurlyWood;">BurlyWood</option>
+                <option #if($usercolor == "#F5F5DC")selected#end value="#F5F5DC" style="background-color: Beige;">Beige</option>
             </select>
         </td>
     </tr>
