@@ -1,8 +1,6 @@
 // Created by Andrey Markelov 29-08-2012.
 // Copyright Mail.Ru Group 2012. All rights reserved.
 
-AJS.InlineDialog(AJS.$("#popupLink"), 1, "templates/inline-dialog-content.html");
-
 jQuery(document).ready(function () {
     jQuery(document).ajaxStart(function () { showProgress() }).ajaxStop(function () { hideProgress() });
 });
@@ -68,7 +66,11 @@ function initAddCal(baseUrl)
         dataType: "json",
         async: false,
         error: function(xhr, ajaxOptions, thrownError) {
-            alert(xhr.responseText);
+            if (xhr.responseText) {
+                alert(xhr.responseText);
+            } else {
+                alert("Internal error");
+            }
         },
         success: function(result) {
             res = result.html;
@@ -88,7 +90,11 @@ function initCreateIssue(baseUrl, date)
         data: {"date": date},
         async: false,
         error: function(xhr, ajaxOptions, thrownError) {
-            alert(xhr.responseText);
+            if (xhr.responseText) {
+                alert(xhr.responseText);
+            } else {
+                alert("Internal error");
+            }
         },
         success: function(result) {
             res = result.html;
@@ -108,7 +114,11 @@ function changeCalMode(baseUrl, ctime) {
         async: false,
         data: {"mode": mode, "ctime": ctime},
         error: function(xhr, ajaxOptions, thrownError) {
-            alert(xhr.responseText);
+            if (xhr.responseText) {
+                alert(xhr.responseText);
+            } else {
+                alert("Internal error");
+            }
         },
         success: function(result) {
             AJS.$('#calendar').fullCalendar('refetchEvents');
@@ -125,7 +135,11 @@ function deleteMailRuCalendar(event, baseUrl, ctime) {
             async: false,
             data: {"calctime": ctime},
             error: function(xhr, ajaxOptions, thrownError) {
-                alert(xhr.responseText);
+                if (xhr.responseText) {
+                    alert(xhr.responseText);
+                } else {
+                    alert("Internal error");
+                }
             },
             success: function(result) {
                 window.location.reload();
@@ -264,7 +278,11 @@ function initInfoCal(baseUrl, ctime)
         async: false,
         data: {"ctime": ctime},
         error: function(xhr, ajaxOptions, thrownError) {
-            alert(xhr.responseText);
+            if (xhr.responseText) {
+                alert(xhr.responseText);
+            } else {
+                alert("Internal error");
+            }
         },
         success: function(result) {
             res = result.html;
@@ -318,7 +336,11 @@ function setUserPrefView(baseUrl, view) {
         dataType: "json",
         data: {"view": view},
         error: function(xhr, ajaxOptions, thrownError) {
-            alert(xhr.responseText);
+            if (xhr.responseText) {
+                alert(xhr.responseText);
+            } else {
+                alert("Internal error");
+            }
         }
     });
 }

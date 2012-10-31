@@ -84,6 +84,7 @@ label.checkbox {
     width: 200px;
     height: 60px;
     display: table;
+    z-index: 50;
 }
 
 .progress_p {

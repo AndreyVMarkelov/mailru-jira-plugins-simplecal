@@ -358,7 +358,7 @@ public class MailRuCalService
         String mode = request.getParameter("mode");
 
         //--> checks
-        if (!Utils.isStr(mode))
+        if (!Utils.isStr(ctimestr))
         {
             log.error("MailRuCalService::changeCalendarMode - Required parameters are not set");
             return Response.status(500).build();
@@ -381,13 +381,14 @@ public class MailRuCalService
             userPref = new UserCalPref();
         }
 
-        if (!Boolean.parseBoolean(mode))
+        if (Utils.isStr(mode) &&
+            (Boolean.parseBoolean(mode) || mode.equalsIgnoreCase("checked")))
         {
-            userPref.addshadowCalendar(ctime);
+            userPref.removeshadowCalendar(ctime);
         }
         else
         {
-            userPref.removeshadowCalendar(ctime);
+            userPref.addshadowCalendar(ctime);
         }
         mailCfg.putUserCalPref(user.getName(), userPref);
 

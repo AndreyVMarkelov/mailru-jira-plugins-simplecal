@@ -167,7 +167,7 @@ public class MailRuCalCfgImpl
      */
     private String prefKey(String user)
     {
-        return (user + ".pref");
+        return (user + ".userpref");
     }
 
     @Override

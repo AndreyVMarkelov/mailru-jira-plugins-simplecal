@@ -1,7 +1,7 @@
 ## Created by Andrey Markelov 29-08-2012.
 ## Copyright Mail.Ru Group 2012. All rights reserved.
 <form id="deletecalform" name="deletecalform" action="${baseUrl}/rest/mailrucalws/1.0/mailcalsrv/updatecalendar" method="post">
-  <input type="hidden" value="$pcud.getcTime()" id="calctime" name="calctime"/>
+  <input type="hidden" value="$pcud.getCalId()" id="calctime" name="calctime"/>
   <input type="hidden" value="$pcud.getName()" id="origcalname" name="origcalname"/>
   <table class="dlginfotable">
     <tr>
