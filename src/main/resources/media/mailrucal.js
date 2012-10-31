@@ -28,8 +28,8 @@ function addMailRuCalendar(event, baseUrl) {
     }
 
     var md = new AJS.Dialog({
-        width:740,
-        height:560,
+        width:700,
+        height:520,
         id:"add_calendar_dialog",
         closeOnOutsideClick: true
     });
@@ -247,8 +247,8 @@ function actMailRuCalendar(event, baseUrl, ctime) {
     }
 
     var md = new AJS.Dialog({
-        width:680,
-        height:560,
+        width:700,
+        height:520,
         id:"info_calendar_dialog",
         closeOnOutsideClick: true
     });

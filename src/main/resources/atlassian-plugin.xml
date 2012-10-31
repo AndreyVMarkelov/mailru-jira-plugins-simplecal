@@ -3,6 +3,10 @@
         <description>${project.description}</description>
         <version>${project.version}</version>
         <vendor name="Mail.Ru Group" url="http://www.mail.ru/" />
+        <param name="plugin-logo">/media/mcal.png</param>
+        <param name="plugin-icon">/media/mcal.png</param>
+        <param name="vendor-icon">/media/icon.png</param>
+        <param name="vendor-logo">/media/logo.png</param>
     </plugin-info>
 
     <!-- Resources -->
