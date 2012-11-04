@@ -31,21 +31,21 @@ var defaults = {
     },
     weekends: true,
 
-	// editing
-	//editable: false,
-	//disableDragging: false,
-	//disableResizing: false,
-	
-	allDayDefault: true,
-	ignoreTimezone: true,
-	
-	// event ajax
-	lazyFetching: true,
-	startParam: 'start',
-	endParam: 'end',
-	
-	// time formats
-	titleFormat: {
+    // editing
+    //editable: false,
+    //disableDragging: false,
+    //disableResizing: false,
+
+    allDayDefault: true,
+    ignoreTimezone: true,
+
+    // event ajax
+    lazyFetching: false,
+    startParam: 'start',
+    endParam: 'end',
+
+    // time formats
+    titleFormat: {
 		month: 'MMMM yyyy',
 		week: "MMM d[ yyyy]{ '&#8212;'[ MMM] d yyyy}",
 		day: 'dddd, MMM d, yyyy'
@@ -363,43 +363,41 @@ function Calendar(element, options, eventSources) {
 			ignoreWindowResize--;
 		}
 	}
-	
-	
-	
-	function renderView(inc) {
-		if (elementVisible()) {
-			ignoreWindowResize++; // because renderEvents might temporarily change the height before setSize is reached
 
-			unselect();
-			
-			if (suggestedViewHeight === undefined) {
-				calcSize();
-			}
-			
-			var forceEventRender = false;
-			if (!currentView.start || inc || date < currentView.start || date >= currentView.end) {
-				// view must render an entire new date range (and refetch/render events)
-				currentView.render(date, inc || 0); // responsible for clearing events
-				setSize(true);
-				forceEventRender = true;
-			}
-			else if (currentView.sizeDirty) {
-				// view must resize (and rerender events)
-				currentView.clearEvents();
-				setSize();
-				forceEventRender = true;
-			}
-			else if (currentView.eventsDirty) {
-				currentView.clearEvents();
-				forceEventRender = true;
-			}
-			currentView.sizeDirty = false;
-			currentView.eventsDirty = false;
-			updateEvents(forceEventRender);
-			
-			elementOuterWidth = element.outerWidth();
-			
-			header.updateTitle(currentView.title);
+    function renderView(inc) {
+        if (elementVisible()) {
+            ignoreWindowResize++; // because renderEvents might temporarily change the height before setSize is reached
+
+            unselect();
+
+            if (suggestedViewHeight === undefined) {
+                calcSize();
+            }
+
+            var forceEventRender = false;
+            if (!currentView.start || inc || date < currentView.start || date >= currentView.end) {
+                // view must render an entire new date range (and refetch/render events)
+                currentView.render(date, inc || 0); // responsible for clearing events
+                setSize(true);
+                forceEventRender = true;
+            }
+            else if (currentView.sizeDirty) {
+                // view must resize (and rerender events)
+                currentView.clearEvents();
+                setSize();
+                forceEventRender = true;
+            }
+            else if (currentView.eventsDirty) {
+                currentView.clearEvents();
+                forceEventRender = true;
+            }
+            currentView.sizeDirty = false;
+            currentView.eventsDirty = false;
+            updateEvents(forceEventRender);
+
+            elementOuterWidth = element.outerWidth();
+
+            header.updateTitle(currentView.title);
 			var today = new Date();
 			if (today >= currentView.start && today < currentView.end) {
 				header.disableButton('today');
@@ -486,26 +484,24 @@ function Calendar(element, options, eventSources) {
 	
 	
 	
-	/* Event Fetching/Rendering
-	-----------------------------------------------------------------------------*/
-	
-	
-	// fetches events if necessary, rerenders events if necessary (or if forced)
-	function updateEvents(forceRender) {
-		if (!options.lazyFetching || isFetchNeeded(currentView.visStart, currentView.visEnd)) {
-			refetchEvents();
-		}
-		else if (forceRender) {
-			rerenderEvents();
-		}
-	}
-	
-	
-	function refetchEvents() {
-		fetchEvents(currentView.visStart, currentView.visEnd); // will call reportEvents
-	}
-	
-	
+    /* Event Fetching/Rendering
+     * -----------------------------------------------------------------------------
+     */
+
+    // fetches events if necessary, rerenders events if necessary (or if forced)
+    function updateEvents(forceRender) {
+        if (!options.lazyFetching || isFetchNeeded(currentView.visStart, currentView.visEnd)) {
+            refetchEvents();
+        }
+        else if (forceRender) {
+            rerenderEvents();
+        }
+    }
+
+    function refetchEvents() {
+        fetchEvents(currentView.visStart, currentView.visEnd); // will call reportEvents
+    }
+
 	// called when event data arrives
 	function reportEvents(_events) {
 		events = _events;
@@ -595,9 +591,8 @@ function Calendar(element, options, eventSources) {
 		}
 		renderView();
 	}
-	
-	
-	function incrementDate(years, months, days) {
+
+    function incrementDate(years, months, days) {
 		if (years !== undefined) {
 			addYears(date, years);
 		}

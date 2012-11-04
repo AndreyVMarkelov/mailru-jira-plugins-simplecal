@@ -413,7 +413,7 @@ public class MailRuCalService
             if (val != null && val instanceof Timestamp)
             {
                 Timestamp ts = (Timestamp)val;
-                if (ts.after(startDate) && ts.before(endDate))
+                if (ts.compareTo(startDate) >= 0 && ts.compareTo(endDate) <= 0)
                 {
                     return createEventEntityObj(issue, baseUrl, color, sdf.format(ts), null);
                 }
@@ -446,7 +446,7 @@ public class MailRuCalService
             {
                 Timestamp startTs = (Timestamp)startVal;
                 Timestamp endTs = (Timestamp)endVal;
-                if (endTs.after(startDate) && startTs.before(endDate))
+                if (endTs.compareTo(startDate) >= 0 && startTs.compareTo(endDate) <= 0)
                 {
                     return createEventEntityObj(issue, baseUrl, color, sdf.format(startTs), sdf.format(endTs));
                 }
@@ -454,7 +454,7 @@ public class MailRuCalService
             else if (startVal != null && startVal instanceof Timestamp)
             {
                 Timestamp ts = (Timestamp)startVal;
-                if (ts.after(startDate) && ts.before(endDate))
+                if (ts.compareTo(startDate) >= 0 && ts.compareTo(endDate) <= 0)
                 {
                     return createEventEntityObj(issue, baseUrl, color, sdf.format(ts), null);
                 }
@@ -462,7 +462,7 @@ public class MailRuCalService
             else if (endVal != null && endVal instanceof Timestamp)
             {
                 Timestamp ts = (Timestamp)endVal;
-                if (ts.after(startDate) && ts.before(endDate))
+                if (ts.compareTo(startDate) >= 0 && ts.compareTo(endDate) <= 0)
                 {
                     return createEventEntityObj(issue, baseUrl, color, sdf.format(ts), null);
                 }
@@ -476,7 +476,7 @@ public class MailRuCalService
                 if (val != null && val instanceof Timestamp)
                 {
                     Timestamp ts = (Timestamp)val;
-                    if (ts.after(startDate) && ts.before(endDate))
+                    if (ts.compareTo(startDate) >= 0 && ts.compareTo(endDate) <= 0)
                     {
                         return createEventEntityObj(issue, baseUrl, color, sdf.format(ts), null);
                     }
@@ -491,7 +491,7 @@ public class MailRuCalService
                 if (val != null && val instanceof Timestamp)
                 {
                     Timestamp ts = (Timestamp)val;
-                    if (ts.after(startDate) && ts.before(endDate))
+                    if (ts.compareTo(startDate) >= 0 && ts.compareTo(endDate) <= 0)
                     {
                         return createEventEntityObj(issue, baseUrl, color, sdf.format(ts), null);
                     }
@@ -568,7 +568,7 @@ public class MailRuCalService
         String color)
     {
         Timestamp dueDate = issue.getDueDate();
-        if (dueDate != null && dueDate.after(startDate) && dueDate.before(endDate))
+        if (dueDate != null && dueDate.compareTo(startDate) >= 0 && dueDate.compareTo(endDate) <= 0)
         {
             return createEventEntityObj(issue, baseUrl, color, sdf.format(dueDate), null);
         }
