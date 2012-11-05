@@ -16,6 +16,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.GET;
@@ -34,18 +35,21 @@ import com.atlassian.jira.ComponentManager;
 import com.atlassian.jira.bc.JiraServiceContext;
 import com.atlassian.jira.bc.JiraServiceContextImpl;
 import com.atlassian.jira.bc.filter.SearchRequestService;
+import com.atlassian.jira.bc.project.component.ProjectComponent;
 import com.atlassian.jira.component.ComponentAccessor;
 import com.atlassian.jira.issue.CustomFieldManager;
 import com.atlassian.jira.issue.Issue;
 import com.atlassian.jira.issue.fields.CustomField;
 import com.atlassian.jira.issue.fields.config.manager.IssueTypeSchemeManager;
 import com.atlassian.jira.issue.issuetype.IssueType;
+import com.atlassian.jira.issue.label.Label;
 import com.atlassian.jira.issue.search.SearchException;
 import com.atlassian.jira.issue.search.SearchRequest;
 import com.atlassian.jira.jql.builder.JqlClauseBuilder;
 import com.atlassian.jira.jql.builder.JqlQueryBuilder;
 import com.atlassian.jira.project.Project;
 import com.atlassian.jira.project.ProjectManager;
+import com.atlassian.jira.project.version.Version;
 import com.atlassian.jira.security.JiraAuthenticationContext;
 import com.atlassian.jira.security.PermissionManager;
 import com.atlassian.jira.security.Permissions;
@@ -541,18 +545,106 @@ public class MailRuCalService
     {
         EventEntity en= new EventEntity();
         en.setId(issue.getKey());
+        //--> summary
         en.setTitle(issue.getSummary());
         en.setStart(start);
         en.setEnd(end);
         en.setColor(color);
         en.setAllDay(true);
         en.setUrl(baseUrl + "/browse/" + issue.getKey());
+        //--> key
         en.setKey(issue.getKey());
+        //--> status
         en.setStatus(issue.getStatusObject().getName());
+        //--> assignee
         if (issue.getAssigneeUser() != null)
         {
             en.setAssignee(issue.getAssigneeUser().getDisplayName());
         }
+        //--> reporter
+        if (issue.getReporterUser() != null)
+        {
+            en.setReporter(issue.getReporterUser().getDisplayName());
+        }
+        //--> custom fields
+        List<CustomField> cfs = cfMgr.getCustomFieldObjects(issue);
+        if (cfs != null && !cfs.isEmpty())
+        {
+            Map<String, String> cfMap = new HashMap<String, String>();
+            for (CustomField cf : cfs)
+            {
+                Object cfVal = cf.getValue(issue);
+                if (cfVal != null)
+                cfMap.put(cf.getName(), cfVal.toString());
+            }
+            en.setCustomFields(cfMap);
+        }
+        //--> labels
+        Set<Label> labels = issue.getLabels();
+        if (labels != null && !labels.isEmpty())
+        {
+            List<String> labelList = new ArrayList<String>();
+            for (Label label : labels)
+            {
+                labelList.add(label.getLabel());
+            }
+            en.setLabels(labelList);
+        }
+        //--> components
+        Collection<ProjectComponent> comps = issue.getComponentObjects();
+        if (comps != null && !comps.isEmpty())
+        {
+            List<String> pcs = new ArrayList<String>();
+            for (ProjectComponent pc : comps)
+            {
+                pcs.add(pc.getName());
+            }
+            en.setComponents(pcs);
+        }
+        //--> due
+        if (issue.getDueDate() != null)
+        {
+            en.setDue(issue.getDueDate().toString());
+        }
+        //--> environment
+        en.setEnvironment(issue.getEnvironment());
+        //--> priority
+        if (issue.getPriorityObject() != null)
+        {
+            en.setPriority(issue.getPriorityObject().getName());
+        }
+        //--> resolution
+        if (issue.getResolutionObject() != null)
+        {
+            en.setResolution(issue.getResolutionObject().getName());
+        }
+        //--> affect versions
+        Collection<Version> vers = issue.getAffectedVersions();
+        if (vers != null && !vers.isEmpty())
+        {
+            List<String> versList = new ArrayList<String>();
+            for (Version ver : vers)
+            {
+                versList.add(ver.getName());
+            }
+            en.setAffectVersions(versList);
+        }
+        //--> fix versions
+        vers = issue.getFixVersions();
+        if (vers != null && !vers.isEmpty())
+        {
+            List<String> versList = new ArrayList<String>();
+            for (Version ver : vers)
+            {
+                versList.add(ver.getName());
+            }
+            en.setFixVersions(versList);
+        }
+        //--> created
+        en.setCreated(issue.getCreated().toString());
+        //--> updated
+        en.setUpdated(issue.getUpdated().toString());
+
         return en;
     }
 

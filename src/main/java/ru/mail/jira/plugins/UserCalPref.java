@@ -28,6 +28,11 @@ public class UserCalPref
     private String defaultView;
 
     /**
+     * Fields.
+     */
+    private Set<String> fields;
+
+    /**
      * Hide calendars.
      */
     private Set<Long> shadowCalendars;
@@ -63,6 +68,11 @@ public class UserCalPref
     public String getDefaultView()
     {
         return defaultView;
+    }
+
+    public Set<String> getFields()
+    {
+        return fields;
     }
 
     /**
@@ -133,6 +143,11 @@ public class UserCalPref
         this.defaultView = defaultView;
     }
 
+    public void setFields(Set<String> fields)
+    {
+        this.fields = fields;
+    }
+
     /**
      * Set hide calendars.
      */
@@ -156,7 +171,7 @@ public class UserCalPref
     @Override
     public String toString()
     {
-        return "UserCalPref[defaultView=" + defaultView + ", shadowCalendars=" +
-            shadowCalendars + ", colors=" + colors + "]";
+        return "UserCalPref [colors=" + colors + ", defaultView=" + defaultView
+            + ", fields=" + fields + ", shadowCalendars=" + shadowCalendars + "]";
     }
 }
