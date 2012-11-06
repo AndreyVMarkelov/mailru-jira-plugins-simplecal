@@ -14,7 +14,7 @@
  * Date: Mon Feb 6 22:40:40 2012 -0800
  *
  */
- 
+
 (function($, undefined) {
 
 var defaults = {
@@ -46,49 +46,48 @@ var defaults = {
 
     // time formats
     titleFormat: {
-		month: 'MMMM yyyy',
-		week: "MMM d[ yyyy]{ '&#8212;'[ MMM] d yyyy}",
-		day: 'dddd, MMM d, yyyy'
-	},
-	columnFormat: {
-		month: 'ddd',
-		week: 'ddd M/d',
-		day: 'dddd M/d'
-	},
-	timeFormat: { // for event elements
-		'': 'h(:mm)t' // default
-	},
-	
-	// locale
-	isRTL: false,
-	firstDay: 0,
-	monthNames: ['January','February','March','April','May','June','July','August','September','October','November','December'],
-	monthNamesShort: ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],
-	dayNames: ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'],
-	dayNamesShort: ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'],
-	buttonText: {
-		prev: '&nbsp;&#9668;&nbsp;',
-		next: '&nbsp;&#9658;&nbsp;',
-		prevYear: '&nbsp;&lt;&lt;&nbsp;',
-		nextYear: '&nbsp;&gt;&gt;&nbsp;',
-		today: 'today',
-		month: 'month',
-		week: 'week',
-		day: 'day'
-	},
-	
-	// jquery-ui theming
-	theme: false,
-	buttonIcons: {
-		prev: 'circle-triangle-w',
-		next: 'circle-triangle-e'
-	},
-	
-	//selectable: false,
-	unselectAuto: true,
-	
-	dropAccept: '*'
-	
+        month: 'MMMM yyyy',
+        week: "MMMM d[ yyyy]{ '&#8212;'[ MMM] d yyyy}",
+        day: 'dddd, MMMM d, yyyy'
+    },
+    columnFormat: {
+        month: 'ddd',
+        week: 'ddd M/d',
+        day: 'dddd M/d'
+    },
+    timeFormat: { // for event elements
+        '': 'h(:mm)t' // default
+    },
+
+    // locale
+    isRTL: false,
+    firstDay: 0,
+    monthNames: ['January','February','March','April','May','June','July','August','September','October','November','December'],
+    monthNamesShort: ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],
+    dayNames: ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'],
+    dayNamesShort: ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'],
+    buttonText: {
+        prev: '&nbsp;&#9668;&nbsp;',
+        next: '&nbsp;&#9658;&nbsp;',
+        prevYear: '&nbsp;&lt;&lt;&nbsp;',
+        nextYear: '&nbsp;&gt;&gt;&nbsp;',
+        today: 'today',
+        month: 'month',
+        week: 'week',
+        day: 'day'
+    },
+
+    // jquery-ui theming
+    theme: false,
+    buttonIcons: {
+        prev: 'circle-triangle-w',
+        next: 'circle-triangle-e'
+    },
+
+    //selectable: false,
+    unselectAuto: true,
+
+    dropAccept: '*'
 };
 
 // right-to-left defaults
@@ -111,13 +110,11 @@ var rtlDefaults = {
 };
 
 
-
 var fc = $.fullCalendar = { version: "1.5.3" };
 var fcViews = fc.views = {};
 
 
 $.fn.fullCalendar = function(options) {
-
 
 	// method calling
 	if (typeof options == 'string') {
@@ -140,8 +137,8 @@ $.fn.fullCalendar = function(options) {
 		}
 		return this;
 	}
-	
-	
+
+
 	// would like to have this logic in EventManager, but needs to happen before options are recursively extended
 	var eventSources = options.eventSources || [];
 	delete options.eventSources;
@@ -149,7 +146,6 @@ $.fn.fullCalendar = function(options) {
 		eventSources.push(options.events);
 		delete options.events;
 	}
-	
 
 	options = $.extend(true, {},
 		defaults,
@@ -3447,31 +3443,28 @@ function AgendaView(element, calendar, viewName) {
 	
 	/* Selection
 	---------------------------------------------------------------------------------*/
-	
-	
-	function defaultSelectionEnd(startDate, allDay) {
-		if (allDay) {
-			return cloneDate(startDate);
-		}
-		return addMinutes(cloneDate(startDate), opt('slotMinutes'));
-	}
-	
-	
-	function renderSelection(startDate, endDate, allDay) { // only for all-day
-		if (allDay) {
-			if (opt('allDaySlot')) {
-				renderDayOverlay(startDate, addDays(cloneDate(endDate), 1), true);
-			}
-		}else{
-			renderSlotSelection(startDate, endDate);
-		}
-	}
-	
-	
-	function renderSlotSelection(startDate, endDate) {
-		var helperOption = opt('selectHelper');
-		coordinateGrid.build();
-		if (helperOption) {
+
+    function defaultSelectionEnd(startDate, allDay) {
+        if (allDay) {
+            return cloneDate(startDate);
+        }
+        return addMinutes(cloneDate(startDate), opt('slotMinutes'));
+    }
+
+    function renderSelection(startDate, endDate, allDay) { // only for all-day
+        if (allDay) {
+            if (opt('allDaySlot')) {
+                renderDayOverlay(startDate, addDays(cloneDate(endDate), 1), true);
+            }
+        } else {
+            renderSlotSelection(startDate, endDate);
+        }
+    }
+
+    function renderSlotSelection(startDate, endDate) {
+        var helperOption = opt('selectHelper');
+        coordinateGrid.build();
+        if (helperOption) {
 			var col = dayDiff(startDate, t.visStart) * dis + dit;
 			if (col >= 0 && col < colCnt) { // only works when times are on same day
 				var rect = coordinateGrid.rect(0, col, 0, col, slotContent); // only for horizontal coords
@@ -3518,18 +3511,16 @@ function AgendaView(element, calendar, viewName) {
 			renderSlotOverlay(startDate, endDate);
 		}
 	}
-	
-	
-	function clearSelection() {
-		clearOverlays();
-		if (selectionHelper) {
-			selectionHelper.remove();
-			selectionHelper = null;
-		}
-	}
-	
-	
-	function slotSelectionMousedown(ev) {
+
+    function clearSelection() {
+        clearOverlays();
+        if (selectionHelper) {
+            selectionHelper.remove();
+            selectionHelper = null;
+        }
+    }
+
+    function slotSelectionMousedown(ev) {
 		if (ev.which == 1 && opt('selectable')) { // ev.which==1 means left mouse button
 			unselect(ev);
 			var dates;
@@ -3560,14 +3551,11 @@ function AgendaView(element, calendar, viewName) {
 			});
 		}
 	}
-	
-	
-	function reportDayClick(date, allDay, ev) {
-		trigger('dayClick', dayBodyCells[dayOfWeekCol(date.getDay())], date, allDay, ev);
-	}
-	
-	
-	
+
+    function reportDayClick(date, allDay, ev) {
+        trigger('dayClick', dayBodyCells[dayOfWeekCol(date.getDay())], date, allDay, ev);
+    }
+
 	/* External Dragging
 	--------------------------------------------------------------------------------*/
 	
@@ -3872,9 +3860,8 @@ function AgendaEventRenderer() {
 		}
 					
 	}
-	
-	
-	function slotSegHtml(event, seg) {
+
+    function slotSegHtml(event, seg) {
 		var html = "<";
 		var url = event.url;
 		var skinCss = getSkinCss(event, opt);
@@ -3898,32 +3885,52 @@ function AgendaEventRenderer() {
 		}else{
 			html += "div";
 		}
-		html +=
-			" class='" + classes.join(' ') + "'" +
-			" style='position:absolute;z-index:8;top:" + seg.top + "px;left:" + seg.left + "px;" + skinCss + "'" +
-			">" +
-			"<div class='fc-event-inner fc-event-skin'" + skinCssAttr + ">" +
-			"<div class='fc-event-head fc-event-skin'" + skinCssAttr + ">" +
-			"<div class='fc-event-time'>" +
-			htmlEscape(formatDates(event.start, event.end, opt('timeFormat'))) +
-			"</div>" +
-			"</div>" +
-			"<div class='fc-event-content'>" +
-			"<div class='fc-event-title'>" +
-            "<span class='fc-event-issuekey'>" + event.key + "</span>: " + htmlEscape(event.title) +
-            " (" + opt('assignee') + " - " + event.assignee + ", " + opt('issuestatus') + " - " + event.status + ")" +
+
+        //--> extra info
+        var extraInfo = "<span class='extrainfomain'>[" +
+            "<span class='extrainfo'><span class='extrainfoheader'>" +
+            opt('assignee') + ": </span><span class='extrainfobody'>" +
+            htmlEscape(event.assignee) + "</span></span>, " +
+            "<span class='extrainfo'><span class='extrainfoheader'>" +
+            opt('issuestatus') + ": </span><span class='extrainfobody'>" +
+            htmlEscape(event.status) + "</span></span>";
+
+        /*if (event.customFields) {
+            for (j=0; j < event.customFields.length; j++) {
+                extraInfo += ", <span class='extrainfo'><span class='extrainfoheader'>" +
+                    event.customFields[j][0] + ": </span><span class='extrainfobody'>" +
+                    htmlEscape(event.customFields[j][1]) + "</span></span>";
+            }
+        }*/
+        extraInfo += "]</span>";
+        //<--
+
+        var issueInfo = "<div>" +
+            "<nobr><span class='extrainfo'><span class='issuetitleheader'>" +
+            event.key + ": </span></nobr><span class='extrainfobody'>" +
+            htmlEscape(event.title) + "</span></div>";
+
+        html +=
+            " class='" + classes.join(' ') + "'" +
+            " style='position:absolute;z-index:8;top:" + seg.top + "px;left:" + seg.left + "px;" + skinCss + "'" +
+            ">" +
+            "<div class='fc-event-inner fc-event-skin'" + skinCssAttr + ">" +
+            "<div class='fc-event-head fc-event-skin'" + skinCssAttr + ">" +
+            "<div class='fc-event-time'>" +
+            htmlEscape(formatDates(event.start, event.end, opt('timeFormat'))) +
             "</div>" +
-			"</div>" +
-			"<div class='fc-event-bg'></div>" +
-			"</div>"; // close inner
-		if (seg.isEnd && isEventResizable(event)) {
-			html +=
-				"<div class='ui-resizable-handle ui-resizable-s'>=</div>";
-		}
-		html +=
-			"</" + (url ? "a" : "div") + ">";
-		return html;
-	}
+            "</div>" +
+            "<div class='fc-event-content'>" + issueInfo + extraInfo + "</div>" +
+            "<div class='fc-event-bg'></div>" +
+            "</div>"; // close inner
+       if (seg.isEnd && isEventResizable(event)) {
+           html +=
+               "<div class='ui-resizable-handle ui-resizable-s'>=</div>";
+        }
+        html +=
+            "</" + (url ? "a" : "div") + ">";
+        return html;
+    }
 
 	function bindDaySeg(event, eventElement, seg) {
 		if (isEventDraggable(event)) {
@@ -4643,30 +4650,53 @@ function DayEventRenderer() {
 			}else{
 				html += "<div";
 			}
-			html +=
-				" class='" + classes.join(' ') + "'" +
-				" style='position:absolute;z-index:8;left:"+left+"px;" + skinCss + "'" +
-				">" +
-				"<div" +
-				" class='fc-event-inner fc-event-skin'" +
-				(skinCss ? " style='" + skinCss + "'" : '') +
-				">";
-			if (!event.allDay && seg.isStart) {
-				html +=
-					"<span class='fc-event-time'>" +
-					htmlEscape(formatDates(event.start, event.end, opt('timeFormat'))) +
-					"</span>";
-			}
             html +=
-                "<span class='fc-event-title'>" + "<span class='fc-event-issuekey'>" + event.key + "</span>: " + htmlEscape(event.title) +
-                " (" + opt('assignee') + " - " + event.assignee + ", " + opt('issuestatus') + " - " + event.status + ")" + "</span>" +
-                "</div>";
-			if (seg.isEnd && isEventResizable(event)) {
-				html +=
-					"<div class='ui-resizable-handle ui-resizable-" + (rtl ? 'w' : 'e') + "'>" +
-					"&nbsp;&nbsp;&nbsp;" + // makes hit area a lot better for IE6/7
-					"</div>";
-			}
+                " class='" + classes.join(' ') + "'" +
+                " style='position:absolute;z-index:8;left:"+left+"px;" + skinCss + "'" +
+                ">" +
+                "<div" +
+                " class='fc-event-inner fc-event-skin'" +
+                (skinCss ? " style='" + skinCss + "'" : '') +
+                ">";
+            if (!event.allDay && seg.isStart) {
+            html +=
+                "<span class='fc-event-time'>" +
+                htmlEscape(formatDates(event.start, event.end, opt('timeFormat'))) +
+                "</span>";
+            }
+
+            //--> extra info
+            var extraInfo = "<span class='extrainfomain'>[" +
+                "<span class='extrainfo'><span class='extrainfoheader'>" +
+                opt('assignee') + ": </span><span class='extrainfobody'>" +
+                htmlEscape(event.assignee) + "</span></span>, " +
+                "<span class='extrainfo'><span class='extrainfoheader'>" +
+                opt('issuestatus') + ": </span><span class='extrainfobody'>" +
+                htmlEscape(event.status) + "</span></span>";
+
+            /*if (event.customFields) {
+                for (j=0; j < event.customFields.length; j++) {
+                    extraInfo += ", <span class='extrainfo'><span class='extrainfoheader'>" +
+                        event.customFields[j][0] + ": </span><span class='extrainfobody'>" +
+                        htmlEscape(event.customFields[j][1]) + "</span></span>";
+                }
+            }*/
+            extraInfo += "]</span>";
+            //<--
+
+            var issueInfo = "<div>" +
+                "<nobr><span class='extrainfo'><span class='issuetitleheader'>" +
+                event.key + ": </span></nobr><span class='extrainfobody'>" +
+                htmlEscape(event.title) + "</span></div>";
+
+            html +=
+                issueInfo + extraInfo + "</div>";
+            if (seg.isEnd && isEventResizable(event)) {
+                html +=
+                    "<div class='ui-resizable-handle ui-resizable-" + (rtl ? 'w' : 'e') + "'>" +
+                    "&nbsp;&nbsp;&nbsp;" + // makes hit area a lot better for IE6/7
+                    "</div>";
+            }
 			html +=
 				"</" + (url ? "a" : "div" ) + ">";
 			seg.left = left;
@@ -4676,8 +4706,7 @@ function DayEventRenderer() {
 		}
 		return html;
 	}
-	
-	
+
 	function daySegElementResolve(segs, elements) { // sets seg.element
 		var i;
 		var segCnt = segs.length;

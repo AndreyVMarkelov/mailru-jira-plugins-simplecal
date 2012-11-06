@@ -35,12 +35,11 @@
                                 #foreach($proj in $usrData)
                                 <tr>
                                     <td>
-                                        <input type="checkbox" onclick="changeCalMode('$baseUrl', $proj.getCalId())" id="$proj.getCalId()" name="$proj.getCalId()"/>
-                                        <a href="#" onclick="actMailRuCalendar(event, '$baseUrl', $proj.getCalId())">
-                                            <span #if($usrPref.isUserColor($proj.getCalId()))style="color: $usrPref.getUserColor($proj.getCalId());"#else style="color: $proj.getColor();"#end>$proj.getName()</span>
-                                        </a>
+                                        <input class="pointer" type="checkbox" onclick="changeCalMode('$baseUrl', $proj.getCalId())" id="$proj.getCalId()" name="$proj.getCalId()"/>
+                                        <span #if($usrPref.isUserColor($proj.getCalId()))style="font-weight: bold; color: $usrPref.getUserColor($proj.getCalId());"#else style="font-weight: bold; color: $proj.getColor();"#end>$proj.getName()</span>
+                                        <img class="pointer" onclick="actMailRuCalendar(event, '$baseUrl', $proj.getCalId())" height="16px" width="16px" src="$baseUrl/images/icons/confg_16.gif" title="Config Calendar" alt="Config Calendar"/>
                                         #if(!$proj.getCreator() || $proj.getCreator().equals($user))
-                                        <img onclick="deleteMailRuCalendar(event, '$baseUrl', $proj.getCalId());" id="share_trash" height="16px" width="16px" class="shareTrash" src="$baseUrl/images/icons/trash_16.gif" title="Delete Share" alt="Delete Share"/> <input id="share_type_hidden" name="shareValues" type="hidden"/>
+                                        <img class="pointer" onclick="deleteMailRuCalendar(event, '$baseUrl', $proj.getCalId());" height="16px" width="16px" src="$baseUrl/images/icons/trash_16.gif" title="Delete Calendar" alt="Delete Calendar"/>
                                         #end
                                     </td>
                                 </tr>

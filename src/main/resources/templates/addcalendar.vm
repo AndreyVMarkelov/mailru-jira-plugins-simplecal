@@ -47,7 +47,7 @@
               <table class="justtable">
                       <tr>
                         <td valign="top">
-            <select id="calcolor" name="calcolor" style="background-color: #efe381; color: white;" onchange="changeColor();" onkeydown="changeColor();" onkeyup="changeColor();">
+            <select id="calcolor" name="calcolor" style="background-color: #808080; color: white;" onchange="changeColor();" onkeydown="changeColor();" onkeyup="changeColor();">
                 <option value="#808080" style="background-color: Gray;">Gray</option>
                 <option value="#A9A9A9" style="background-color: DarkGray;">DarkGray</option>
                 <option value="#D3D3D3" style="background-color: LightGrey;">LightGray</option>

@@ -93,3 +93,7 @@ label.checkbox {
     text-align: center;
     font-size:28px;
 }
+
+.pointer {
+    cursor: pointer;
+}

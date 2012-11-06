@@ -616,9 +616,31 @@ table.fc-border-separate {
 	text-align: center;
 	cursor: s-resize;
 	}
-	
+
 .fc-agenda .ui-resizable-resizing { /* TODO: better selector */
-	_overflow: hidden;
-	}
-	
-	
+    _overflow: hidden;
+}
+
+/* information about additional issue fields */
+.extrainfomain {
+    font-size: 12px;
+    font-style: normal;
+}
+
+.extrainfo {
+    word-wrap: break-word;
+}
+
+.extrainfoheader {
+    font-style: italic;
+    word-wrap: normal;
+}
+
+.issuetitleheader {
+    font-weight: bold;
+    word-wrap: normal;
+}
+
+.extrainfobody {
+    word-wrap: break-word;
+}
