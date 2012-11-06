@@ -159,7 +159,7 @@ public class MailRuCalService
         this.projectRoleManager = projectRoleManager;
         this.cfMgr = cfMgr;
         this.sdf = new SimpleDateFormat("yyyy-MM-dd");
-        xstream = new XStream(new JsonHierarchicalStreamDriver()
+        this.xstream = new XStream(new JsonHierarchicalStreamDriver()
         {
             public HierarchicalStreamWriter createWriter(Writer writer)
             {
@@ -405,8 +405,6 @@ public class MailRuCalService
     private EventEntity createDatePointEntity(
         ProjectCalUserData pcud,
         Issue issue,
-        Date startDate,
-        Date endDate,
         String baseUrl,
         CustomField datePointCf,
         String color)
@@ -417,10 +415,7 @@ public class MailRuCalService
             if (val != null && val instanceof Timestamp)
             {
                 Timestamp ts = (Timestamp)val;
-                if (ts.compareTo(startDate) >= 0 && ts.compareTo(endDate) <= 0)
-                {
-                    return createEventEntityObj(issue, baseUrl, color, sdf.format(ts), null);
-                }
+                return createEventEntityObj(issue, baseUrl, color, sdf.format(ts), null);
             }
         }
 
@@ -433,8 +428,6 @@ public class MailRuCalService
     private EventEntity createDateRangeEntity(
         ProjectCalUserData pcud,
         Issue issue,
-        Date startDate,
-        Date endDate,
         String baseUrl,
         CustomField startCf,
         CustomField endCf,
@@ -450,26 +443,17 @@ public class MailRuCalService
             {
                 Timestamp startTs = (Timestamp)startVal;
                 Timestamp endTs = (Timestamp)endVal;
-                if (endTs.compareTo(startDate) >= 0 && startTs.compareTo(endDate) <= 0)
-                {
-                    return createEventEntityObj(issue, baseUrl, color, sdf.format(startTs), sdf.format(endTs));
-                }
+                return createEventEntityObj(issue, baseUrl, color, sdf.format(startTs), sdf.format(endTs));
             }
             else if (startVal != null && startVal instanceof Timestamp)
             {
                 Timestamp ts = (Timestamp)startVal;
-                if (ts.compareTo(startDate) >= 0 && ts.compareTo(endDate) <= 0)
-                {
-                    return createEventEntityObj(issue, baseUrl, color, sdf.format(ts), null);
-                }
+                return createEventEntityObj(issue, baseUrl, color, sdf.format(ts), null);
             }
             else if (endVal != null && endVal instanceof Timestamp)
             {
                 Timestamp ts = (Timestamp)endVal;
-                if (ts.compareTo(startDate) >= 0 && ts.compareTo(endDate) <= 0)
-                {
-                    return createEventEntityObj(issue, baseUrl, color, sdf.format(ts), null);
-                }
+                return createEventEntityObj(issue, baseUrl, color, sdf.format(ts), null);
             }
         }
         else if (startCf == null && endCf != null)
@@ -480,10 +464,7 @@ public class MailRuCalService
                 if (val != null && val instanceof Timestamp)
                 {
                     Timestamp ts = (Timestamp)val;
-                    if (ts.compareTo(startDate) >= 0 && ts.compareTo(endDate) <= 0)
-                    {
-                        return createEventEntityObj(issue, baseUrl, color, sdf.format(ts), null);
-                    }
+                    return createEventEntityObj(issue, baseUrl, color, sdf.format(ts), null);
                 }
             }
         }
@@ -495,10 +476,7 @@ public class MailRuCalService
                 if (val != null && val instanceof Timestamp)
                 {
                     Timestamp ts = (Timestamp)val;
-                    if (ts.compareTo(startDate) >= 0 && ts.compareTo(endDate) <= 0)
-                    {
-                        return createEventEntityObj(issue, baseUrl, color, sdf.format(ts), null);
-                    }
+                    return createEventEntityObj(issue, baseUrl, color, sdf.format(ts), null);
                 }
             }
         }
@@ -512,8 +490,6 @@ public class MailRuCalService
     private EventEntity createEventEntity(
         ProjectCalUserData pcud,
         Issue issue,
-        Date startDate,
-        Date endDate,
         String baseUrl,
         CustomField startCf,
         CustomField endCf,
@@ -521,15 +497,15 @@ public class MailRuCalService
     {
         if (pcud.isIDD())
         {
-            return createIddEvent(pcud, issue, startDate, endDate, baseUrl, color);
+            return createIddEvent(pcud, issue, baseUrl, color);
         }
         else if (pcud.isDatePoint())
         {
-            return createDatePointEntity(pcud, issue, startDate, endDate, baseUrl, startCf, color);
+            return createDatePointEntity(pcud, issue, baseUrl, startCf, color);
         }
         else
         {
-            return createDateRangeEntity(pcud, issue, startDate, endDate, baseUrl, startCf, endCf, color);
+            return createDateRangeEntity(pcud, issue, baseUrl, startCf, endCf, color);
         }
     }
 
@@ -654,18 +630,11 @@ public class MailRuCalService
     private EventEntity createIddEvent(
         ProjectCalUserData pcud,
         Issue issue,
-        Date startDate,
-        Date endDate,
         String baseUrl,
         String color)
     {
         Timestamp dueDate = issue.getDueDate();
-        if (dueDate != null && dueDate.compareTo(startDate) >= 0 && dueDate.compareTo(endDate) <= 0)
-        {
-            return createEventEntityObj(issue, baseUrl, color, sdf.format(dueDate), null);
-        }
-
-        return null;
+        return createEventEntityObj(issue, baseUrl, color, sdf.format(dueDate), null);
     }
 
     @POST
@@ -729,9 +698,6 @@ public class MailRuCalService
             return Response.status(500).build();
         }
 
-        Date startDate = new Date(startLong);
-        Date endDate = new Date(endLong);
-
         List<ProjectCalUserData> datas = mailCfg.getCalendarsData();
         Iterator<ProjectCalUserData> iter = datas.iterator();
         while (iter.hasNext())
@@ -778,11 +744,11 @@ public class MailRuCalService
             List<EventEntity> localeventObjs = null;
             if (pcud.isProjectType())
             {
-                localeventObjs = getProjectIssues(id, user, startDate, endDate, pcud, Utils.getBaseUrl(request), color);
+                localeventObjs = getProjectIssues(id, user, startLong, endLong, pcud, Utils.getBaseUrl(request), color);
             }
             else
             {
-                localeventObjs = getJclIssues(id, user, startDate, endDate, pcud, Utils.getBaseUrl(request), color);
+                localeventObjs = getJclIssues(id, user, startLong, endLong, pcud, Utils.getBaseUrl(request), color);
             }
 
             if (localeventObjs != null && !localeventObjs.isEmpty())
@@ -804,8 +770,8 @@ public class MailRuCalService
     private List<EventEntity> getJclIssues(
         Long fltId,
         User user,
-        Date startDate,
-        Date endDate,
+        long startDate,
+        long endDate,
         ProjectCalUserData pcud,
         String baseUrl,
         String color)
@@ -855,12 +821,12 @@ public class MailRuCalService
             JqlClauseBuilder jcb = JqlQueryBuilder.newClauseBuilder();
             if (pcud.isIDD())
             {
-                jcb.and().dueBetween(startDate, endDate);
+                jcb.and().dueBetween(formatDate(startDate), formatDate(endDate));
             }
             else if (pcud.isDatePoint())
             {
                 JqlClauseBuilder jcb2 = JqlQueryBuilder.newClauseBuilder();
-                jcb2.customField(startCf.getIdAsLong()).gtEq(startDate).and().customField(startCf.getIdAsLong()).ltEq(endDate);
+                jcb2.customField(startCf.getIdAsLong()).gtEq(formatDate(startDate)).and().customField(startCf.getIdAsLong()).ltEq(formatDate(endDate));
                 jcb.and().addClause(jcb2.buildClause());
             }
             else if (pcud.isDateRange())
@@ -868,8 +834,8 @@ public class MailRuCalService
                 if (startCf != null && endCf != null)
                 {
                     JqlClauseBuilder jcb2 = JqlQueryBuilder.newClauseBuilder();
-                    JqlClauseBuilder jcb3 = JqlQueryBuilder.newClauseBuilder().not().addClause(JqlQueryBuilder.newClauseBuilder().customField(startCf.getIdAsLong()).gt(endDate).buildClause());
-                    JqlClauseBuilder jcb4 = JqlQueryBuilder.newClauseBuilder().not().addClause(JqlQueryBuilder.newClauseBuilder().customField(endCf.getIdAsLong()).lt(startDate).buildClause());
+                    JqlClauseBuilder jcb3 = JqlQueryBuilder.newClauseBuilder().not().addClause(JqlQueryBuilder.newClauseBuilder().customField(startCf.getIdAsLong()).gt(formatDate(endDate)).buildClause());
+                    JqlClauseBuilder jcb4 = JqlQueryBuilder.newClauseBuilder().not().addClause(JqlQueryBuilder.newClauseBuilder().customField(endCf.getIdAsLong()).lt(formatDate(startDate)).buildClause());
                     jcb3.and().addClause(jcb4.buildClause());
                     jcb2.addClause(jcb3.buildClause());
                     jcb.and().addClause(jcb2.buildClause());
@@ -888,7 +854,7 @@ public class MailRuCalService
                 start += issues.size();
                 for (Issue issue : issues)
                 {
-                    EventEntity entity = createEventEntity(pcud, issue, startDate, endDate, baseUrl, startCf, endCf, color);
+                    EventEntity entity = createEventEntity(pcud, issue, baseUrl, startCf, endCf, color);
                     if (entity != null)
                     {
                         entities.add(entity);
@@ -916,8 +882,8 @@ public class MailRuCalService
     private List<EventEntity> getProjectIssues(
         Long prId,
         User user,
-        Date startDate,
-        Date endDate,
+        long startDate,
+        long endDate,
         ProjectCalUserData pcud,
         String baseUrl,
         String color)
@@ -964,12 +930,12 @@ public class MailRuCalService
         jcb.project(prId);
         if (pcud.isIDD())
         {
-            jcb.and().dueBetween(startDate, endDate);
+            jcb.and().dueBetween(formatDate(startDate), formatDate(endDate));
         }
         else if (pcud.isDatePoint())
         {
             JqlClauseBuilder jcb2 = JqlQueryBuilder.newClauseBuilder();
-            jcb2.customField(startCf.getIdAsLong()).gtEq(startDate).and().customField(startCf.getIdAsLong()).ltEq(endDate);
+            jcb2.customField(startCf.getIdAsLong()).gtEq(formatDate(startDate)).and().customField(startCf.getIdAsLong()).ltEq(formatDate(endDate));
             jcb.and().addClause(jcb2.buildClause());
         }
         else if (pcud.isDateRange())
@@ -977,8 +943,8 @@ public class MailRuCalService
             if (startCf != null && endCf != null)
             {
                 JqlClauseBuilder jcb2 = JqlQueryBuilder.newClauseBuilder();
-                JqlClauseBuilder jcb3 = JqlQueryBuilder.newClauseBuilder().not().addClause(JqlQueryBuilder.newClauseBuilder().customField(startCf.getIdAsLong()).gt(endDate).buildClause());
-                JqlClauseBuilder jcb4 = JqlQueryBuilder.newClauseBuilder().not().addClause(JqlQueryBuilder.newClauseBuilder().customField(endCf.getIdAsLong()).lt(startDate).buildClause());
+                JqlClauseBuilder jcb3 = JqlQueryBuilder.newClauseBuilder().not().addClause(JqlQueryBuilder.newClauseBuilder().customField(startCf.getIdAsLong()).gt(formatDate(endDate)).buildClause());
+                JqlClauseBuilder jcb4 = JqlQueryBuilder.newClauseBuilder().not().addClause(JqlQueryBuilder.newClauseBuilder().customField(endCf.getIdAsLong()).lt(formatDate(startDate)).buildClause());
                 jcb3.and().addClause(jcb4.buildClause());
                 jcb2.addClause(jcb3.buildClause());
                 jcb.and().addClause(jcb2.buildClause());
@@ -997,7 +963,7 @@ public class MailRuCalService
             start += issues.size();
             for (Issue issue : issues)
             {
-                EventEntity entity = createEventEntity(pcud, issue, startDate, endDate, baseUrl, startCf, endCf, color);
+                EventEntity entity = createEventEntity(pcud, issue, baseUrl, startCf, endCf, color);
                 if (entity != null)
                 {
                     entities.add(entity);
@@ -1006,6 +972,14 @@ public class MailRuCalService
         }
 
         return entities;
+    }
+
+    /**
+     * Format date.
+     */
+    private synchronized String formatDate(long date)
+    {
+        return sdf.format(date);
     }
 
     /**
