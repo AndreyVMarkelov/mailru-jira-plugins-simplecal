@@ -30,7 +30,7 @@ public class UserCalPref
     /**
      * Fields.
      */
-    private Set<String> fields;
+    private Map<Long, Set<String>> fields;
 
     /**
      * Hide calendars.
@@ -55,6 +55,19 @@ public class UserCalPref
     }
 
     /**
+     * Get fields for the calendar.
+     */
+    public Set<String> getCalendarFields(Long calId)
+    {
+        if (fields == null)
+        {
+            return null;
+        }
+
+        return fields.get(calId);
+    }
+
+    /**
      * Get user colors.
      */
     public Map<Long, String> getColors()
@@ -70,7 +83,10 @@ public class UserCalPref
         return defaultView;
     }
 
-    public Set<String> getFields()
+    /**
+     * Fields for every calendar.
+     */
+    public Map<Long, Set<String>> getFields()
     {
         return fields;
     }
@@ -128,6 +144,30 @@ public class UserCalPref
     }
 
     /**
+     * Set fields for the calendar.
+     */
+    public void setCalendarFields(Long calId, Set<String> calFields)
+    {
+        if (fields == null)
+        {
+            fields = new HashMap<Long, Set<String>>();
+        }
+
+        Set<String> storedFields = fields.get(calId);
+        if (storedFields == null)
+        {
+            storedFields = new HashSet<String>(calFields);
+        }
+        else
+        {
+            storedFields.clear();
+            storedFields.addAll(calFields);
+        }
+
+        fields.put(calId, storedFields);
+    }
+
+    /**
      * Set user colors.
      */
     public void setColors(Map<Long, String> colors)
@@ -143,7 +183,10 @@ public class UserCalPref
         this.defaultView = defaultView;
     }
 
-    public void setFields(Set<String> fields)
+    /**
+     * Set calendar fields.
+     */
+    public void setFields(Map<Long, Set<String>> fields)
     {
         this.fields = fields;
     }

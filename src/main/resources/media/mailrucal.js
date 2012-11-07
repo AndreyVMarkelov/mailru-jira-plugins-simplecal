@@ -188,6 +188,82 @@ function changeCalItem(event, baseUrl) {
     jQuery("#its").html(jQuery("#it" + id).html());
 }
 
+function editMailRuCalendar(event, baseUrl, ctime) {
+    event.preventDefault();
+
+    var dialogBody = editInfoCal(baseUrl, ctime);
+    if (!dialogBody)
+    {
+        return;
+    }
+
+    if (dialogBody == "NO_PROJECT") {
+        var errDlg = new AJS.Dialog({
+            width:300,
+            height:200,
+            id:"error_calendar_dialog",
+            closeOnOutsideClick: true
+        });
+        errDlg.addHeader(AJS.I18n.getText("mailrucal.errorcaltitle"));
+        errDlg.addPanel("load_panel", "<p>" + AJS.I18n.getText("mailrucal.noproject") + "</p>");
+        errDlg.addCancel(AJS.I18n.getText("mailrucal.closebtn"), function() {
+            errDlg.hide();
+        });
+        errDlg.show();
+        return;
+    }
+
+    if (dialogBody == "NO_FILTER") {
+        var errDlg = new AJS.Dialog({
+            width:300,
+            height:200,
+            id:"error_calendar_dialog",
+            closeOnOutsideClick: true
+        });
+        errDlg.addHeader(AJS.I18n.getText("mailrucal.errorcaltitle"));
+        errDlg.addPanel("load_panel", "<p>" + AJS.I18n.getText("mailrucal.nofilter") + "</p>");
+        errDlg.addCancel(AJS.I18n.getText("mailrucal.closebtn"), function() {
+            errDlg.hide();
+        });
+        errDlg.show();
+        return;
+    }
+
+    if (dialogBody == "NO_CALENDAR") {
+        var errDlg = new AJS.Dialog({
+            width:300,
+            height:200,
+            id:"error_calendar_dialog",
+            closeOnOutsideClick: true
+        });
+        errDlg.addHeader(AJS.I18n.getText("mailrucal.errorcaltitle"));
+        errDlg.addPanel("load_panel", "<p>" + AJS.I18n.getText("mailrucal.nocalendar") + "</p>");
+        errDlg.addCancel(AJS.I18n.getText("mailrucal.closebtn"), function() {
+            errDlg.hide();
+            window.location.reload();
+        });
+        errDlg.show();
+        return;
+    }
+
+    var md = new AJS.Dialog({
+        width:700,
+        height:520,
+        id:"info_calendar_dialog",
+        closeOnOutsideClick: true
+    });
+    md.addHeader(AJS.I18n.getText("mailrucal.calendarprops"));
+    md.addPanel("load_panel", dialogBody);
+    md.addButton(AJS.I18n.getText("mailrucal.updatecalbtn"), function() {
+        AJS.$("#editcalform").submit();
+    });
+    md.addCancel(AJS.I18n.getText("mailrucal.closebtn"), function() {
+        AJS.$("#editcalform").remove();
+        md.hide();
+    });
+    md.show();
+}
+
 function actMailRuCalendar(event, baseUrl, ctime) {
     event.preventDefault();
 
@@ -292,6 +368,30 @@ function initInfoCal(baseUrl, ctime)
     return res;
 }
 
+function editInfoCal(baseUrl, ctime)
+{
+    var res = "";
+    jQuery.ajax({
+        url: baseUrl + "/rest/mailrucalws/1.0/mailcalsrv/editcaldlg",
+        type: "POST",
+        dataType: "json",
+        async: false,
+        data: {"ctime": ctime},
+        error: function(xhr, ajaxOptions, thrownError) {
+            if (xhr.responseText) {
+                alert(xhr.responseText);
+            } else {
+                alert("Internal error");
+            }
+        },
+        success: function(result) {
+            res = result.html;
+        }
+    });
+
+    return res;
+}
+
 function fillProj() {
     jQuery("#mainsel").html(AJS.$("#projsel").html());
 }
@@ -307,7 +407,7 @@ function changeColor() {
 
 AJS.$(document).ready(function() {
     jQuery(window).bind('beforeunload', function() {
-        return null;
+        
     });
 });
 

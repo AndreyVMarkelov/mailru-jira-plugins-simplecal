@@ -37,6 +37,7 @@
                                     <td>
                                         <input class="pointer" type="checkbox" onclick="changeCalMode('$baseUrl', $proj.getCalId())" id="$proj.getCalId()" name="$proj.getCalId()"/>
                                         <span #if($usrPref.isUserColor($proj.getCalId()))style="font-weight: bold; color: $usrPref.getUserColor($proj.getCalId());"#else style="font-weight: bold; color: $proj.getColor();"#end>$proj.getName()</span>
+                                        <img class="pointer" onclick="editMailRuCalendar(event, '$baseUrl', $proj.getCalId())" height="16px" width="16px" src="$baseUrl/images/icons/tools_20.png" title="Edit Properties" alt="Edit Properties"/>
                                         <img class="pointer" onclick="actMailRuCalendar(event, '$baseUrl', $proj.getCalId())" height="16px" width="16px" src="$baseUrl/images/icons/confg_16.gif" title="Config Calendar" alt="Config Calendar"/>
                                         #if(!$proj.getCreator() || $proj.getCreator().equals($user))
                                         <img class="pointer" onclick="deleteMailRuCalendar(event, '$baseUrl', $proj.getCalId());" height="16px" width="16px" src="$baseUrl/images/icons/trash_16.gif" title="Delete Calendar" alt="Delete Calendar"/>
@@ -92,15 +93,27 @@
                 week: '$i18n.getText("mailrucal.week")',
                 day: '$i18n.getText("mailrucal.day")'
             },
+            aspectRatio: 2,
+            weekMode: 'liquid',
             viewDisplay: function(view) {
                 setUserPrefView('$baseUrl', view.name);
             },
             dayClick: function(date, allDay, jsEvent, view) {
                 createIssue('$baseUrl', date.getTime());
             },
-            assignee: '$i18n.getText("mailrucal.assigneeview")',
-            priority: '$i18n.getText("mailrucal.priorityview")',
-            issuestatus: '$i18n.getText("mailrucal.statusview")'
+            priority: 'Priority',
+            assignee: 'Assignee',
+            issuestatus: 'Status',
+            resolution: 'Resolution',
+            reporter: 'Reporter',
+            fixes: 'Fix versions',
+            affect: 'Affect versions',
+            labels: 'Labels',
+            components: 'Components',
+            duedate: 'Due',
+            environment: 'Environment',
+            created: 'Created',
+            updated: 'Updated'
         });
     });
     </script>

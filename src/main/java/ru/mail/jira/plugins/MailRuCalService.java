@@ -14,10 +14,13 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.TreeSet;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -27,9 +30,12 @@ import javax.ws.rs.core.CacheControl;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.velocity.exception.VelocityException;
+import org.ofbiz.core.entity.GenericValue;
+
 import com.atlassian.crowd.embedded.api.User;
 import com.atlassian.jira.ComponentManager;
 import com.atlassian.jira.bc.JiraServiceContext;
@@ -60,6 +66,7 @@ import com.atlassian.jira.sharing.SharePermission;
 import com.atlassian.jira.sharing.SharePermissionUtils;
 import com.atlassian.jira.sharing.SharedEntity.SharePermissions;
 import com.atlassian.jira.user.util.UserUtil;
+import com.atlassian.jira.util.I18nHelper;
 import com.atlassian.jira.util.json.JSONArray;
 import com.atlassian.jira.util.json.JSONException;
 import com.atlassian.jira.util.json.JSONObject;
@@ -407,7 +414,8 @@ public class MailRuCalService
         Issue issue,
         String baseUrl,
         CustomField datePointCf,
-        String color)
+        String color,
+        Set<String> calFields)
     {
         if (datePointCf != null)
         {
@@ -415,7 +423,7 @@ public class MailRuCalService
             if (val != null && val instanceof Timestamp)
             {
                 Timestamp ts = (Timestamp)val;
-                return createEventEntityObj(issue, baseUrl, color, sdf.format(ts), null);
+                return createEventEntityObj(issue, baseUrl, color, sdf.format(ts), null, calFields);
             }
         }
 
@@ -431,7 +439,8 @@ public class MailRuCalService
         String baseUrl,
         CustomField startCf,
         CustomField endCf,
-        String color)
+        String color,
+        Set<String> calFields)
     {
         if (startCf != null && endCf != null)
         {
@@ -443,17 +452,17 @@ public class MailRuCalService
             {
                 Timestamp startTs = (Timestamp)startVal;
                 Timestamp endTs = (Timestamp)endVal;
-                return createEventEntityObj(issue, baseUrl, color, sdf.format(startTs), sdf.format(endTs));
+                return createEventEntityObj(issue, baseUrl, color, sdf.format(startTs), sdf.format(endTs), calFields);
             }
             else if (startVal != null && startVal instanceof Timestamp)
             {
                 Timestamp ts = (Timestamp)startVal;
-                return createEventEntityObj(issue, baseUrl, color, sdf.format(ts), null);
+                return createEventEntityObj(issue, baseUrl, color, sdf.format(ts), null, calFields);
             }
             else if (endVal != null && endVal instanceof Timestamp)
             {
                 Timestamp ts = (Timestamp)endVal;
-                return createEventEntityObj(issue, baseUrl, color, sdf.format(ts), null);
+                return createEventEntityObj(issue, baseUrl, color, sdf.format(ts), null, calFields);
             }
         }
         else if (startCf == null && endCf != null)
@@ -464,7 +473,7 @@ public class MailRuCalService
                 if (val != null && val instanceof Timestamp)
                 {
                     Timestamp ts = (Timestamp)val;
-                    return createEventEntityObj(issue, baseUrl, color, sdf.format(ts), null);
+                    return createEventEntityObj(issue, baseUrl, color, sdf.format(ts), null, calFields);
                 }
             }
         }
@@ -476,7 +485,7 @@ public class MailRuCalService
                 if (val != null && val instanceof Timestamp)
                 {
                     Timestamp ts = (Timestamp)val;
-                    return createEventEntityObj(issue, baseUrl, color, sdf.format(ts), null);
+                    return createEventEntityObj(issue, baseUrl, color, sdf.format(ts), null, calFields);
                 }
             }
         }
@@ -493,19 +502,20 @@ public class MailRuCalService
         String baseUrl,
         CustomField startCf,
         CustomField endCf,
-        String color)
+        String color,
+        Set<String> calFields)
     {
         if (pcud.isIDD())
         {
-            return createIddEvent(pcud, issue, baseUrl, color);
+            return createIddEvent(pcud, issue, baseUrl, color, calFields);
         }
         else if (pcud.isDatePoint())
         {
-            return createDatePointEntity(pcud, issue, baseUrl, startCf, color);
+            return createDatePointEntity(pcud, issue, baseUrl, startCf, color, calFields);
         }
         else
         {
-            return createDateRangeEntity(pcud, issue, baseUrl, startCf, endCf, color);
+            return createDateRangeEntity(pcud, issue, baseUrl, startCf, endCf, color, calFields);
         }
     }
 
@@ -517,7 +527,8 @@ public class MailRuCalService
         String baseUrl,
         String color,
         String start,
-        String end)
+        String end,
+        Set<String> calFields)
     {
         EventEntity en= new EventEntity();
         en.setId(issue.getKey());
@@ -531,16 +542,21 @@ public class MailRuCalService
         //--> key
         en.setKey(issue.getKey());
         //--> status
-        en.setStatus(issue.getStatusObject().getName());
-        //--> assignee
-        if (issue.getAssigneeUser() != null)
+        if (calFields != null && calFields.contains("issuestatus"))
         {
-            en.setAssignee(issue.getAssigneeUser().getDisplayName());
+            en.addExtraField("issuestatus", issue.getStatusObject().getName());
         }
-        //--> reporter
-        if (issue.getReporterUser() != null)
+        //--> assignee
+        if (issue.getAssigneeUser() != null  && calFields != null && calFields.contains("assignee"))
         {
-            en.setReporter(issue.getReporterUser().getDisplayName());
+            en.addExtraField("assignee", issue.getAssigneeUser().getDisplayName());
+        }
+
+        //--> extra fields
+        //--> reporter
+        if (issue.getReporterUser() != null && calFields != null && calFields.contains("reporter"))
+        {
+            en.addExtraField("reporter", issue.getReporterUser().getDisplayName());
         }
         //--> custom fields
         List<CustomField> cfs = cfMgr.getCustomFieldObjects(issue);
@@ -550,76 +566,87 @@ public class MailRuCalService
             for (CustomField cf : cfs)
             {
                 Object cfVal = cf.getValue(issue);
-                if (cfVal != null)
-                cfMap.put(cf.getName(), cfVal.toString());
+                if (cfVal != null && calFields != null && calFields.contains(cf.getName()))
+                {
+                    cfMap.put(cf.getName(), cfVal.toString());
+                }
             }
             en.setCustomFields(cfMap);
         }
         //--> labels
         Set<Label> labels = issue.getLabels();
-        if (labels != null && !labels.isEmpty())
+        if (labels != null && !labels.isEmpty() && calFields != null && calFields.contains("labels"))
         {
             List<String> labelList = new ArrayList<String>();
             for (Label label : labels)
             {
                 labelList.add(label.getLabel());
             }
-            en.setLabels(labelList);
+            en.addExtraField("labels", labelList.toString());
         }
         //--> components
         Collection<ProjectComponent> comps = issue.getComponentObjects();
-        if (comps != null && !comps.isEmpty())
+        if (comps != null && !comps.isEmpty() && calFields != null && calFields.contains("components"))
         {
             List<String> pcs = new ArrayList<String>();
             for (ProjectComponent pc : comps)
             {
                 pcs.add(pc.getName());
             }
-            en.setComponents(pcs);
+            en.addExtraField("components", pcs.toString());
         }
         //--> due
-        if (issue.getDueDate() != null)
+        if (issue.getDueDate() != null && calFields != null && calFields.contains("duedate"))
         {
-            en.setDue(issue.getDueDate().toString());
+            en.addExtraField("duedate", ComponentManager.getInstance().getJiraAuthenticationContext().getOutlookDate().format(issue.getDueDate()));
         }
         //--> environment
-        en.setEnvironment(issue.getEnvironment());
-        //--> priority
-        if (issue.getPriorityObject() != null)
+        if (calFields != null && calFields.contains("environment"))
         {
-            en.setPriority(issue.getPriorityObject().getName());
+            en.addExtraField("environment", issue.getEnvironment());
+        }
+        //--> priority
+        if (issue.getPriorityObject() != null && calFields != null && calFields.contains("priority"))
+        {
+            en.addExtraField("priority", issue.getPriorityObject().getName());
         }
         //--> resolution
-        if (issue.getResolutionObject() != null)
+        if (issue.getResolutionObject() != null && calFields != null && calFields.contains("resolution"))
         {
-            en.setResolution(issue.getResolutionObject().getName());
+            en.addExtraField("resolution", issue.getResolutionObject().getName());
         }
         //--> affect versions
         Collection<Version> vers = issue.getAffectedVersions();
-        if (vers != null && !vers.isEmpty())
+        if (vers != null && !vers.isEmpty() && calFields != null && calFields.contains("affect"))
         {
             List<String> versList = new ArrayList<String>();
             for (Version ver : vers)
             {
                 versList.add(ver.getName());
             }
-            en.setAffectVersions(versList);
+            en.addExtraField("affect", versList.toString());
         }
         //--> fix versions
         vers = issue.getFixVersions();
-        if (vers != null && !vers.isEmpty())
+        if (vers != null && !vers.isEmpty() && calFields != null && calFields.contains("fixed"))
         {
             List<String> versList = new ArrayList<String>();
             for (Version ver : vers)
             {
                 versList.add(ver.getName());
             }
-            en.setFixVersions(versList);
+            en.addExtraField("fixed", versList.toString());
         }
         //--> created
-        en.setCreated(issue.getCreated().toString());
+        if (calFields != null &&calFields.contains("created"))
+        {
+            en.addExtraField("created", ComponentManager.getInstance().getJiraAuthenticationContext().getOutlookDate().format(issue.getCreated()));
+        }
         //--> updated
-        en.setUpdated(issue.getUpdated().toString());
+        if (calFields != null && calFields.contains("updated"))
+        {
+            en.addExtraField("updated", ComponentManager.getInstance().getJiraAuthenticationContext().getOutlookDate().format(issue.getUpdated()));
+        }
 
         return en;
     }
@@ -631,10 +658,11 @@ public class MailRuCalService
         ProjectCalUserData pcud,
         Issue issue,
         String baseUrl,
-        String color)
+        String color,
+        Set<String> calFields)
     {
         Timestamp dueDate = issue.getDueDate();
-        return createEventEntityObj(issue, baseUrl, color, sdf.format(dueDate), null);
+        return createEventEntityObj(issue, baseUrl, color, sdf.format(dueDate), null, calFields);
     }
 
     @POST
@@ -666,6 +694,70 @@ public class MailRuCalService
         mailCfg.deleteCalendar(ctime);
 
         return Response.ok().build();
+    }
+
+    @POST
+    @Produces ({ MediaType.APPLICATION_JSON})
+    @Path("/editcalendarprops")
+    public Response editCalendarProps(@Context HttpServletRequest request)
+    throws JSONException
+    {
+        JiraAuthenticationContext authCtx = ComponentManager.getInstance().getJiraAuthenticationContext();
+        User user = authCtx.getLoggedInUser();
+        if (user == null)
+        {
+            log.error("MailRuCalService::editCalendarProps - User is not logged");
+            return Response.status(401).build();
+        }
+
+        String ctimestr = request.getParameter("calctime");
+        String color = request.getParameter("calcolor");
+
+        Long ctime;
+        try
+        {
+            ctime = Long.valueOf(ctimestr);
+        }
+        catch (NumberFormatException nfex)
+        {
+            log.error("MailRuCalService::editCalendarProps - Incorrect input parameters", nfex);
+            return Response.status(500).build();
+        }
+
+        ProjectCalUserData pcud = mailCfg.getCalendarData(ctime);
+        if (pcud != null && Utils.isCalendarVisiable(pcud, user, groupMgr, prMgr, projectRoleManager))
+        {
+            Set<String> fields = new TreeSet<String>();
+            Map<String, Object> parms = request.getParameterMap();
+            for (Map.Entry<String, Object> parm : parms.entrySet())
+            {
+                if (!parm.getKey().equals("calctime") &&
+                    !parm.getKey().equals("calcolor"))
+                {
+                    fields.add(parm.getKey());
+                }
+            }
+
+            UserCalPref userPref = mailCfg.getUserCalPref(user.getName());
+            if (userPref == null)
+            {
+                userPref = new UserCalPref();
+            }
+            userPref.storeUserColor(pcud.getCalId(), color);
+            userPref.setCalendarFields(pcud.getCalId(), fields);
+            mailCfg.putUserCalPref(user.getName(), userPref);
+        }
+
+        String baseUrl = Utils.getBaseUrl(request);
+        return Response.seeOther(URI.create(baseUrl + "/plugins/servlet/mailrucal/view")).build();
+    }
+
+    /**
+     * Format date.
+     */
+    private synchronized String formatDate(long date)
+    {
+        return sdf.format(date);
     }
 
     @GET
@@ -744,11 +836,11 @@ public class MailRuCalService
             List<EventEntity> localeventObjs = null;
             if (pcud.isProjectType())
             {
-                localeventObjs = getProjectIssues(id, user, startLong, endLong, pcud, Utils.getBaseUrl(request), color);
+                localeventObjs = getProjectIssues(id, user, startLong, endLong, pcud, Utils.getBaseUrl(request), color, userPref.getCalendarFields(pcud.getCalId()));
             }
             else
             {
-                localeventObjs = getJclIssues(id, user, startLong, endLong, pcud, Utils.getBaseUrl(request), color);
+                localeventObjs = getJclIssues(id, user, startLong, endLong, pcud, Utils.getBaseUrl(request), color, userPref.getCalendarFields(pcud.getCalId()));
             }
 
             if (localeventObjs != null && !localeventObjs.isEmpty())
@@ -774,7 +866,8 @@ public class MailRuCalService
         long endDate,
         ProjectCalUserData pcud,
         String baseUrl,
-        String color)
+        String color,
+        Set<String> calFields)
     throws SearchException
     {
         SearchRequest search = getSearchRequest(fltId, user);
@@ -854,7 +947,7 @@ public class MailRuCalService
                 start += issues.size();
                 for (Issue issue : issues)
                 {
-                    EventEntity entity = createEventEntity(pcud, issue, baseUrl, startCf, endCf, color);
+                    EventEntity entity = createEventEntity(pcud, issue, baseUrl, startCf, endCf, color, calFields);
                     if (entity != null)
                     {
                         entities.add(entity);
@@ -886,7 +979,8 @@ public class MailRuCalService
         long endDate,
         ProjectCalUserData pcud,
         String baseUrl,
-        String color)
+        String color,
+        Set<String> calFields)
     throws SearchException
     {
         List<EventEntity> entities = new ArrayList<EventEntity>();
@@ -963,7 +1057,7 @@ public class MailRuCalService
             start += issues.size();
             for (Issue issue : issues)
             {
-                EventEntity entity = createEventEntity(pcud, issue, baseUrl, startCf, endCf, color);
+                EventEntity entity = createEventEntity(pcud, issue, baseUrl, startCf, endCf, color, calFields);
                 if (entity != null)
                 {
                     entities.add(entity);
@@ -972,14 +1066,6 @@ public class MailRuCalService
         }
 
         return entities;
-    }
-
-    /**
-     * Format date.
-     */
-    private synchronized String formatDate(long date)
-    {
-        return sdf.format(date);
     }
 
     /**
@@ -1162,7 +1248,105 @@ public class MailRuCalService
         }
         params.put("pcids", pcids);
 
+        if (pcids.isEmpty())
+        {
+            return Response.ok(new HtmlEntity("")).build();
+        }
+
         return Response.ok(new HtmlEntity(ComponentAccessor.getVelocityManager().getBody("templates/", "initCreateIssue.vm", params))).build();
+    }
+
+    @POST
+    @Produces({ MediaType.APPLICATION_JSON})
+    @Path("/editcaldlg")
+    public Response initEditDialog(@Context HttpServletRequest request)
+    throws VelocityException, JSONException
+    {
+        JiraAuthenticationContext authCtx = ComponentManager.getInstance().getJiraAuthenticationContext();
+        User user = authCtx.getLoggedInUser();
+        if (user == null)
+        {
+            log.error("MailRuCalService::initEditDialog - User is not logged");
+            return Response.status(401).build();
+        }
+
+        String ctimestr = request.getParameter("ctime");
+
+        Long ctime;
+        try
+        {
+            ctime = Long.valueOf(ctimestr);
+        }
+        catch (NumberFormatException nfex)
+        {
+            log.error("MailRuCalService::initEditDialog - Incorrect input parameters");
+            return Response.status(500).build();
+        }
+
+        ProjectCalUserData pcud = mailCfg.getCalendarData(ctime);
+        if (pcud != null && Utils.isCalendarVisiable(pcud, user, groupMgr, prMgr, projectRoleManager))
+        {
+            I18nHelper i18n = authCtx.getI18nHelper();
+            Map<String, Object> params = new HashMap<String, Object>();
+            params.put("i18n", i18n);
+            params.put("baseUrl", Utils.getBaseUrl(request));
+            params.put("pcud", pcud);
+
+            //--> set user color
+            UserCalPref userPref = mailCfg.getUserCalPref(user.getName());
+            if (userPref == null)
+            {
+                userPref = new UserCalPref();
+            }
+
+            String color = pcud.getColor();
+            if (userPref.isUserColor(pcud.getCalId()))
+            {
+                color = userPref.getUserColor(pcud.getCalId());
+            }
+            params.put("usercolor", color);
+
+            Map<String, String> fields = new LinkedHashMap<String, String>();
+            fields.put("issuestatus", i18n.getText("mailrucal.statusview"));
+            fields.put("assignee", i18n.getText("mailrucal.assigneeview"));
+            fields.put("reporter", i18n.getText("mailrucal.reporter"));
+            fields.put("labels", i18n.getText("mailrucal.labels"));
+            fields.put("components", i18n.getText("mailrucal.components"));
+            fields.put("duedate", i18n.getText("mailrucal.duedate"));
+            fields.put("environment", i18n.getText("mailrucal.environment"));
+            fields.put("priority", i18n.getText("mailrucal.priority"));
+            fields.put("resolution", i18n.getText("mailrucal.resolution"));
+            fields.put("affect", i18n.getText("mailrucal.affect"));
+            fields.put("fixed", i18n.getText("mailrucal.fixed"));
+            fields.put("created", i18n.getText("mailrucal.created"));
+            fields.put("updated", i18n.getText("mailrucal.updated"));
+            List<CustomField> cgList = cfMgr.getCustomFieldObjects();
+            for (CustomField cf : cgList)
+            {
+                if (cf.isAllProjects())
+                {
+                    fields.put(cf.getName(), cf.getName());
+                }
+                else
+                {
+                    List<GenericValue> projs = cf.getAssociatedProjects();
+                    for (GenericValue proj : projs)
+                    {
+                        Long projId = (Long) proj.get("id");
+                        if (pcud.isProjectType() && Long.valueOf(pcud.getTarget()).equals(projId))
+                        {
+                            fields.put(cf.getName(), cf.getName());
+                        }
+                    }
+                }
+            }
+            params.put("storedFields", userPref.getCalendarFields(ctime));
+            params.put("fields", fields);
+
+            return Response.ok(new HtmlEntity(ComponentAccessor.getVelocityManager().getBody("templates/", "editcalendar.vm", params))).build();
+        }
+
+        return Response.ok(new HtmlEntity("NO_CALENDAR")).build();
     }
 
     @POST

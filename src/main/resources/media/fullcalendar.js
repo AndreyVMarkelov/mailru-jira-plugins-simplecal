@@ -22,6 +22,17 @@ var defaults = {
     priority: 'Priority',
     assignee: 'Assignee',
     issuestatus: 'Status',
+    resolution: 'Resolution',
+    reporter: 'Reporter',
+    fixes: 'Fix versions',
+    affect: 'Affect versions',
+    labels: 'Labels',
+    components: 'Components',
+    duedate: 'Due',
+    environment: 'Environment',
+    created: 'Created',
+    updated: 'Updated',
+
     defaultView: 'month',
     aspectRatio: 1.35,
     header: {
@@ -3861,48 +3872,56 @@ function AgendaEventRenderer() {
 					
 	}
 
+    function fromOpt(val) {
+        var optVal = opt(val);
+        if (optVal) {
+            return optVal;
+        } else {
+            return val;
+        }
+    }
+
     function slotSegHtml(event, seg) {
-		var html = "<";
-		var url = event.url;
-		var skinCss = getSkinCss(event, opt);
-		var skinCssAttr = (skinCss ? " style='" + skinCss + "'" : '');
-		var classes = ['fc-event', 'fc-event-skin', 'fc-event-vert'];
-		if (isEventDraggable(event)) {
-			classes.push('fc-event-draggable');
-		}
-		if (seg.isStart) {
-			classes.push('fc-corner-top');
-		}
-		if (seg.isEnd) {
-			classes.push('fc-corner-bottom');
-		}
-		classes = classes.concat(event.className);
-		if (event.source) {
-			classes = classes.concat(event.source.className || []);
-		}
-		if (url) {
-			html += "a href='" + htmlEscape(event.url) + "'";
-		}else{
-			html += "div";
-		}
+        var html = "<";
+        var url = event.url;
+        var skinCss = getSkinCss(event, opt);
+        var skinCssAttr = (skinCss ? " style='" + skinCss + "'" : '');
+        var classes = ['fc-event', 'fc-event-skin', 'fc-event-vert'];
+        if (isEventDraggable(event)) {
+            classes.push('fc-event-draggable');
+        }
+        if (seg.isStart) {
+            classes.push('fc-corner-top');
+        }
+        if (seg.isEnd) {
+            classes.push('fc-corner-bottom');
+        }
+        classes = classes.concat(event.className);
+        if (event.source) {
+            classes = classes.concat(event.source.className || []);
+        }
+        if (url) {
+            html += "a href='" + htmlEscape(event.url) + "'";
+        } else {
+            html += "div";
+        }
 
         //--> extra info
-        var extraInfo = "<span class='extrainfomain'>[" +
-            "<span class='extrainfo'><span class='extrainfoheader'>" +
-            opt('assignee') + ": </span><span class='extrainfobody'>" +
-            htmlEscape(event.assignee) + "</span></span>, " +
-            "<span class='extrainfo'><span class='extrainfoheader'>" +
-            opt('issuestatus') + ": </span><span class='extrainfobody'>" +
-            htmlEscape(event.status) + "</span></span>";
-
-        /*if (event.customFields) {
-            for (j=0; j < event.customFields.length; j++) {
-                extraInfo += ", <span class='extrainfo'><span class='extrainfoheader'>" +
-                    event.customFields[j][0] + ": </span><span class='extrainfobody'>" +
-                    htmlEscape(event.customFields[j][1]) + "</span></span>";
+        var extraInfo = "";
+        if (event.extraFields) {
+            for (j=0; j < event.extraFields.length; j++) {
+                if (j != 0) {
+                    extraInfo += ", ";
+                }
+                extraInfo += "<span class='extrainfo'><span class='extrainfoheader'>" +
+                    fromOpt(event.extraFields[j][0]) + ": </span><span class='extrainfobody'>" +
+                    htmlEscape(event.extraFields[j][1]) + "</span></span>";
             }
-        }*/
-        extraInfo += "]</span>";
+        }
+        var extraInfoMain = "";
+        if (extraInfo) {
+            extraInfoMain = "<span class='extrainfomain'>[" + extraInfo + "]</span>";
+        }
         //<--
 
         var issueInfo = "<div>" +
@@ -3920,7 +3939,7 @@ function AgendaEventRenderer() {
             htmlEscape(formatDates(event.start, event.end, opt('timeFormat'))) +
             "</div>" +
             "</div>" +
-            "<div class='fc-event-content'>" + issueInfo + extraInfo + "</div>" +
+            "<div class='fc-event-content'>" + issueInfo + extraInfoMain + "</div>" +
             "<div class='fc-event-bg'></div>" +
             "</div>"; // close inner
        if (seg.isEnd && isEventResizable(event)) {
@@ -4589,8 +4608,16 @@ function DayEventRenderer() {
 		}
 		return $(elements);
 	}
-	
-	
+
+    function fromOpt(val) {
+        var optVal = opt(val);
+        if (optVal) {
+            return optVal;
+        } else {
+            return val;
+        }
+    }
+
 	function daySegHTML(segs) { // also sets seg.left and seg.outerWidth
 		var rtl = opt('isRTL');
 		var i;
@@ -4666,22 +4693,21 @@ function DayEventRenderer() {
             }
 
             //--> extra info
-            var extraInfo = "<span class='extrainfomain'>[" +
-                "<span class='extrainfo'><span class='extrainfoheader'>" +
-                opt('assignee') + ": </span><span class='extrainfobody'>" +
-                htmlEscape(event.assignee) + "</span></span>, " +
-                "<span class='extrainfo'><span class='extrainfoheader'>" +
-                opt('issuestatus') + ": </span><span class='extrainfobody'>" +
-                htmlEscape(event.status) + "</span></span>";
-
-            /*if (event.customFields) {
-                for (j=0; j < event.customFields.length; j++) {
-                    extraInfo += ", <span class='extrainfo'><span class='extrainfoheader'>" +
-                        event.customFields[j][0] + ": </span><span class='extrainfobody'>" +
-                        htmlEscape(event.customFields[j][1]) + "</span></span>";
+            var extraInfo = "";
+            if (event.extraFields) {
+                for (j=0; j < event.extraFields.length; j++) {
+                    if (j != 0) {
+                        extraInfo += ", ";
+                    }
+                    extraInfo += "<span class='extrainfo'><span class='extrainfoheader'>" +
+                        fromOpt(event.extraFields[j][0]) + ": </span><span class='extrainfobody'>" +
+                        htmlEscape(event.extraFields[j][1]) + "</span></span>";
                 }
-            }*/
-            extraInfo += "]</span>";
+            }
+            var extraInfoMain = "";
+            if (extraInfo) {
+                extraInfoMain = "<span class='extrainfomain'>[" + extraInfo + "]</span>";
+            }
             //<--
 
             var issueInfo = "<div>" +
@@ -4690,7 +4716,7 @@ function DayEventRenderer() {
                 htmlEscape(event.title) + "</span></div>";
 
             html +=
-                issueInfo + extraInfo + "</div>";
+                issueInfo + extraInfoMain + "</div>";
             if (seg.isEnd && isEventResizable(event)) {
                 html +=
                     "<div class='ui-resizable-handle ui-resizable-" + (rtl ? 'w' : 'e') + "'>" +
@@ -4875,33 +4901,29 @@ function DayEventRenderer() {
 			}
 		}
 	}
-	
-	
-	
-	/* Resizing
-	-----------------------------------------------------------------------------------*/
-	
-	
-	function resizableDayEvent(event, element, seg) {
-		var rtl = opt('isRTL');
-		var direction = rtl ? 'w' : 'e';
-		var handle = element.find('div.ui-resizable-' + direction);
-		var isResizing = false;
-		
-		// TODO: look into using jquery-ui mouse widget for this stuff
-		disableTextSelection(element); // prevent native <a> selection for IE
-		element
-			.mousedown(function(ev) { // prevent native <a> selection for others
-				ev.preventDefault();
-			})
-			.click(function(ev) {
-				if (isResizing) {
-					ev.preventDefault(); // prevent link from being visited (only method that worked in IE6)
-					ev.stopImmediatePropagation(); // prevent fullcalendar eventClick handler from being called
-					                               // (eventElementHandlers needs to be bound after resizableDayEvent)
-				}
-			});
-		
+
+    /* Resizing
+     *-----------------------------------------------------------------------------------
+     */
+
+    function resizableDayEvent(event, element, seg) {
+        var rtl = opt('isRTL');
+        var direction = rtl ? 'w' : 'e';
+        var handle = element.find('div.ui-resizable-' + direction);
+        var isResizing = false;
+
+        // TODO: look into using jquery-ui mouse widget for this stuff
+        disableTextSelection(element); // prevent native <a> selection for IE
+        element.mousedown(function(ev) { // prevent native <a> selection for others
+            ev.preventDefault();
+        }).click(function(ev) {
+            if (isResizing) {
+                ev.preventDefault(); // prevent link from being visited (only method that worked in IE6)
+                ev.stopImmediatePropagation(); // prevent fullcalendar eventClick handler from being called
+                // (eventElementHandlers needs to be bound after resizableDayEvent)
+            }
+        });
+
 		handle.mousedown(function(ev) {
 			if (ev.which != 1) {
 				return; // needs to be left mouse button
