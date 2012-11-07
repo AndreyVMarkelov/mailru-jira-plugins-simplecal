@@ -429,6 +429,25 @@ function setIssueDueDate() {
     jQuery("#cdpinput").enable(false);
 }
 
+//--> change weekends view
+function changeWeekendsView(baseUrl, view) {
+    jQuery.ajax({
+        url: baseUrl + "/rest/mailrucalws/1.0/mailcalsrv/setweekendview",
+        type: "POST",
+        dataType: "json",
+        error: function(xhr, ajaxOptions, thrownError) {
+            if (xhr.responseText) {
+                alert(xhr.responseText);
+            } else {
+                alert("Internal error");
+            }
+        },
+        success: function(result) {
+            window.location.reload();
+        }
+    });
+}
+
 function setUserPrefView(baseUrl, view) {
     jQuery.ajax({
         url: baseUrl + "/rest/mailrucalws/1.0/mailcalsrv/setuserprefview",

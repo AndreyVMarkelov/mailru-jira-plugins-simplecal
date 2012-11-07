@@ -20,7 +20,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
-
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -30,12 +29,10 @@ import javax.ws.rs.core.CacheControl;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.velocity.exception.VelocityException;
 import org.ofbiz.core.entity.GenericValue;
-
 import com.atlassian.crowd.embedded.api.User;
 import com.atlassian.jira.ComponentManager;
 import com.atlassian.jira.bc.JiraServiceContext;
@@ -1323,7 +1320,7 @@ public class MailRuCalService
             List<CustomField> cgList = cfMgr.getCustomFieldObjects();
             for (CustomField cf : cgList)
             {
-                if (cf.isAllProjects())
+                if (cf.isAllProjects() || pcud.isJclType())
                 {
                     fields.put(cf.getName(), cf.getName());
                 }
@@ -1333,7 +1330,7 @@ public class MailRuCalService
                     for (GenericValue proj : projs)
                     {
                         Long projId = (Long) proj.get("id");
-                        if (pcud.isProjectType() && Long.valueOf(pcud.getTarget()).equals(projId))
+                        if (Long.valueOf(pcud.getTarget()).equals(projId))
                         {
                             fields.put(cf.getName(), cf.getName());
                         }
@@ -1542,6 +1539,31 @@ public class MailRuCalService
             userPref = new UserCalPref();
         }
         userPref.setDefaultView(view);
+        mailCfg.putUserCalPref(user.getName(), userPref);
+
+        return Response.ok().build();
+    }
+
+    @POST
+    @Produces ({ MediaType.APPLICATION_JSON})
+    @Path("/setweekendview")
+    public Response setWeekendView(@Context HttpServletRequest request)
+    {
+        JiraAuthenticationContext authCtx = ComponentManager.getInstance().getJiraAuthenticationContext();
+        User user = authCtx.getLoggedInUser();
+        if (user == null)
+        {
+            log.error("MailRuCalService::setUserPrefView - User is not logged");
+            return Response.status(401).build();
+        }
+
+        UserCalPref userPref = mailCfg.getUserCalPref(user.getName());
+        if (userPref == null)
+        {
+            userPref = new UserCalPref();
+        }
+        boolean weekends = userPref.isHideWeekend();
+        userPref.setHideWeekend(!weekends);
         mailCfg.putUserCalPref(user.getName(), userPref);
 
         return Response.ok().build();

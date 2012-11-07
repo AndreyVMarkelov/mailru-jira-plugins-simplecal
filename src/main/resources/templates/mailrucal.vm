@@ -18,6 +18,10 @@
                 <td width="20%" valign="top">
                     <div class="rightbox">
                         <div class="optionbox">
+                            <button onclick="changeWeekendsView('$baseUrl');">#if($usrPref.isHideWeekend())$i18n.getText("mailrucal.showweekends")#else$i18n.getText("mailrucal.hideweekends")#end</button>
+                        </div>
+                        <hr class="linemargin"/>
+                        <div class="optionbox">
                         <p>
                             <img src="$baseUrl/images/icons/bullet_creme.gif" height="8" align="absmiddle" border="0" width="8">
                             <strong><a id="addMailRuCalendarBtn" name="addMailRuCalendarBtn" href="#" class="addact" onclick="addMailRuCalendar(event, '$baseUrl')">$i18n.getText("mailrucal.addcal")</a></strong>
@@ -101,6 +105,7 @@
             dayClick: function(date, allDay, jsEvent, view) {
                 createIssue('$baseUrl', date.getTime());
             },
+            weekends: !$usrPref.isHideWeekend(),
             priority: 'Priority',
             assignee: 'Assignee',
             issuestatus: 'Status',

@@ -33,6 +33,11 @@ public class UserCalPref
     private Map<Long, Set<String>> fields;
 
     /**
+     * Hide weekends.
+     */
+    private boolean hideWeekend;
+
+    /**
      * Hide calendars.
      */
     private Set<Long> shadowCalendars;
@@ -119,6 +124,11 @@ public class UserCalPref
         return shadowCalendars.contains(calId);
     }
 
+    public boolean isHideWeekend()
+    {
+        return hideWeekend;
+    }
+
     /**
      * Is user color for calendar?
      */
@@ -191,6 +201,11 @@ public class UserCalPref
         this.fields = fields;
     }
 
+    public void setHideWeekend(boolean hideWeekend)
+    {
+        this.hideWeekend = hideWeekend;
+    }
+
     /**
      * Set hide calendars.
      */
@@ -214,7 +229,8 @@ public class UserCalPref
     @Override
     public String toString()
     {
-        return "UserCalPref [colors=" + colors + ", defaultView=" + defaultView
-            + ", fields=" + fields + ", shadowCalendars=" + shadowCalendars + "]";
+        return "UserCalPref[colors=" + colors + ", defaultView=" + defaultView
+            + ", fields=" + fields + ", hideWeekend=" + hideWeekend
+            + ", shadowCalendars=" + shadowCalendars + "]";
     }
 }
