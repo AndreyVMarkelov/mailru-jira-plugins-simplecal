@@ -113,12 +113,18 @@ public class MailRuCalServlet
             }
         }
 
+        UserCalPref userPref = mailCfg.getUserCalPref(user.getName());
+        if (userPref == null)
+        {
+            userPref = new UserCalPref();
+        }
+
         Map<String, Object> parms = new HashMap<String, Object>();
         parms.put("lang", req.getLocale().getLanguage());
         parms.put("baseUrl", Utils.getBaseUrl(req));
         parms.put("i18n", ComponentManager.getInstance().getJiraAuthenticationContext().getI18nHelper());
         parms.put("usrData", datas);
-        parms.put("usrPref", mailCfg.getUserCalPref(user.getName()));
+        parms.put("usrPref", userPref);
         parms.put("user", user.getName());
 
         resp.setContentType("text/html;charset=utf-8");
