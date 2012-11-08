@@ -5,6 +5,7 @@
 package ru.mail.jira.plugins;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.StringTokenizer;
 import javax.servlet.http.HttpServletRequest;
@@ -120,6 +121,28 @@ public class Utils
         }
 
         return true;
+    }
+
+    /**
+     * Convert list to string for entity view.
+     */
+    public static String listEntityView(List<String> list)
+    {
+        StringBuilder sb = new StringBuilder("(");
+        if (list != null)
+        {
+            for (int i = 0; i < list.size(); i++)
+            {
+                if (i > 0)
+                {
+                    sb.append(", ");
+                }
+                sb.append(list.get(i));
+            }
+        }
+        sb.append(")");
+
+        return sb.toString();
     }
 
     /**

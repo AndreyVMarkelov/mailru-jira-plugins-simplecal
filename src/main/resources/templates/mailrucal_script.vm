@@ -45,19 +45,19 @@
                 createIssue('$baseUrl', date.getTime());
             },
             weekends: !$usrPref.isHideWeekend(),
-            priority: 'Priority',
-            assignee: 'Assignee',
-            issuestatus: 'Status',
-            resolution: 'Resolution',
-            reporter: 'Reporter',
-            fixes: 'Fix versions',
-            affect: 'Affect versions',
-            labels: 'Labels',
-            components: 'Components',
-            duedate: 'Due',
-            environment: 'Environment',
-            created: 'Created',
-            updated: 'Updated'
+            priority: '$i18n.getText("mailrucal.priority")',
+            assignee: '$i18n.getText("mailrucal.assigneeview")',
+            issuestatus: '$i18n.getText("mailrucal.statusview")',
+            resolution: '$i18n.getText("mailrucal.resolution")',
+            reporter: '$i18n.getText("mailrucal.reporter")',
+            fixes: '$i18n.getText("mailrucal.fixes")',
+            affect: '$i18n.getText("mailrucal.affect")',
+            labels: '$i18n.getText("mailrucal.labels")',
+            components: '$i18n.getText("mailrucal.components")',
+            duedate: '$i18n.getText("mailrucal.duedate")',
+            environment: '$i18n.getText("mailrucal.environment")',
+            created: '$i18n.getText("mailrucal.created")',
+            updated: '$i18n.getText("mailrucal.updated")'
         });
     });
 </script>

@@ -565,7 +565,16 @@ public class MailRuCalService
                 Object cfVal = cf.getValue(issue);
                 if (cfVal != null && calFields != null && calFields.contains(cf.getName()))
                 {
-                    cfMap.put(cf.getName(), cfVal.toString());
+                    String cfStrVal;
+                    if (cfVal instanceof Date)
+                    {
+                        cfStrVal = ComponentManager.getInstance().getJiraAuthenticationContext().getOutlookDate().formatDateTimePicker((Date)cfVal);
+                    }
+                    else
+                    {
+                        cfStrVal = cfVal.toString();
+                    }
+                    cfMap.put(cf.getName(), cfStrVal);
                 }
             }
             en.setCustomFields(cfMap);
@@ -579,7 +588,7 @@ public class MailRuCalService
             {
                 labelList.add(label.getLabel());
             }
-            en.addExtraField("labels", labelList.toString());
+            en.addExtraField("labels", Utils.listEntityView(labelList));
         }
         //--> components
         Collection<ProjectComponent> comps = issue.getComponentObjects();
@@ -590,7 +599,7 @@ public class MailRuCalService
             {
                 pcs.add(pc.getName());
             }
-            en.addExtraField("components", pcs.toString());
+            en.addExtraField("components", Utils.listEntityView(pcs));
         }
         //--> due
         if (issue.getDueDate() != null && calFields != null && calFields.contains("duedate"))
@@ -621,7 +630,7 @@ public class MailRuCalService
             {
                 versList.add(ver.getName());
             }
-            en.addExtraField("affect", versList.toString());
+            en.addExtraField("affect", Utils.listEntityView(versList));
         }
         //--> fix versions
         vers = issue.getFixVersions();
@@ -632,7 +641,7 @@ public class MailRuCalService
             {
                 versList.add(ver.getName());
             }
-            en.addExtraField("fixed", versList.toString());
+            en.addExtraField("fixed", Utils.listEntityView(versList));
         }
         //--> created
         if (calFields != null &&calFields.contains("created"))
