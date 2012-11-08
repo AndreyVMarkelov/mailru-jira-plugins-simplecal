@@ -1,0 +1,63 @@
+<script type='text/javascript'>
+    jQuery(document).ready(function() {
+        #foreach($proj in $usrData)
+            #if($usrPref.isCalendarShadow($proj.getCalId()))
+                jQuery('#$proj.getCalId()').removeAttr("checked");
+            #else
+                jQuery('#$proj.getCalId()').attr('checked', 'checked');
+            #end
+        #end
+
+        jQuery('#calendar').fullCalendar({
+            #if($usrPref && $usrPref.getDefaultView())defaultView: '$usrPref.getDefaultView()',#end
+            header: {
+                left: 'prev,next today',
+                center: 'title',
+                right: 'month,basicWeek,basicDay'
+            },
+            editable: false,
+            events: "$baseUrl/rest/mailrucalws/1.0/mailcalsrv/events",
+            eventDrop: function(event, delta) {
+                alert(event.title + ' was moved ' + delta + ' days\n' +
+                '(should probably update your database)');
+            },
+            firstDay: 1,
+            monthNames: ['$i18n.getText("mailrucal.January")', '$i18n.getText("mailrucal.February")', '$i18n.getText("mailrucal.March")', '$i18n.getText("mailrucal.April")', '$i18n.getText("mailrucal.May")', '$i18n.getText("mailrucal.June")', '$i18n.getText("mailrucal.July")', '$i18n.getText("mailrucal.August")', '$i18n.getText("mailrucal.September")', '$i18n.getText("mailrucal.October")', '$i18n.getText("mailrucal.November")', '$i18n.getText("mailrucal.December")'],
+            monthNamesShort: ['$i18n.getText("mailrucal.Jan")', '$i18n.getText("mailrucal.Feb")', '$i18n.getText("mailrucal.Mar")', '$i18n.getText("mailrucal.Apr")', '$i18n.getText("mailrucal.May")', '$i18n.getText("mailrucal.Jun")', '$i18n.getText("mailrucal.Jul")', '$i18n.getText("mailrucal.Aug")', '$i18n.getText("mailrucal.Sep")', '$i18n.getText("mailrucal.Oct")', '$i18n.getText("mailrucal.Nov")', '$i18n.getText("mailrucal.Dec")'],
+            dayNames: ['$i18n.getText("mailrucal.Sunday")', '$i18n.getText("mailrucal.Monday")', '$i18n.getText("mailrucal.Tuesday")', '$i18n.getText("mailrucal.Wednesday")', '$i18n.getText("mailrucal.Thursday")', '$i18n.getText("mailrucal.Friday")', '$i18n.getText("mailrucal.Saturday")'],
+            dayNamesShort: ['$i18n.getText("mailrucal.Sun")', '$i18n.getText("mailrucal.Mon")', '$i18n.getText("mailrucal.Tue")', '$i18n.getText("mailrucal.Wed")', '$i18n.getText("mailrucal.Thu")', '$i18n.getText("mailrucal.Fri")', '$i18n.getText("mailrucal.Sat")'],
+            buttonText: {
+                prev: '&nbsp;&#9668;&nbsp;',
+                next: '&nbsp;&#9658;&nbsp;',
+                prevYear: '&nbsp;&lt;&lt;&nbsp;',
+                nextYear: '&nbsp;&gt;&gt;&nbsp;',
+                today: '$i18n.getText("mailrucal.today")',
+                month: '$i18n.getText("mailrucal.month")',
+                week: '$i18n.getText("mailrucal.week")',
+                day: '$i18n.getText("mailrucal.day")'
+            },
+            aspectRatio: 2,
+            weekMode: 'liquid',
+            viewDisplay: function(view) {
+                setUserPrefView('$baseUrl', view.name);
+            },
+            dayClick: function(date, allDay, jsEvent, view) {
+                createIssue('$baseUrl', date.getTime());
+            },
+            weekends: !$usrPref.isHideWeekend(),
+            priority: 'Priority',
+            assignee: 'Assignee',
+            issuestatus: 'Status',
+            resolution: 'Resolution',
+            reporter: 'Reporter',
+            fixes: 'Fix versions',
+            affect: 'Affect versions',
+            labels: 'Labels',
+            components: 'Components',
+            duedate: 'Due',
+            environment: 'Environment',
+            created: 'Created',
+            updated: 'Updated'
+        });
+    });
+</script>

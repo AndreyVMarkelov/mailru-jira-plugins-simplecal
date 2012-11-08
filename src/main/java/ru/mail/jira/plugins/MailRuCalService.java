@@ -725,13 +725,12 @@ public class MailRuCalService
         if (pcud != null && Utils.isCalendarVisiable(pcud, user, groupMgr, prMgr, projectRoleManager))
         {
             Set<String> fields = new TreeSet<String>();
-            Map<String, Object> parms = request.getParameterMap();
-            for (Map.Entry<String, Object> parm : parms.entrySet())
+            String[] parms = request.getParameterValues("selfields");
+            if (parms != null)
             {
-                if (!parm.getKey().equals("calctime") &&
-                    !parm.getKey().equals("calcolor"))
+                for (String parm : parms)
                 {
-                    fields.add(parm.getKey());
+                    fields.add(parm);
                 }
             }
 

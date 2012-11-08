@@ -7,6 +7,8 @@ package ru.mail.jira.plugins;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import com.atlassian.sal.api.pluginsettings.PluginSettings;
 import com.atlassian.sal.api.pluginsettings.PluginSettingsFactory;
 import com.thoughtworks.xstream.XStream;
@@ -20,6 +22,11 @@ import com.thoughtworks.xstream.XStreamException;
 public class MailRuCalCfgImpl
     implements MailRuCalCfg
 {
+    /**
+     * Logger.
+     */
+    private static Log log = LogFactory.getLog(MailRuCalCfgImpl.class);
+
     /**
      * Calendars.
      */
@@ -87,6 +94,7 @@ public class MailRuCalCfgImpl
             }
             catch (XStreamException xsex)
             {
+                log.warn("MailRuCalCfgImpl::getCalendarData - XStream error", xsex);
                 return null;
             }
         }
@@ -123,7 +131,7 @@ public class MailRuCalCfgImpl
                 }
                 catch (XStreamException xsex)
                 {
-                    //
+                    log.warn("MailRuCalCfgImpl::getCalendarsData - XStream error", xsex);
                 }
             }
         }
@@ -156,6 +164,7 @@ public class MailRuCalCfgImpl
             }
             catch (XStreamException xsex)
             {
+                log.warn("MailRuCalCfgImpl::getUserCalPref - XStream error", xsex);
                 return null;
             }
         }

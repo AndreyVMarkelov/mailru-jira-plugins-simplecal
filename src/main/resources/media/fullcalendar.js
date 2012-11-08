@@ -697,36 +697,36 @@ function Header(calendar, options) {
 	
 
 
-	function render() {
-		tm = options.theme ? 'ui' : 'fc';
-		var sections = options.header;
-		if (sections) {
-			element = $("<table class='fc-header' style='width:100%'/>")
-				.append(
-					$("<tr/>")
-						.append(renderSection('left'))
-						.append(renderSection('center'))
-						.append(renderSection('right'))
-				);
-			return element;
-		}
-	}
-	
-	
-	function destroy() {
-		element.remove();
-	}
-	
-	
-	function renderSection(position) {
-		var e = $("<td class='fc-header-" + position + "'/>");
-		var buttonStr = options.header[position];
-		if (buttonStr) {
-			$.each(buttonStr.split(' '), function(i) {
-				if (i > 0) {
-					e.append("<span class='fc-header-space'/>");
-				}
-				var prevButton;
+    function render() {
+        tm = options.theme ? 'ui' : 'fc';
+        var sections = options.header;
+        if (sections) {
+            element = $("<div class='fc-header-div'/>").append(
+                $("<table class='fc-header' style='width:100%'/>")
+                    .append(
+                        $("<tr/>")
+                            .append(renderSection('left'))
+                            .append(renderSection('center'))
+                            .append(renderSection('right'))
+                    )
+                );
+            return element;
+        }
+    }
+
+    function destroy() {
+        element.remove();
+    }
+
+    function renderSection(position) {
+        var e = $("<td class='fc-header-" + position + "'/>");
+        var buttonStr = options.header[position];
+        if (buttonStr) {
+            $.each(buttonStr.split(' '), function(i) {
+                if (i > 0) {
+                    e.append("<span class='fc-header-space'/>");
+                }
+                var prevButton;
 				$.each(this.split(','), function(j, buttonName) {
 					if (buttonName == 'title') {
 						e.append("<span class='fc-header-title'><h2>&nbsp;</h2></span>");

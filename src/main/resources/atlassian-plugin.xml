@@ -23,6 +23,7 @@
         <resource type="download" name="jquery.json-2.3.js" location="media/jquery.json-2.3.js"/>
         <resource type="download" name="mailrucal.js" location="media/mailrucal.js"/>
         <resource type="download" name="mailrucal.css" location="media/mailrucal.css"/>
+        <resource type="download" name="mailrucal-images/" location="images"/>
     </web-resource>
 
     <web-resource key="jcalendar-admin" name="Mail.Ru Calendar Admin Resources">

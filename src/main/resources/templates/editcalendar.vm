@@ -31,13 +31,11 @@
     <tr>
       <td class="dlgtablekey"><label for="calcolor">$i18n.getText("mailrucal.showfields")</label></td>
       <td valign="top">
-        <table>
-        #foreach($field in $fields.entrySet())
-          <tr><td>
-            <input type="checkbox" id="$field" name="$field.key" value="$field.key" #if($storedFields.contains($field.key))checked="checked"#end/>&nbsp;$field.value
-          </td></tr>
-        #end
-        </table>
+        <select id="selfields" name="selfields" multiple="multiple" size="20">
+            #foreach($field in $fields.entrySet())
+            <option value="$field.key" #if($storedFields.contains($field.key))selected="selected"#end>$field.value</option>
+            #end
+        </select>
       </td>
     </tr>
   </table>

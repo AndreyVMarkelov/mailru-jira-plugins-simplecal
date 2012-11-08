@@ -2,6 +2,64 @@
   Created by Andrey Markelov 29-08-2012.
   Copyright Mail.Ru Group 2012. All rights reserved.
 */
+
+/* break span words */
+span.breakwords {
+    word-wrap: break-word;
+}
+
+/* calendars box */
+div.calendar_box {
+    
+}
+
+span.groupheader {
+    color: #333;
+    font-size: 22px;
+    position: relative;
+}
+
+/* calendar row */
+tr.calendar_row {
+    height: 20px;
+    max-height: 20px;
+    min-height: 20px;
+    padding: 2px;
+}
+
+/* calendar column */
+td.calendar_clm {
+    height: 20px;
+    max-height: 20px;
+    min-height: 20px;
+    padding: 2px;
+    vertical-align: top;
+}
+
+/* action images margin */
+img.actimg {
+    margin: 1px;
+}
+
+/* group opt margin */
+.group_opt_margin {
+    margin-left: 3px;
+}
+
+/* list calendars box */
+div.list_calendars {
+    overflow-x: hidden;
+    overflow-y: auto;
+    height: 320px;
+}
+
+/* calendars table */
+table.calendars_table {
+    width: 100%;
+    table-layout: fixed;
+    border-collapse: collapse;
+}
+
 .optionbox {
     margin: 12px;
 }
@@ -11,10 +69,35 @@
     margin-right: 12px;
 }
 
-.rightbox {
+/* just black line */
+hr.justline {
+    color: #FFFFFF;
+}
+
+/* button full width */
+button.fullsize {
+    width: 100%;
+}
+
+/* calendar frame */
+td.centerframe {
+    padding-top: 5px;
+    padding-left: 5px;
+}
+
+/* options frame */
+td.rightframe {
+    padding: 5px;
+}
+
+/* right main panel style */
+div.rightbox {
     float: left;
     width: 100%;
     height: 100%;
+    border: 1px solid #000000;
+    background: #FFFFFF;
+    border-radius:4px;
 }
 
 .opttext {
