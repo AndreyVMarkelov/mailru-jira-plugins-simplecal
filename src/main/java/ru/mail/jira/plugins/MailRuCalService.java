@@ -574,7 +574,11 @@ public class MailRuCalService
                     {
                         cfStrVal = cfVal.toString();
                     }
-                    cfMap.put(cf.getName(), cfStrVal);
+
+                    if (cfStrVal.length() > 0)
+                    {
+                        cfMap.put(cf.getName(), cfStrVal);
+                    }
                 }
             }
             en.setCustomFields(cfMap);
@@ -607,7 +611,7 @@ public class MailRuCalService
             en.addExtraField("duedate", ComponentManager.getInstance().getJiraAuthenticationContext().getOutlookDate().format(issue.getDueDate()));
         }
         //--> environment
-        if (calFields != null && calFields.contains("environment"))
+        if (issue.getEnvironment() != null && calFields != null && calFields.contains("environment"))
         {
             en.addExtraField("environment", issue.getEnvironment());
         }
@@ -1322,7 +1326,7 @@ public class MailRuCalService
             fields.put("priority", i18n.getText("mailrucal.priority"));
             fields.put("resolution", i18n.getText("mailrucal.resolution"));
             fields.put("affect", i18n.getText("mailrucal.affect"));
-            fields.put("fixed", i18n.getText("mailrucal.fixed"));
+            fields.put("fixed", i18n.getText("mailrucal.fixes"));
             fields.put("created", i18n.getText("mailrucal.created"));
             fields.put("updated", i18n.getText("mailrucal.updated"));
             List<CustomField> cgList = cfMgr.getCustomFieldObjects();
