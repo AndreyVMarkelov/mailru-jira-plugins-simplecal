@@ -4,6 +4,7 @@
  */
 package ru.mail.jira.plugins;
 
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -96,13 +97,33 @@ public class Utils
         {
             for (ProjRole pr : pcud.getProjRoles())
             {
-                ProjectRole realRole = projectRoleManager.getProjectRole(Long.valueOf(pr.getRole()));
-                Project realProject = prMgr.getProjectObj(Long.valueOf(pr.getProject()));
-                if (realRole != null &&
-                    realProject != null &&
-                    projectRoleManager.isUserInProjectRole(user, realRole, realProject))
+                if (pr.getRole().equals(""))
                 {
-                    return true;
+                    Collection<ProjectRole> realRoles = projectRoleManager.getProjectRoles();
+                    if (realRoles != null)
+                    {
+                        for (ProjectRole realRole : realRoles)
+                        {
+                            Project realProject = prMgr.getProjectObj(Long.valueOf(pr.getProject()));
+                            if (realRole != null &&
+                                realProject != null &&
+                                projectRoleManager.isUserInProjectRole(user, realRole, realProject))
+                            {
+                                return true;
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    ProjectRole realRole = projectRoleManager.getProjectRole(Long.valueOf(pr.getRole()));
+                    Project realProject = prMgr.getProjectObj(Long.valueOf(pr.getProject()));
+                    if (realRole != null &&
+                        realProject != null &&
+                        projectRoleManager.isUserInProjectRole(user, realRole, realProject))
+                    {
+                        return true;
+                    }
                 }
             }
         }
