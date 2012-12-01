@@ -42,7 +42,10 @@
               name="Links Mail.Ru Calendar"
               section="system.top.navigation.bar"
               weight="47">
-        <condition class="com.atlassian.jira.plugin.webfragment.conditions.UserLoggedInCondition"/>
+        <conditions type="AND">
+            <condition class="com.atlassian.jira.plugin.webfragment.conditions.UserLoggedInCondition"/>
+            <condition class="ru.mail.jira.plugins.ViewCalendarCondition"/>
+        </conditions>
         <label key="mailrucal.title"/>
         <tooltip key="mailrucal.title"/>
         <link linkId="mailrucal-links-link">/plugins/servlet/mailrucal/view</link>
@@ -53,7 +56,10 @@
               weight="47">
         <label key="mailrucal.title"/>
         <tooltip key="mailrucal.title"/>
-        <condition class="com.atlassian.jira.plugin.webfragment.conditions.UserLoggedInCondition"/>
+        <conditions type="AND">
+            <condition class="com.atlassian.jira.plugin.webfragment.conditions.UserLoggedInCondition"/>
+            <condition class="ru.mail.jira.plugins.ViewCalendarCondition"/>
+        </conditions>
         <link linkId="mailrucal-links-link-item">/plugins/servlet/mailrucal/view</link>
     </web-item>
     <!-- End sections -->
@@ -63,6 +69,23 @@
         <description>Provides the REST resource for the "mailrucal" plugin.</description>
     </rest>
     <!-- End rest -->
+
+    <web-item key="adminpagelink" name="Configure Simple Calendar" section="system.admin/globalsettings" weight="95">
+        <label key="mailrucal.admin.title"/>
+        <condition class="com.atlassian.jira.plugin.webfragment.conditions.JiraGlobalPermissionCondition">
+            <param name="permission">admin</param>
+        </condition>
+        <link linkId="adminpagelink">/secure/CalendarConfigClass!default.jspa</link>
+    </web-item>
+
+    <webwork1 key="configurepluginaction" name="Configure Plug-In Action" class="java.lang.Object">
+        <actions>
+            <action name="ru.mail.jira.plugins.CalendarConfigClass" alias="CalendarConfigClass">
+                <view name="input">/templates/configpage.vm</view>
+                <view name="success">/templates/configpage.vm</view>
+            </action>
+        </actions>
+    </webwork1>
 
     <!-- component imports -->
     <component key="mailrucal-config" name="Mail.Ru calendar Plug-In configuration" class="ru.mail.jira.plugins.MailRuCalCfgImpl"/>

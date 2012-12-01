@@ -1,0 +1,39 @@
+<html>
+    <head>
+        <title>$i18n.getText("mailrucal.admin.title")</title>
+        <meta name="decorator" content="admin"/>
+        $webResourceManager.requireResource("jira.webresources:global-static")
+        $webResourceManager.requireResource("jira.webresources:jira-global")
+        $webResourceManager.requireResource("com.atlassian.auiplugin:ajs")
+    </head>
+    <body class="aui">
+        #if($action.hasAdminPermission())
+            #if ($saved)
+            <div class="aui-message closeable shadowed">
+                <p class="title"><span class="aui-icon icon-success"></span><strong>$action.getText("mailrucal.admin.config.success")</strong></p>
+            </div>
+            #end
+            <h3 style="margin: 7px; background: #D3D3D3;"><b>$action.getText("mailrucal.config.header")</b></h3>
+            <form class="aui" onsubmit="if (this.submitted) return false; this.submitted = true; return true"
+                  name="jiraform" method="post" action="CalendarConfigClass.jspa">
+                <input type="hidden" name="atl_token" value="$atl_token" />
+                <div class="field-group">
+                    <label for="selectedGroups">$action.getText("mailrucal.config.groups")</label>
+                    <select id="selectedGroups" name="selectedGroups" size="5" multiple="multiple">
+                        #foreach($group in $action.getGroups())
+                        <option #if($action.getSavedGroups().contains($group.getName()))selected="selected"#end value="$group.getName()">$group.getName()</option>
+                        #end
+                    </select>
+                </div>
+                <div class="buttons-container">
+                    <div class="buttons">
+                        <input class="button submit" type="submit" name="add" value="$action.getText("common.words.save")" accesskey="S" title="Press Alt+Shift+S to submit form"/>
+                        <input class="button submit" id="cancelButton" type="button" accesskey="`" title="Cancel (Alt+Shift + `)" name="Cancel" value="$action.getText("common.words.cancel")" onclick="window.history.back();"/>
+                    </div>
+                </div>
+            </form>
+        #else
+            <div class="errorArea">$i18n.getText("mailrucal.admin.access.error")</div>
+        #end
+    </body>
+</html>

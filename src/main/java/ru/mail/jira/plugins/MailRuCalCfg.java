@@ -25,6 +25,11 @@ public interface MailRuCalCfg
     ProjectCalUserData getCalendarData(Long id);
 
     /**
+     * Get calendar groups.
+     */
+    List<String> getCalendarGroups();
+
+    /**
      * Get list of all stored calendars.
      */
     Set<Long> getCalendars();
@@ -48,6 +53,11 @@ public interface MailRuCalCfg
      * Store all calendars.
      */
     void saveCalendars(Set<Long> cals);
+
+    /**
+     * Set calendar groups.
+     */
+    void setCalendarGroups(List<String> groups);
 
     /**
      * Store calendar.

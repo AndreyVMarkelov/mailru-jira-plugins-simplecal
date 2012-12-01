@@ -7,6 +7,7 @@ package ru.mail.jira.plugins;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.StringTokenizer;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import com.atlassian.sal.api.pluginsettings.PluginSettings;
@@ -26,6 +27,11 @@ public class MailRuCalCfgImpl
      * Logger.
      */
     private static Log log = LogFactory.getLog(MailRuCalCfgImpl.class);
+
+    /**
+     * Calendar groups.
+     */
+    private final String CALENDAR_GROUPS = "calendarsGroups";
 
     /**
      * Calendars.
@@ -97,6 +103,26 @@ public class MailRuCalCfgImpl
                 log.warn("MailRuCalCfgImpl::getCalendarData - XStream error", xsex);
                 return null;
             }
+        }
+
+        return null;
+    }
+
+    @Override
+    public List<String> getCalendarGroups()
+    {
+        String groupsStr = (String) getPluginSettings().get(CALENDAR_GROUPS);
+        if (groupsStr != null)
+        {
+            List<String> groups = new ArrayList<String>();
+            StringTokenizer st = new StringTokenizer(groupsStr, "&");
+            while (st.hasMoreTokens())
+            {
+                String group = st.nextToken();
+                groups.add(group);
+            }
+
+            return groups;
         }
 
         return null;
@@ -199,6 +225,21 @@ public class MailRuCalCfgImpl
     public void saveCalendars(Set<Long> cals)
     {
         getPluginSettings().put(CALENDARS, Utils.listLongsToStr(cals));
+    }
+
+    @Override
+    public void setCalendarGroups(
+        List<String> groups)
+    {
+        StringBuilder sb = new StringBuilder();
+        if (groups != null && !groups.isEmpty())
+        {
+            for (String group : groups)
+            {
+                sb.append(group).append("&");
+            }
+        }
+        getPluginSettings().put(CALENDAR_GROUPS, sb.toString());
     }
 
     @Override

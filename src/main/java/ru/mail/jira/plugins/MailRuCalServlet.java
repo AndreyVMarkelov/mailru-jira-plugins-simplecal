@@ -101,6 +101,28 @@ public class MailRuCalServlet
             return;
         }
 
+        List<String> groups = mailCfg.getCalendarGroups();
+        if (groups != null)
+        {
+            boolean userInGroup = false;
+            for (String group : groups)
+            {
+                if (grMgr.groupExists(group))
+                {
+                    if (grMgr.isUserInGroup(user, grMgr.getGroupObject(group)));
+                    {
+                        userInGroup = true;
+                    }
+                }
+            }
+
+            if (!userInGroup)
+            {
+                resp.sendError(402);
+                return;
+            }
+        }
+
         List<ProjectCalUserData> datas = mailCfg.getCalendarsData();
         Iterator<ProjectCalUserData> iter = datas.iterator();
         while (iter.hasNext())

@@ -4,6 +4,7 @@
  */
 package ru.mail.jira.plugins;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
@@ -26,6 +27,26 @@ import com.atlassian.jira.user.util.UserUtil;
  */
 public class Utils
 {
+    /**
+     * Convert array to set.
+     */
+    public static List<String> arrayToList(String[] array)
+    {
+        if (array == null)
+        {
+            return null;
+        }
+        else
+        {
+            List<String> list = new ArrayList<String>();
+            for (String item : array)
+            {
+                list.add(item);
+            }
+            return list;
+        }
+    }
+
     /**
      * Get base URL from HTTP request.
      */
