@@ -42,6 +42,8 @@ import com.atlassian.jira.bc.project.component.ProjectComponent;
 import com.atlassian.jira.component.ComponentAccessor;
 import com.atlassian.jira.issue.CustomFieldManager;
 import com.atlassian.jira.issue.Issue;
+import com.atlassian.jira.issue.customfields.impl.DateCFType;
+import com.atlassian.jira.issue.customfields.impl.DateTimeCFType;
 import com.atlassian.jira.issue.fields.CustomField;
 import com.atlassian.jira.issue.fields.config.manager.IssueTypeSchemeManager;
 import com.atlassian.jira.issue.issuetype.IssueType;
@@ -127,6 +129,11 @@ public class MailRuCalService
     private final SimpleDateFormat sdf;
 
     /**
+     * Date formatter.
+     */
+    private final SimpleDateFormat sdt;
+
+    /**
      * Search request service.
      */
     private final SearchRequestService srMgr;
@@ -163,6 +170,7 @@ public class MailRuCalService
         this.projectRoleManager = projectRoleManager;
         this.cfMgr = cfMgr;
         this.sdf = new SimpleDateFormat("yyyy-MM-dd");
+        this.sdt = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         this.xstream = new XStream(new JsonHierarchicalStreamDriver()
         {
             public HierarchicalStreamWriter createWriter(Writer writer)
@@ -412,7 +420,8 @@ public class MailRuCalService
         String baseUrl,
         CustomField datePointCf,
         String color,
-        Set<String> calFields)
+        Set<String> calFields,
+        boolean showTime)
     {
         if (datePointCf != null)
         {
@@ -420,7 +429,8 @@ public class MailRuCalService
             if (val != null && val instanceof Timestamp)
             {
                 Timestamp ts = (Timestamp)val;
-                return createEventEntityObj(issue, baseUrl, color, sdf.format(ts), null, calFields);
+                boolean notAllDay = (datePointCf.getCustomFieldType() instanceof DateTimeCFType) && showTime;
+                return createEventEntityObj(issue, baseUrl, color, formatTime(ts.getTime()), null, !notAllDay, calFields);
             }
         }
 
@@ -437,53 +447,51 @@ public class MailRuCalService
         CustomField startCf,
         CustomField endCf,
         String color,
-        Set<String> calFields)
+        Set<String> calFields,
+        boolean showTime)
     {
         if (startCf != null && endCf != null)
         {
             Object startVal = issue.getCustomFieldValue(startCf);
             Object endVal = issue.getCustomFieldValue(endCf);
+            boolean notAllDay = (startCf.getCustomFieldType() instanceof DateTimeCFType) && (endCf.getCustomFieldType() instanceof DateTimeCFType) && showTime;
 
             if (startVal != null && startVal instanceof Timestamp &&
                 endVal != null && endVal instanceof Timestamp)
             {
                 Timestamp startTs = (Timestamp)startVal;
                 Timestamp endTs = (Timestamp)endVal;
-                return createEventEntityObj(issue, baseUrl, color, sdf.format(startTs), sdf.format(endTs), calFields);
+                return createEventEntityObj(issue, baseUrl, color, formatTime(startTs.getTime()), formatTime(endTs.getTime()), !notAllDay, calFields);
             }
             else if (startVal != null && startVal instanceof Timestamp)
             {
                 Timestamp ts = (Timestamp)startVal;
-                return createEventEntityObj(issue, baseUrl, color, sdf.format(ts), null, calFields);
+                return createEventEntityObj(issue, baseUrl, color, formatTime(ts.getTime()), null, !notAllDay, calFields);
             }
             else if (endVal != null && endVal instanceof Timestamp)
             {
                 Timestamp ts = (Timestamp)endVal;
-                return createEventEntityObj(issue, baseUrl, color, sdf.format(ts), null, calFields);
+                return createEventEntityObj(issue, baseUrl, color, formatTime(ts.getTime()), null, !notAllDay, calFields);
             }
         }
         else if (startCf == null && endCf != null)
         {
-            if (endCf != null)
+            Object val = issue.getCustomFieldValue(endCf);
+            if (val != null && val instanceof Timestamp)
             {
-                Object val = issue.getCustomFieldValue(endCf);
-                if (val != null && val instanceof Timestamp)
-                {
-                    Timestamp ts = (Timestamp)val;
-                    return createEventEntityObj(issue, baseUrl, color, sdf.format(ts), null, calFields);
-                }
+                Timestamp ts = (Timestamp)val;
+                boolean notAllDay = (endCf.getCustomFieldType() instanceof DateTimeCFType) && showTime;
+                return createEventEntityObj(issue, baseUrl, color, formatTime(ts.getTime()), null, !notAllDay, calFields);
             }
         }
         else if (startCf != null && endCf == null)
         {
-            if (startCf != null)
+            Object val = issue.getCustomFieldValue(startCf);
+            if (val != null && val instanceof Timestamp)
             {
-                Object val = issue.getCustomFieldValue(startCf);
-                if (val != null && val instanceof Timestamp)
-                {
-                    Timestamp ts = (Timestamp)val;
-                    return createEventEntityObj(issue, baseUrl, color, sdf.format(ts), null, calFields);
-                }
+                Timestamp ts = (Timestamp)val;
+                boolean notAllDay = (startCf.getCustomFieldType() instanceof DateTimeCFType) && showTime;
+                return createEventEntityObj(issue, baseUrl, color, formatTime(ts.getTime()), null, !notAllDay, calFields);
             }
         }
 
@@ -500,7 +508,8 @@ public class MailRuCalService
         CustomField startCf,
         CustomField endCf,
         String color,
-        Set<String> calFields)
+        Set<String> calFields,
+        boolean showTime)
     {
         if (pcud.isIDD())
         {
@@ -508,11 +517,11 @@ public class MailRuCalService
         }
         else if (pcud.isDatePoint())
         {
-            return createDatePointEntity(pcud, issue, baseUrl, startCf, color, calFields);
+            return createDatePointEntity(pcud, issue, baseUrl, startCf, color, calFields, showTime);
         }
         else
         {
-            return createDateRangeEntity(pcud, issue, baseUrl, startCf, endCf, color, calFields);
+            return createDateRangeEntity(pcud, issue, baseUrl, startCf, endCf, color, calFields, showTime);
         }
     }
 
@@ -525,6 +534,7 @@ public class MailRuCalService
         String color,
         String start,
         String end,
+        boolean allDay,
         Set<String> calFields)
     {
         EventEntity en= new EventEntity();
@@ -534,7 +544,7 @@ public class MailRuCalService
         en.setStart(start);
         en.setEnd(end);
         en.setColor(color);
-        en.setAllDay(true);
+        en.setAllDay(allDay);
         en.setUrl(baseUrl + "/browse/" + issue.getKey());
         //--> key
         en.setKey(issue.getKey());
@@ -672,7 +682,7 @@ public class MailRuCalService
         Set<String> calFields)
     {
         Timestamp dueDate = issue.getDueDate();
-        return createEventEntityObj(issue, baseUrl, color, sdf.format(dueDate), null, calFields);
+        return createEventEntityObj(issue, baseUrl, color, formatTime(dueDate.getTime()), null, true, calFields);
     }
 
     @POST
@@ -769,6 +779,14 @@ public class MailRuCalService
         return sdf.format(date);
     }
 
+    /**
+     * Format time.
+     */
+    private synchronized String formatTime(long date)
+    {
+        return sdt.format(date);
+    }
+
     @GET
     @Produces ({ MediaType.APPLICATION_JSON})
     @Path("/events")
@@ -845,11 +863,11 @@ public class MailRuCalService
             List<EventEntity> localeventObjs = null;
             if (pcud.isProjectType())
             {
-                localeventObjs = getProjectIssues(id, user, startLong, endLong, pcud, Utils.getBaseUrl(request), color, userPref.getCalendarFields(pcud.getCalId()));
+                localeventObjs = getProjectIssues(id, user, startLong, endLong, pcud, Utils.getBaseUrl(request), color, userPref.getCalendarFields(pcud.getCalId()), userPref.isShowTime());
             }
             else
             {
-                localeventObjs = getJclIssues(id, user, startLong, endLong, pcud, Utils.getBaseUrl(request), color, userPref.getCalendarFields(pcud.getCalId()));
+                localeventObjs = getJclIssues(id, user, startLong, endLong, pcud, Utils.getBaseUrl(request), color, userPref.getCalendarFields(pcud.getCalId()), userPref.isShowTime());
             }
 
             if (localeventObjs != null && !localeventObjs.isEmpty())
@@ -876,7 +894,8 @@ public class MailRuCalService
         ProjectCalUserData pcud,
         String baseUrl,
         String color,
-        Set<String> calFields)
+        Set<String> calFields,
+        boolean showTime)
     throws SearchException
     {
         SearchRequest search = getSearchRequest(fltId, user);
@@ -956,7 +975,7 @@ public class MailRuCalService
                 start += issues.size();
                 for (Issue issue : issues)
                 {
-                    EventEntity entity = createEventEntity(pcud, issue, baseUrl, startCf, endCf, color, calFields);
+                    EventEntity entity = createEventEntity(pcud, issue, baseUrl, startCf, endCf, color, calFields, showTime);
                     if (entity != null)
                     {
                         entities.add(entity);
@@ -989,7 +1008,8 @@ public class MailRuCalService
         ProjectCalUserData pcud,
         String baseUrl,
         String color,
-        Set<String> calFields)
+        Set<String> calFields,
+        boolean showTime)
     throws SearchException
     {
         List<EventEntity> entities = new ArrayList<EventEntity>();
@@ -1066,7 +1086,7 @@ public class MailRuCalService
             start += issues.size();
             for (Issue issue : issues)
             {
-                EventEntity entity = createEventEntity(pcud, issue, baseUrl, startCf, endCf, color, calFields);
+                EventEntity entity = createEventEntity(pcud, issue, baseUrl, startCf, endCf, color, calFields, showTime);
                 if (entity != null)
                 {
                     entities.add(entity);
@@ -1131,9 +1151,7 @@ public class MailRuCalService
         Map<String, String> cfs = new TreeMap<String, String>();
         for (CustomField cf : cfMgr.getCustomFieldObjects())
         {
-            String key = cf.getCustomFieldType().getKey();
-            if (key.equals("com.atlassian.jira.plugin.system.customfieldtypes:datepicker") ||
-                key.equals("com.atlassian.jira.plugin.system.customfieldtypes:datetime"))
+            if (cf.getCustomFieldType() instanceof DateCFType || cf.getCustomFieldType() instanceof DateTimeCFType)
             {
                 cfs.put(cf.getId(), cf.getName());
             }
@@ -1576,6 +1594,31 @@ public class MailRuCalService
         }
         boolean weekends = userPref.isHideWeekend();
         userPref.setHideWeekend(!weekends);
+        mailCfg.putUserCalPref(user.getName(), userPref);
+
+        return Response.ok().build();
+    }
+
+    @POST
+    @Produces ({ MediaType.APPLICATION_JSON})
+    @Path("/setshowtimeview")
+    public Response setShowTimeView(@Context HttpServletRequest request)
+    {
+        JiraAuthenticationContext authCtx = ComponentManager.getInstance().getJiraAuthenticationContext();
+        User user = authCtx.getLoggedInUser();
+        if (user == null)
+        {
+            log.error("MailRuCalService::setShowTimeView - User is not logged");
+            return Response.status(401).build();
+        }
+
+        UserCalPref userPref = mailCfg.getUserCalPref(user.getName());
+        if (userPref == null)
+        {
+            userPref = new UserCalPref();
+        }
+        boolean showTime = userPref.isShowTime();
+        userPref.setShowTime(!showTime);
         mailCfg.putUserCalPref(user.getName(), userPref);
 
         return Response.ok().build();

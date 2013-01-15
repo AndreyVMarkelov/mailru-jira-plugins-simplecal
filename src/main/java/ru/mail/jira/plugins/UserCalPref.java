@@ -38,6 +38,11 @@ public class UserCalPref
     private boolean hideWeekend;
 
     /**
+     * Show time.
+     */
+    private boolean showTime;
+
+    /**
      * Hide calendars.
      */
     private Set<Long> shadowCalendars;
@@ -129,6 +134,11 @@ public class UserCalPref
         return hideWeekend;
     }
 
+    public boolean isShowTime()
+    {
+        return showTime;
+    }
+
     /**
      * Is user color for calendar?
      */
@@ -214,6 +224,11 @@ public class UserCalPref
         this.shadowCalendars = shadowCalendars;
     }
 
+    public void setShowTime(boolean showTime)
+    {
+        this.showTime = showTime;
+    }
+
     /**
      * Add user color for calendar.
      */
@@ -231,6 +246,6 @@ public class UserCalPref
     {
         return "UserCalPref[colors=" + colors + ", defaultView=" + defaultView
             + ", fields=" + fields + ", hideWeekend=" + hideWeekend
-            + ", shadowCalendars=" + shadowCalendars + "]";
+            + ", shadowCalendars=" + shadowCalendars + ", showTime=" + showTime + "]";
     }
 }

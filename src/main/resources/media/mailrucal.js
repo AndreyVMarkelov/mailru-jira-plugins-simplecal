@@ -430,9 +430,28 @@ function setIssueDueDate() {
 }
 
 //--> change weekends view
-function changeWeekendsView(baseUrl, view) {
+function changeWeekendsView(baseUrl) {
     jQuery.ajax({
         url: baseUrl + "/rest/mailrucalws/1.0/mailcalsrv/setweekendview",
+        type: "POST",
+        dataType: "json",
+        error: function(xhr, ajaxOptions, thrownError) {
+            if (xhr.responseText) {
+                alert(xhr.responseText);
+            } else {
+                alert("Internal error");
+            }
+        },
+        success: function(result) {
+            window.location.reload();
+        }
+    });
+}
+
+//--> change show time view
+function changeShowTimeView(baseUrl) {
+    jQuery.ajax({
+        url: baseUrl + "/rest/mailrucalws/1.0/mailcalsrv/setshowtimeview",
         type: "POST",
         dataType: "json",
         error: function(xhr, ajaxOptions, thrownError) {

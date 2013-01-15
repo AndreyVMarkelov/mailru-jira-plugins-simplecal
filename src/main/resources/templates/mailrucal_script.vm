@@ -45,6 +45,7 @@
                 createIssue('$baseUrl', date.getTime());
             },
             weekends: !$usrPref.isHideWeekend(),
+            timeFormat: 'H(:mm)',
             priority: '$i18n.getText("mailrucal.priority")',
             assignee: '$i18n.getText("mailrucal.assigneeview")',
             issuestatus: '$i18n.getText("mailrucal.statusview")',

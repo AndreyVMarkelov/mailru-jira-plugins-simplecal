@@ -29,6 +29,13 @@
                                     </button>
                                 </td>
                             </tr>
+                            <tr>
+                                <td>
+                                    <button class="fullsize group_opt_margin pointer" onclick="changeShowTimeView('$baseUrl');">
+                                        #if($usrPref.isShowTime())$i18n.getText("mailrucal.hidefulltime")#else$i18n.getText("mailrucal.showfulltime")#end
+                                    </button>
+                                </td>
+                            </tr>
                         </table>
                         </div>
                         <div class="calendar_box">
