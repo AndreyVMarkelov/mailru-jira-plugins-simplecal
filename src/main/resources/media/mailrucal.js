@@ -255,7 +255,32 @@ function editMailRuCalendar(event, baseUrl, ctime) {
     md.addHeader(AJS.I18n.getText("mailrucal.calendarprops"));
     md.addPanel("load_panel", dialogBody);
     md.addButton(AJS.I18n.getText("mailrucal.updatecalbtn"), function() {
-        AJS.$("#editcalform").submit();
+        var fields = [];
+        jQuery("#selfields > option").each(function(i) {
+            fields[i] = this.value;
+        });
+        var itemObj = new Object();
+        itemObj["selfields"] = fields;
+        itemObj["calcolor"] = jQuery("#calcolor").val();
+        itemObj["calctime"] = jQuery("#calctime").val();
+
+        jQuery.ajax({
+            url: baseUrl + "/rest/mailrucalws/1.0/mailcalsrv/editcalendarprops",
+            type: "POST",
+            dataType: "json",
+            async: true,
+            data: {"data": jQuery.toJSON(itemObj)},
+            error: function(xhr, ajaxOptions, thrownError) {
+                if (xhr.responseText) {
+                    alert(xhr.responseText);
+                } else {
+                    alert("Internal error");
+                }
+            },
+            success: function(result) {
+                window.location.reload();
+            }
+        });
     });
     md.addCancel(AJS.I18n.getText("mailrucal.closebtn"), function() {
         AJS.$("#editcalform").remove();
@@ -567,4 +592,47 @@ function removeGroup(event) {
     }
     jQuery("#shares_data").val(jQuery.toJSON(sharesObj));
     jQuery(parent).remove();
+}
+
+function addSelectOneToTwo(event) {
+    event.preventDefault();
+    jQuery("#srcfields :selected").each(function(key, value){
+        var realVal = jQuery(value).val();
+        var realText = jQuery(value).text();
+        jQuery("#selfields").append("<option value='" + realVal + "'>" + realText + "</option>");
+    });
+    jQuery("#srcfields option:selected").remove();
+}
+
+function addSelectTwoToOne(event) {
+    event.preventDefault();
+    jQuery("#selfields :selected").each(function(key, value){
+        var realVal = jQuery(value).val();
+        var realText = jQuery(value).text();
+        jQuery("#srcfields").append("<option value='" + realVal + "'>" + realText + "</option>");
+    });
+    jQuery("#selfields option:selected").remove();
+}
+
+function upInFieldSelectList(event) {
+    event.preventDefault();
+    jQuery("#selfields option:selected").each(function() {
+        var newPos = jQuery('#selfields option').index(this) - 1;
+        if (newPos > -1) {
+            jQuery('#selfields option').eq(newPos).before("<option value='" + jQuery(this).val() + "' selected='selected'>" + jQuery(this).text() + "</option>");
+            jQuery(this).remove();
+        }
+    });
+}
+
+function downInFieldSelectList(event) {
+    event.preventDefault();
+    var countOptions = jQuery('#selfields option').size();
+    jQuery('#selfields option:selected').each(function() {
+        var newPos = jQuery('#selfields option').index(this) + 1;
+        if (newPos < countOptions) {
+            jQuery('#selfields option').eq(newPos).after("<option value='" + jQuery(this).val() + "' selected='selected'>" + jQuery(this).text() + "</option>");
+            jQuery(this).remove();
+        }
+    });
 }

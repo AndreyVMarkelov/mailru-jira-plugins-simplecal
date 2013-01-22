@@ -75,7 +75,7 @@ public class CalendarConfigClass
     throws Exception
     {
         List<String> groups = cfg.getCalendarGroups();
-        if (groups != null)
+        if (groups != null && !groups.isEmpty())
         {
             selectedGroups = groups.toArray(new String[groups.size()]);
             savedGroups = Arrays.asList(selectedGroups);

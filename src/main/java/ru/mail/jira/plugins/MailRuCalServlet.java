@@ -102,7 +102,7 @@ public class MailRuCalServlet
         }
 
         List<String> groups = mailCfg.getCalendarGroups();
-        if (groups != null)
+        if (groups != null && !groups.isEmpty())
         {
             boolean userInGroup = false;
             for (String group : groups)

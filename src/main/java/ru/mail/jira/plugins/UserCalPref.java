@@ -6,6 +6,8 @@ package ru.mail.jira.plugins;
 
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -71,7 +73,7 @@ public class UserCalPref
     {
         if (fields == null)
         {
-            return null;
+            fields = new HashMap<Long, Set<String>>();
         }
 
         return fields.get(calId);
@@ -170,13 +172,13 @@ public class UserCalPref
     {
         if (fields == null)
         {
-            fields = new HashMap<Long, Set<String>>();
+            fields = new LinkedHashMap<Long, Set<String>>();
         }
 
         Set<String> storedFields = fields.get(calId);
         if (storedFields == null)
         {
-            storedFields = new HashSet<String>(calFields);
+            storedFields = new LinkedHashSet<String>(calFields);
         }
         else
         {

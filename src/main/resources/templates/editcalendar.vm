@@ -31,11 +31,20 @@
     <tr>
       <td class="dlgtablekey"><label for="calcolor">$i18n.getText("mailrucal.showfields")</label></td>
       <td valign="top">
-        <select id="selfields" name="selfields" multiple="multiple" size="20">
+        <select style="width: 100px" id="srcfields" name="srcfields" multiple="multiple" size="20">
             #foreach($field in $fields.entrySet())
-            <option value="$field.key" #if($storedFields.contains($field.key))selected="selected"#end>$field.value</option>
+            <option value="$field.key">$field.value</option>
             #end
         </select>
+        <a href="#" onclick="addSelectOneToTwo(event);">Add &raquo;</a>
+        <a href="#" onclick="addSelectTwoToOne(event);">&laquo; Remove</a>
+        <select style="width: 100px" name="selfields" id="selfields" multiple size="20">
+            #foreach($field in $storedFields)
+            <option value="$field">$field</option>
+            #end
+        </select>
+        <a href="#" onclick="upInFieldSelectList(event);">Up</a>
+        <a href="#" onclick="downInFieldSelectList(event);">Down</a>
       </td>
     </tr>
   </table>

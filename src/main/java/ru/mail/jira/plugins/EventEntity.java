@@ -4,7 +4,7 @@
  */
 package ru.mail.jira.plugins;
 
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
@@ -41,7 +41,7 @@ public class EventEntity
     {
         if (extraFields == null)
         {
-            extraFields = new HashMap<String, String>();
+            extraFields = new LinkedHashMap<String, String>();
         }
 
         extraFields.put(key, value);
@@ -106,7 +106,7 @@ public class EventEntity
     {
         if (extraFields == null)
         {
-            extraFields = new HashMap<String, String>();
+            extraFields = new LinkedHashMap<String, String>();
         }
 
         extraFields.putAll(customFields);

@@ -93,7 +93,7 @@ public class ViewCalendarCondition
         if (username != null)
         {
             List<String> groups = cfg.getCalendarGroups();
-            if (groups != null)
+            if (groups != null && !groups.isEmpty())
             {
                 for (String group : groups)
                 {

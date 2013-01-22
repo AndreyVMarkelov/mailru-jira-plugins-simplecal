@@ -15,11 +15,11 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
-import java.util.TreeSet;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -730,8 +730,9 @@ public class MailRuCalService
             return Response.status(401).build();
         }
 
-        String ctimestr = request.getParameter("calctime");
-        String color = request.getParameter("calcolor");
+        String data = request.getParameter("data");
+        JSONObject jsonObj = new JSONObject(data);
+        String ctimestr = jsonObj.getString("calctime");
 
         Long ctime;
         try
@@ -747,14 +748,12 @@ public class MailRuCalService
         ProjectCalUserData pcud = mailCfg.getCalendarData(ctime);
         if (pcud != null && Utils.isCalendarVisiable(pcud, user, groupMgr, prMgr, projectRoleManager))
         {
-            Set<String> fields = new TreeSet<String>();
-            String[] parms = request.getParameterValues("selfields");
-            if (parms != null)
+            String color = jsonObj.getString("calcolor");
+            JSONArray jsonArray = jsonObj.getJSONArray("selfields");
+            Set<String> fields = new LinkedHashSet<String>();
+            for (int i = 0; i < jsonArray.length(); i++)
             {
-                for (String parm : parms)
-                {
-                    fields.add(parm);
-                }
+                fields.add(jsonArray.getString(i));
             }
 
             UserCalPref userPref = mailCfg.getUserCalPref(user.getName());
@@ -767,8 +766,7 @@ public class MailRuCalService
             mailCfg.putUserCalPref(user.getName(), userPref);
         }
 
-        String baseUrl = Utils.getBaseUrl(request);
-        return Response.seeOther(URI.create(baseUrl + "/plugins/servlet/mailrucal/view")).build();
+        return Response.ok().build();
     }
 
     /**
@@ -1333,20 +1331,61 @@ public class MailRuCalService
             }
             params.put("usercolor", color);
 
+            Set<String> stored = userPref.getCalendarFields(ctime);
+
             Map<String, String> fields = new LinkedHashMap<String, String>();
-            fields.put("issuestatus", i18n.getText("mailrucal.statusview"));
-            fields.put("assignee", i18n.getText("mailrucal.assigneeview"));
-            fields.put("reporter", i18n.getText("mailrucal.reporter"));
-            fields.put("labels", i18n.getText("mailrucal.labels"));
-            fields.put("components", i18n.getText("mailrucal.components"));
-            fields.put("duedate", i18n.getText("mailrucal.duedate"));
-            fields.put("environment", i18n.getText("mailrucal.environment"));
-            fields.put("priority", i18n.getText("mailrucal.priority"));
-            fields.put("resolution", i18n.getText("mailrucal.resolution"));
-            fields.put("affect", i18n.getText("mailrucal.affect"));
-            fields.put("fixed", i18n.getText("mailrucal.fixes"));
-            fields.put("created", i18n.getText("mailrucal.created"));
-            fields.put("updated", i18n.getText("mailrucal.updated"));
+            if(!stored.contains("issuestatus"))
+            {
+                fields.put("issuestatus", i18n.getText("mailrucal.statusview"));
+            }
+            if(!stored.contains("assignee"))
+            {
+                fields.put("assignee", i18n.getText("mailrucal.assigneeview"));
+            }
+            if(!stored.contains("reporter"))
+            {
+                fields.put("reporter", i18n.getText("mailrucal.reporter"));
+            }
+            if(!stored.contains("labels"))
+            {
+                fields.put("labels", i18n.getText("mailrucal.labels"));
+            }
+            if(!stored.contains("components"))
+            {
+                fields.put("components", i18n.getText("mailrucal.components"));
+            }
+            if(!stored.contains("duedate"))
+            {
+                fields.put("duedate", i18n.getText("mailrucal.duedate"));
+            }
+            if(!stored.contains("environment"))
+            {
+                fields.put("environment", i18n.getText("mailrucal.environment"));
+            }
+            if(!stored.contains("priority"))
+            {
+                fields.put("priority", i18n.getText("mailrucal.priority"));
+            }
+            if(!stored.contains("resolution"))
+            {
+                fields.put("resolution", i18n.getText("mailrucal.resolution"));
+            }
+            if(!stored.contains("affect"))
+            {
+                fields.put("affect", i18n.getText("mailrucal.affect"));
+            }
+            if(!stored.contains("fixed"))
+            {
+                fields.put("fixed", i18n.getText("mailrucal.fixes"));
+            }
+            if(!stored.contains("created"))
+            {
+                fields.put("created", i18n.getText("mailrucal.created"));
+            }
+            if(!stored.contains("updated"))
+            {
+                fields.put("updated", i18n.getText("mailrucal.updated"));
+            }
             List<CustomField> cgList = cfMgr.getCustomFieldObjects();
             for (CustomField cf : cgList)
             {
@@ -1360,14 +1399,14 @@ public class MailRuCalService
                     for (GenericValue proj : projs)
                     {
                         Long projId = (Long) proj.get("id");
-                        if (Long.valueOf(pcud.getTarget()).equals(projId))
+                        if (Long.valueOf(pcud.getTarget()).equals(projId) && !stored.contains(cf.getName()))
                         {
                             fields.put(cf.getName(), cf.getName());
                         }
                     }
                 }
             }
-            params.put("storedFields", userPref.getCalendarFields(ctime));
+            params.put("storedFields", stored);
             params.put("fields", fields);
 
             return Response.ok(new HtmlEntity(ComponentAccessor.getVelocityManager().getBody("templates/", "editcalendar.vm", params))).build();

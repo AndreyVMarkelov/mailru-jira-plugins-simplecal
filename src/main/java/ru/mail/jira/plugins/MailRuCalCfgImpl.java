@@ -125,7 +125,7 @@ public class MailRuCalCfgImpl
             return groups;
         }
 
-        return null;
+        return new ArrayList<String>();
     }
 
     @Override
@@ -191,10 +191,10 @@ public class MailRuCalCfgImpl
             catch (XStreamException xsex)
             {
                 log.warn("MailRuCalCfgImpl::getUserCalPref - XStream error", xsex);
-                return null;
+                return new UserCalPref();
             }
         }
-        return null;
+        return new UserCalPref();
     }
 
     /**
