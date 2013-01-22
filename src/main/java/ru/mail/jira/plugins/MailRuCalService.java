@@ -1332,57 +1332,58 @@ public class MailRuCalService
             params.put("usercolor", color);
 
             Set<String> stored = userPref.getCalendarFields(ctime);
+            Map<String, String> mstored = Utils.getStoredFields(stored, i18n);
 
             Map<String, String> fields = new LinkedHashMap<String, String>();
-            if(!stored.contains("issuestatus"))
+            if(!mstored.containsKey("issuestatus"))
             {
                 fields.put("issuestatus", i18n.getText("mailrucal.statusview"));
             }
-            if(!stored.contains("assignee"))
+            if(!mstored.containsKey("assignee"))
             {
                 fields.put("assignee", i18n.getText("mailrucal.assigneeview"));
             }
-            if(!stored.contains("reporter"))
+            if(!mstored.containsKey("reporter"))
             {
                 fields.put("reporter", i18n.getText("mailrucal.reporter"));
             }
-            if(!stored.contains("labels"))
+            if(!mstored.containsKey("labels"))
             {
                 fields.put("labels", i18n.getText("mailrucal.labels"));
             }
-            if(!stored.contains("components"))
+            if(!mstored.containsKey("components"))
             {
                 fields.put("components", i18n.getText("mailrucal.components"));
             }
-            if(!stored.contains("duedate"))
+            if(!mstored.containsKey("duedate"))
             {
                 fields.put("duedate", i18n.getText("mailrucal.duedate"));
             }
-            if(!stored.contains("environment"))
+            if(!mstored.containsKey("environment"))
             {
                 fields.put("environment", i18n.getText("mailrucal.environment"));
             }
-            if(!stored.contains("priority"))
+            if(!mstored.containsKey("priority"))
             {
                 fields.put("priority", i18n.getText("mailrucal.priority"));
             }
-            if(!stored.contains("resolution"))
+            if(!mstored.containsKey("resolution"))
             {
                 fields.put("resolution", i18n.getText("mailrucal.resolution"));
             }
-            if(!stored.contains("affect"))
+            if(!mstored.containsKey("affect"))
             {
                 fields.put("affect", i18n.getText("mailrucal.affect"));
             }
-            if(!stored.contains("fixed"))
+            if(!mstored.containsKey("fixed"))
             {
                 fields.put("fixed", i18n.getText("mailrucal.fixes"));
             }
-            if(!stored.contains("created"))
+            if(!mstored.containsKey("created"))
             {
                 fields.put("created", i18n.getText("mailrucal.created"));
             }
-            if(!stored.contains("updated"))
+            if(!mstored.containsKey("updated"))
             {
                 fields.put("updated", i18n.getText("mailrucal.updated"));
             }
@@ -1399,14 +1400,14 @@ public class MailRuCalService
                     for (GenericValue proj : projs)
                     {
                         Long projId = (Long) proj.get("id");
-                        if (Long.valueOf(pcud.getTarget()).equals(projId) && !stored.contains(cf.getName()))
+                        if (Long.valueOf(pcud.getTarget()).equals(projId) && !mstored.containsKey(cf.getName()))
                         {
                             fields.put(cf.getName(), cf.getName());
                         }
                     }
                 }
             }
-            params.put("storedFields", stored);
+            params.put("storedFields", mstored);
             params.put("fields", fields);
 
             return Response.ok(new HtmlEntity(ComponentAccessor.getVelocityManager().getBody("templates/", "editcalendar.vm", params))).build();

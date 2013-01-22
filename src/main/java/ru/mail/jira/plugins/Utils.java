@@ -7,7 +7,9 @@ package ru.mail.jira.plugins;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 import javax.servlet.http.HttpServletRequest;
@@ -19,6 +21,7 @@ import com.atlassian.jira.security.groups.GroupManager;
 import com.atlassian.jira.security.roles.ProjectRole;
 import com.atlassian.jira.security.roles.ProjectRoleManager;
 import com.atlassian.jira.user.util.UserUtil;
+import com.atlassian.jira.util.I18nHelper;
 
 /**
  * This class contains utility methods.
@@ -45,6 +48,78 @@ public class Utils
             }
             return list;
         }
+    }
+
+    public static Map<String, String> getStoredFields(
+        Set<String> fields,
+        I18nHelper i18n)
+    {
+        Map<String, String> fMap = new LinkedHashMap<String, String>();
+
+        if (fields != null)
+        {
+            for (String field : fields)
+            {
+                if(field.equals("issuestatus"))
+                {
+                    fMap.put("issuestatus", i18n.getText("mailrucal.statusview"));
+                }
+                else if(field.equals("assignee"))
+                {
+                    fMap.put("assignee", i18n.getText("mailrucal.assigneeview"));
+                }
+                else if(field.equals("reporter"))
+                {
+                    fMap.put("reporter", i18n.getText("mailrucal.reporter"));
+                }
+                else if(field.equals("labels"))
+                {
+                    fMap.put("labels", i18n.getText("mailrucal.labels"));
+                }
+                else if(field.equals("components"))
+                {
+                    fMap.put("components", i18n.getText("mailrucal.components"));
+                }
+                else if(field.equals("duedate"))
+                {
+                    fMap.put("duedate", i18n.getText("mailrucal.duedate"));
+                }
+                else if(field.equals("environment"))
+                {
+                    fMap.put("environment", i18n.getText("mailrucal.environment"));
+                }
+                else if(field.equals("priority"))
+                {
+                    fMap.put("priority", i18n.getText("mailrucal.priority"));
+                }
+                else if(field.equals("resolution"))
+                {
+                    fMap.put("resolution", i18n.getText("mailrucal.resolution"));
+                }
+                else if(field.equals("affect"))
+                {
+                    fMap.put("affect", i18n.getText("mailrucal.affect"));
+                }
+                else if(field.equals("fixed"))
+                {
+                    fMap.put("fixed", i18n.getText("mailrucal.fixes"));
+                }
+                else if(field.equals("created"))
+                {
+                    fMap.put("created", i18n.getText("mailrucal.created"));
+                }
+                else if(field.equals("updated"))
+                {
+                    fMap.put("updated", i18n.getText("mailrucal.updated"));
+                }
+                else
+                {
+                    fMap.put(field, field);
+                }
+            }
+        }
+
+        return fMap;
     }
 
     /**
