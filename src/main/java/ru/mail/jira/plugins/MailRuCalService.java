@@ -548,124 +548,114 @@ public class MailRuCalService
         en.setUrl(baseUrl + "/browse/" + issue.getKey());
         //--> key
         en.setKey(issue.getKey());
-        //--> status
-        if (calFields != null && calFields.contains("issuestatus"))
-        {
-            en.addExtraField("issuestatus", issue.getStatusObject().getName());
-        }
-        //--> assignee
-        if (issue.getAssigneeUser() != null  && calFields != null && calFields.contains("assignee"))
-        {
-            en.addExtraField("assignee", issue.getAssigneeUser().getDisplayName());
-        }
 
-        //--> extra fields
-        //--> reporter
-        if (issue.getReporterUser() != null && calFields != null && calFields.contains("reporter"))
+        if (calFields != null)
         {
-            en.addExtraField("reporter", issue.getReporterUser().getDisplayName());
-        }
-        //--> custom fields
-        List<CustomField> cfs = cfMgr.getCustomFieldObjects(issue);
-        if (cfs != null && !cfs.isEmpty())
-        {
-            Map<String, String> cfMap = new HashMap<String, String>();
-            for (CustomField cf : cfs)
+            for (String field : calFields)
             {
-                Object cfVal = cf.getValue(issue);
-                if (cfVal != null && calFields != null && calFields.contains(cf.getName()))
+                if (field.equals("issuestatus")) //--> status
                 {
-                    String cfStrVal;
-                    if (cfVal instanceof Date)
+                    en.addExtraField("issuestatus", issue.getStatusObject().getName());
+                }
+                else if (field.equals("assignee") && issue.getAssigneeUser() != null) //--> assignee
+                {
+                    en.addExtraField("assignee", issue.getAssigneeUser().getDisplayName());
+                }
+                else if (field.equals("reporter") && issue.getReporterUser() != null) //--> reporter
+                {
+                    en.addExtraField("reporter", issue.getReporterUser().getDisplayName());
+                }
+                else if (field.equals("labels") && issue.getLabels() != null && !issue.getLabels().isEmpty()) //--> labels
+                {
+                    List<String> labelList = new ArrayList<String>();
+                    for (Label label : issue.getLabels())
                     {
-                        cfStrVal = ComponentManager.getInstance().getJiraAuthenticationContext().getOutlookDate().formatDateTimePicker((Date)cfVal);
+                        labelList.add(label.getLabel());
                     }
-                    else
+                    en.addExtraField("labels", Utils.listEntityView(labelList));
+                }
+                else if (issue.getComponentObjects() != null && !issue.getComponentObjects().isEmpty() && field.equals("components")) //--> components
+                {
+                    List<String> pcs = new ArrayList<String>();
+                    for (ProjectComponent pc : issue.getComponentObjects())
                     {
-                        cfStrVal = cfVal.toString();
+                        pcs.add(pc.getName());
                     }
+                    en.addExtraField("components", Utils.listEntityView(pcs));
+                }
+                else if (field.equals("duedate") && issue.getDueDate() != null) //--> due
+                {
+                    en.addExtraField("duedate", ComponentManager.getInstance().getJiraAuthenticationContext().getOutlookDate().format(issue.getDueDate()));
+                }
+                else if (field.equals("environment") && issue.getEnvironment() != null) //--> environment
+                {
+                    en.addExtraField("environment", issue.getEnvironment());
+                }
+                else if (field.equals("priority") && issue.getPriorityObject() != null) //--> priority
+                {
+                    en.addExtraField("priority", issue.getPriorityObject().getName());
+                }
+                else if (field.equals("resolution") && issue.getResolutionObject() != null) //--> resolution
+                {
+                    en.addExtraField("resolution", issue.getResolutionObject().getName());
+                }
+                else if (field.equals("affect") && issue.getAffectedVersions() != null && !issue.getAffectedVersions().isEmpty()) //--> affect versions
+                {
+                    List<String> versList = new ArrayList<String>();
+                    for (Version ver : issue.getAffectedVersions())
+                    {
+                        versList.add(ver.getName());
+                    }
+                    en.addExtraField("affect", Utils.listEntityView(versList));
+                }
+                else if (field.equals("fixed") && issue.getFixVersions() != null && !issue.getFixVersions().isEmpty()) //--> fix versions
+                {
+                    List<String> versList = new ArrayList<String>();
+                    for (Version ver : issue.getFixVersions())
+                    {
+                        versList.add(ver.getName());
+                    }
+                    en.addExtraField("fixed", Utils.listEntityView(versList));
+                }
+                else if (field.equals("created")) //--> created
+                {
+                    en.addExtraField("created", ComponentManager.getInstance().getJiraAuthenticationContext().getOutlookDate().format(issue.getCreated()));
+                }
+                else if (field.equals("updated")) //--> updated
+                {
+                    en.addExtraField("updated", ComponentManager.getInstance().getJiraAuthenticationContext().getOutlookDate().format(issue.getUpdated()));
+                }
+                else //--> custom fields
+                {
+                    List<CustomField> cfs = cfMgr.getCustomFieldObjects(issue);
+                    if (cfs != null && !cfs.isEmpty())
+                    {
+                        Map<String, String> cfMap = new HashMap<String, String>();
+                        for (CustomField cf : cfs)
+                        {
+                            Object cfVal = cf.getValue(issue);
+                            if (cfVal != null && calFields != null && field.equals(cf.getName()))
+                            {
+                                String cfStrVal;
+                                if (cfVal instanceof Date)
+                                {
+                                    cfStrVal = ComponentManager.getInstance().getJiraAuthenticationContext().getOutlookDate().formatDateTimePicker((Date)cfVal);
+                                }
+                                else
+                                {
+                                    cfStrVal = cfVal.toString();
+                                }
 
-                    if (cfStrVal.length() > 0)
-                    {
-                        cfMap.put(cf.getName(), cfStrVal);
+                                if (cfStrVal.length() > 0)
+                                {
+                                    cfMap.put(cf.getName(), cfStrVal);
+                                }
+                            }
+                        }
+                        en.setCustomFields(cfMap);
                     }
                 }
             }
-            en.setCustomFields(cfMap);
-        }
-        //--> labels
-        Set<Label> labels = issue.getLabels();
-        if (labels != null && !labels.isEmpty() && calFields != null && calFields.contains("labels"))
-        {
-            List<String> labelList = new ArrayList<String>();
-            for (Label label : labels)
-            {
-                labelList.add(label.getLabel());
-            }
-            en.addExtraField("labels", Utils.listEntityView(labelList));
-        }
-        //--> components
-        Collection<ProjectComponent> comps = issue.getComponentObjects();
-        if (comps != null && !comps.isEmpty() && calFields != null && calFields.contains("components"))
-        {
-            List<String> pcs = new ArrayList<String>();
-            for (ProjectComponent pc : comps)
-            {
-                pcs.add(pc.getName());
-            }
-            en.addExtraField("components", Utils.listEntityView(pcs));
-        }
-        //--> due
-        if (issue.getDueDate() != null && calFields != null && calFields.contains("duedate"))
-        {
-            en.addExtraField("duedate", ComponentManager.getInstance().getJiraAuthenticationContext().getOutlookDate().format(issue.getDueDate()));
-        }
-        //--> environment
-        if (issue.getEnvironment() != null && calFields != null && calFields.contains("environment"))
-        {
-            en.addExtraField("environment", issue.getEnvironment());
-        }
-        //--> priority
-        if (issue.getPriorityObject() != null && calFields != null && calFields.contains("priority"))
-        {
-            en.addExtraField("priority", issue.getPriorityObject().getName());
-        }
-        //--> resolution
-        if (issue.getResolutionObject() != null && calFields != null && calFields.contains("resolution"))
-        {
-            en.addExtraField("resolution", issue.getResolutionObject().getName());
-        }
-        //--> affect versions
-        Collection<Version> vers = issue.getAffectedVersions();
-        if (vers != null && !vers.isEmpty() && calFields != null && calFields.contains("affect"))
-        {
-            List<String> versList = new ArrayList<String>();
-            for (Version ver : vers)
-            {
-                versList.add(ver.getName());
-            }
-            en.addExtraField("affect", Utils.listEntityView(versList));
-        }
-        //--> fix versions
-        vers = issue.getFixVersions();
-        if (vers != null && !vers.isEmpty() && calFields != null && calFields.contains("fixed"))
-        {
-            List<String> versList = new ArrayList<String>();
-            for (Version ver : vers)
-            {
-                versList.add(ver.getName());
-            }
-            en.addExtraField("fixed", Utils.listEntityView(versList));
-        }
-        //--> created
-        if (calFields != null &&calFields.contains("created"))
-        {
-            en.addExtraField("created", ComponentManager.getInstance().getJiraAuthenticationContext().getOutlookDate().format(issue.getCreated()));
-        }
-        //--> updated
-        if (calFields != null && calFields.contains("updated"))
-        {
-            en.addExtraField("updated", ComponentManager.getInstance().getJiraAuthenticationContext().getOutlookDate().format(issue.getUpdated()));
         }
 
         return en;

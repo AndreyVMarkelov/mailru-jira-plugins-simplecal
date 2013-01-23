@@ -31,20 +31,30 @@
     <tr>
       <td class="dlgtablekey"><label for="calcolor">$i18n.getText("mailrucal.showfields")</label></td>
       <td valign="top">
-        <select style="width: 100px" id="srcfields" name="srcfields" multiple="multiple" size="20">
-            #foreach($field in $fields.entrySet())
-            <option value="$field.key">$field.value</option>
-            #end
-        </select>
-        <a href="#" onclick="addSelectOneToTwo(event);">Add &raquo;</a>
-        <a href="#" onclick="addSelectTwoToOne(event);">&laquo; Remove</a>
-        <select style="width: 100px" name="selfields" id="selfields" multiple size="20">
-            #foreach($field in $storedFields.entrySet())
-            <option value="$field.key">$field.value</option>
-            #end
-        </select>
-        <a href="#" onclick="upInFieldSelectList(event);">Up</a>
-        <a href="#" onclick="downInFieldSelectList(event);">Down</a>
+        <table width="100%">
+          <tr>
+            <td width="40%">
+              <select style="width: 100px" id="srcfields" name="srcfields" multiple="multiple" size="12">
+              #foreach($field in $fields.entrySet())
+                <option value="$field.key">$field.value</option>
+              #end
+              </select>
+            </td>
+            <td valign="middle" align="center" width="20%">
+              <a href="#" onclick="addSelectOneToTwo(event);">Add &raquo;</a><br/>
+              <a href="#" onclick="addSelectTwoToOne(event);">&laquo; Remove</a>
+            </td>
+            <td valign="top" width="40%">
+              <select style="width: 100px" name="selfields" id="selfields" multiple size="10">
+              #foreach($field in $storedFields.entrySet())
+                <option value="$field.key">$field.value</option>
+              #end
+              </select><br/>
+              <a href="#" onclick="upInFieldSelectList(event);">Up</a><br/>
+              <a href="#" onclick="downInFieldSelectList(event);">Down</a>
+            </td>
+          </tr>
+        </table>
       </td>
     </tr>
   </table>
