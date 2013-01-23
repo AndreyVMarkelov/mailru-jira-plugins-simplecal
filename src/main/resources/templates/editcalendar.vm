@@ -41,8 +41,8 @@
               </select>
             </td>
             <td valign="middle" align="center" width="20%">
-              <a href="#" onclick="addSelectOneToTwo(event);">Add &raquo;</a><br/>
-              <a href="#" onclick="addSelectTwoToOne(event);">&laquo; Remove</a>
+              <a href="#" onclick="addSelectOneToTwo(event);">Add&nbsp;&raquo;</a><br/>
+              <a href="#" onclick="addSelectTwoToOne(event);">&laquo;&nbsp;Remove</a>
             </td>
             <td valign="top" width="40%">
               <select style="width: 100px" name="selfields" id="selfields" multiple size="10">
