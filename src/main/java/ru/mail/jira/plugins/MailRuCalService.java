@@ -633,23 +633,30 @@ public class MailRuCalService
                         Map<String, String> cfMap = new HashMap<String, String>();
                         for (CustomField cf : cfs)
                         {
-                            Object cfVal = cf.getValue(issue);
-                            if (cfVal != null && calFields != null && field.equals(cf.getName()))
+                            try
                             {
-                                String cfStrVal;
-                                if (cfVal instanceof Date)
+                                Object cfVal = cf.getValue(issue);
+                                if (field.equals(cf.getName()) && cfVal != null)
                                 {
-                                    cfStrVal = ComponentManager.getInstance().getJiraAuthenticationContext().getOutlookDate().formatDateTimePicker((Date)cfVal);
-                                }
-                                else
-                                {
-                                    cfStrVal = cfVal.toString();
-                                }
+                                    String cfStrVal;
+                                    if (cfVal instanceof Date)
+                                    {
+                                        cfStrVal = ComponentManager.getInstance().getJiraAuthenticationContext().getOutlookDate().formatDateTimePicker((Date)cfVal);
+                                    }
+                                    else
+                                    {
+                                        cfStrVal = cfVal.toString();
+                                    }
 
-                                if (cfStrVal.length() > 0)
-                                {
-                                    cfMap.put(cf.getName(), cfStrVal);
+                                    if (cfStrVal.length() > 0)
+                                    {
+                                        cfMap.put(cf.getName(), cfStrVal);
+                                    }
                                 }
+                            }
+                            catch (Exception ex)
+                            {
+                                log.error("MailRuCalService::createEventEntityObj - Cannot get custom field value");
                             }
                         }
                         en.setCustomFields(cfMap);
