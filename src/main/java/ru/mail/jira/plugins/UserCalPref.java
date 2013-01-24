@@ -76,7 +76,12 @@ public class UserCalPref
             fields = new HashMap<Long, Set<String>>();
         }
 
-        return fields.get(calId);
+        Set<String> storedFields = fields.get(calId);
+        if (!(storedFields instanceof LinkedHashSet<?>))
+        {
+            storedFields = new LinkedHashSet<String>(storedFields);
+        }
+        return storedFields;
     }
 
     /**
