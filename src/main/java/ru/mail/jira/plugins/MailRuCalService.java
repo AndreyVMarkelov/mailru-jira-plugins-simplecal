@@ -952,7 +952,7 @@ public class MailRuCalService
                     JqlClauseBuilder jcb2 = JqlQueryBuilder.newClauseBuilder();
                     JqlClauseBuilder jcb3 = JqlQueryBuilder.newClauseBuilder().not().addClause(JqlQueryBuilder.newClauseBuilder().customField(startCf.getIdAsLong()).gt(formatDate(endDate)).buildClause());
                     JqlClauseBuilder jcb4 = JqlQueryBuilder.newClauseBuilder().not().addClause(JqlQueryBuilder.newClauseBuilder().customField(endCf.getIdAsLong()).lt(formatDate(startDate)).buildClause());
-                    jcb3.and().addClause(jcb4.buildClause());
+                    jcb3.or().addClause(jcb4.buildClause());
                     jcb2.addClause(jcb3.buildClause());
                     jcb.and().addClause(jcb2.buildClause());
                 }
@@ -1063,7 +1063,7 @@ public class MailRuCalService
                 JqlClauseBuilder jcb2 = JqlQueryBuilder.newClauseBuilder();
                 JqlClauseBuilder jcb3 = JqlQueryBuilder.newClauseBuilder().not().addClause(JqlQueryBuilder.newClauseBuilder().customField(startCf.getIdAsLong()).gt(formatDate(endDate)).buildClause());
                 JqlClauseBuilder jcb4 = JqlQueryBuilder.newClauseBuilder().not().addClause(JqlQueryBuilder.newClauseBuilder().customField(endCf.getIdAsLong()).lt(formatDate(startDate)).buildClause());
-                jcb3.and().addClause(jcb4.buildClause());
+                jcb3.or().addClause(jcb4.buildClause());
                 jcb2.addClause(jcb3.buildClause());
                 jcb.and().addClause(jcb2.buildClause());
             }

@@ -73,7 +73,7 @@ public class UserCalPref
     {
         if (fields == null)
         {
-            fields = new HashMap<Long, Set<String>>();
+            fields = new LinkedHashMap<Long, Set<String>>();
         }
 
         return fields.get(calId);
@@ -178,6 +178,7 @@ public class UserCalPref
         Set<String> storedFields = fields.get(calId);
         if (storedFields == null)
         {
+            
             storedFields = new LinkedHashSet<String>(calFields);
         }
         else

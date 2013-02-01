@@ -34,7 +34,7 @@
         <table width="100%">
           <tr>
             <td width="40%">
-              <select style="width: 100px" id="srcfields" name="srcfields" multiple="multiple" size="12">
+              <select style="width: 150px" id="srcfields" name="srcfields" multiple="multiple" size="12">
               #foreach($field in $fields.entrySet())
                 <option value="$field.key">$field.value</option>
               #end
@@ -45,7 +45,7 @@
               <a href="#" onclick="addSelectTwoToOne(event);">&laquo;&nbsp;Remove</a>
             </td>
             <td valign="top" width="40%">
-              <select style="width: 100px" name="selfields" id="selfields" multiple size="10">
+              <select style="width: 150px" name="selfields" id="selfields" multiple size="10">
               #foreach($field in $storedFields.entrySet())
                 <option value="$field.key">$field.value</option>
               #end
