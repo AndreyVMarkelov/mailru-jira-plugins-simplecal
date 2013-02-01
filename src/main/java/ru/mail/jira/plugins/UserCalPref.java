@@ -77,7 +77,7 @@ public class UserCalPref
         }
 
         Set<String> storedFields = fields.get(calId);
-        if (!(storedFields instanceof LinkedHashSet<?>))
+        if (storedFields != null && !(storedFields instanceof LinkedHashSet<?>))
         {
             storedFields = new LinkedHashSet<String>(storedFields);
         }
