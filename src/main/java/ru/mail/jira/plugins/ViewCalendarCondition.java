@@ -99,7 +99,7 @@ public class ViewCalendarCondition
                 {
                     if (grpMgr.groupExists(group) && getUserUtil().userExists(username))
                     {
-                        if (grpMgr.isUserInGroup(username, group))
+                        if (grpMgr.isUserInGroup(getUserUtil().getUserObject(username), grpMgr.getGroupObject(group)))
                         {
                             return true;
                         }
