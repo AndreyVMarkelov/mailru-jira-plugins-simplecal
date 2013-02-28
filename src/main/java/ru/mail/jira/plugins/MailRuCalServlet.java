@@ -109,7 +109,7 @@ public class MailRuCalServlet
             {
                 if (grMgr.groupExists(group))
                 {
-                    if (grMgr.isUserInGroup(user, grMgr.getGroupObject(group)));
+                    if (grMgr.isUserInGroup(user, grMgr.getGroupObject(group)))
                     {
                         userInGroup = true;
                     }
