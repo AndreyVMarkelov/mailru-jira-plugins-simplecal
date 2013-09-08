@@ -12,21 +12,19 @@
     <!-- Resources -->
     <resource type="i18n" name="i18n" location="i18n.mailrucal"/>
 
-    <web-resource key="jcalendar" name="Mail.Ru Calendar Resources">
+    <web-resource key="jcalendar" name="AM Calendar Resources">
         <transformation extension="js">
             <transformer key="jsI18n"/>
         </transformation>
-        <resource type="download" name="jquery-ui-1.8.17.custom.min.js" location="media/jquery-ui-1.8.17.custom.min.js"/>
-        <resource type="download" name="jquery.ui.dialog.js" location="media/jquery.ui.dialog.js"/>
         <resource type="download" name="fullcalendar.css" location="media/fullcalendar.css"/>
         <resource type="download" name="fullcalendar.js" location="media/fullcalendar.js"/>
-        <resource type="download" name="jquery.json-2.3.js" location="media/jquery.json-2.3.js"/>
+         <resource type="download" name="jquery.json-2.3.js" location="media/jquery.json-2.3.js"/>
         <resource type="download" name="mailrucal.js" location="media/mailrucal.js"/>
         <resource type="download" name="mailrucal.css" location="media/mailrucal.css"/>
         <resource type="download" name="mailrucal-images/" location="images"/>
     </web-resource>
 
-    <web-resource key="jcalendar-admin" name="Mail.Ru Calendar Admin Resources">
+    <web-resource key="jcalendar-admin" name="AM Calendar Admin Resources">
         <transformation extension="js">
             <transformer key="jsI18n"/>
         </transformation>
@@ -37,50 +35,54 @@
     <!-- End resources -->
 
     <!-- Sections -->
-    <web-section key="mailrucal-link-section" name="Mail.Ru Calendar section" location="mailrucal-links-link" weight="10"/>
-    <web-item key="mailrucal-links-link"
-              name="Links Mail.Ru Calendar"
-              section="system.top.navigation.bar"
-              weight="47">
+    <web-item key="mailrucal-links-link" name="Links AM Calendar" section="system.top.navigation.bar" weight="47">
         <conditions type="AND">
             <condition class="com.atlassian.jira.plugin.webfragment.conditions.UserLoggedInCondition"/>
-            <condition class="ru.mail.jira.plugins.ViewCalendarCondition"/>
+            <condition class="ru.andreymarkelov.atlas.plugins.simplecal.ViewCalendarCondition"/>
+            <condition class="ru.andreymarkelov.atlas.plugins.simplecal.IsPriorToJiraVersion"><param name="majorVersion">6</param><param name="minorVersion">0</param></condition>
         </conditions>
         <label key="mailrucal.title"/>
         <tooltip key="mailrucal.title"/>
-        <link linkId="mailrucal-links-link">/plugins/servlet/mailrucal/view</link>
+        <link linkId="amplugin-simple-cal-link-section">/plugins/servlet/mailrucal/view</link>
     </web-item>
-    <web-item key="mailrucal-links-link-item"
-              name="Links Mail.Ru Calendar"
-              section="mailrucal-links-link/mailrucal-link-section"
-              weight="47">
-        <label key="mailrucal.title"/>
-        <tooltip key="mailrucal.title"/>
+    <web-item key="mailrucal-links-link_new" name="Links AM Calendar" section="system.top.navigation.bar" weight="47">
         <conditions type="AND">
             <condition class="com.atlassian.jira.plugin.webfragment.conditions.UserLoggedInCondition"/>
-            <condition class="ru.mail.jira.plugins.ViewCalendarCondition"/>
+            <condition class="ru.andreymarkelov.atlas.plugins.simplecal.ViewCalendarCondition"/>
+            <condition class="ru.andreymarkelov.atlas.plugins.simplecal.IsAtLeastJiraVersion"><param name="majorVersion">6</param><param name="minorVersion">0</param></condition>
         </conditions>
-        <link linkId="mailrucal-links-link-item">/plugins/servlet/mailrucal/view</link>
+        <label key="mailrucal.title"/>
+        <tooltip key="mailrucal.title"/>
+        <link linkId="amplugin-simple-cal-link-section">/plugins/servlet/mailrucal/view</link>
     </web-item>
     <!-- End sections -->
 
     <!-- Rest resources -->
-    <rest key="mailrucal-resources" path="/mailrucalws" version="1.0">
+    <rest key="amplugin-simple-cal-resources" path="/mailrucalws" version="1.0">
         <description>Provides the REST resource for the "mailrucal" plugin.</description>
     </rest>
     <!-- End rest -->
 
-    <web-item key="adminpagelink" name="Configure Simple Calendar" section="system.admin/globalsettings" weight="95">
+    <web-item key="amplugin-simple-cal-adminpagelink" name="Configure Simple Calendar" section="system.admin/globalsettings" weight="95">
         <label key="mailrucal.admin.title"/>
-        <condition class="com.atlassian.jira.plugin.webfragment.conditions.JiraGlobalPermissionCondition">
-            <param name="permission">admin</param>
-        </condition>
-        <link linkId="adminpagelink">/secure/CalendarConfigClass!default.jspa</link>
+        <conditions type="AND">
+            <condition class="com.atlassian.jira.plugin.webfragment.conditions.JiraGlobalPermissionCondition"><param name="permission">admin</param></condition>
+            <condition class="ru.andreymarkelov.atlas.plugins.simplecal.IsPriorToJiraVersion"><param name="majorVersion">6</param><param name="minorVersion">0</param></condition>
+        </conditions>
+        <link linkId="amplugin-simple-cal-adminpagelink">/secure/CalendarConfigClass!default.jspa</link>
+    </web-item>
+    <web-item key="amplugin-simple-cal-adminpagelink_new" name="Configure Simple Calendar" section="admin_system_menu/top_system_section" weight="95">
+        <label key="mailrucal.admin.title"/>
+        <conditions type="AND">
+            <condition class="com.atlassian.jira.plugin.webfragment.conditions.JiraGlobalPermissionCondition"><param name="permission">admin</param></condition>
+            <condition class="ru.andreymarkelov.atlas.plugins.simplecal.IsAtLeastJiraVersion"><param name="majorVersion">6</param><param name="minorVersion">0</param></condition>
+        </conditions>
+        <link linkId="amplugin-simple-cal-adminpagelink_new">/secure/CalendarConfigClass!default.jspa</link>
     </web-item>
 
-    <webwork1 key="configurepluginaction" name="Configure Plug-In Action" class="java.lang.Object">
+    <webwork1 key="amplugin-simple-cal-configureaction" name="Configure Plug-In Action" class="java.lang.Object">
         <actions>
-            <action name="ru.mail.jira.plugins.CalendarConfigClass" alias="CalendarConfigClass">
+            <action name="ru.andreymarkelov.atlas.plugins.simplecal.CalendarConfigClass" alias="CalendarConfigClass">
                 <view name="input">/templates/configpage.vm</view>
                 <view name="success">/templates/configpage.vm</view>
             </action>
@@ -88,9 +90,9 @@
     </webwork1>
 
     <!-- component imports -->
-    <component key="mailrucal-config" name="Mail.Ru calendar Plug-In configuration" class="ru.mail.jira.plugins.MailRuCalCfgImpl"/>
+    <component key="amplugin-simple-cal-config" name="AM calendar Plug-In configuration" class="ru.andreymarkelov.atlas.plugins.simplecal.MailRuCalCfgImpl"/>
 
-    <component key="simplecal-launcher" name="Simple Calendar Starter" class="ru.mail.jira.plugins.Starter" public="true">
+    <component key="simplecal-launcher" name="Simple Calendar Starter" class="ru.andreymarkelov.atlas.plugins.simplecal.Starter" public="true">
         <interface>com.atlassian.sal.api.lifecycle.LifecycleAware</interface>
     </component>
 
@@ -101,7 +103,7 @@
     <!-- End imports -->
 
     <!-- Servlets -->
-    <servlet key="mailrucal-renderer" class="ru.mail.jira.plugins.MailRuCalServlet">
+    <servlet key="amplugin-simple-cal-renderer" class="ru.andreymarkelov.atlas.plugins.simplecal.MailRuCalServlet">
         <url-pattern>/mailrucal/view</url-pattern>
     </servlet>
     <!-- End servlets -->

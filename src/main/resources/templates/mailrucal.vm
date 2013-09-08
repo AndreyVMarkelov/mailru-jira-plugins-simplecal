@@ -12,8 +12,8 @@
     <body class="workarea">
         <table width="100%">
             <tr>
-                <td width="80%" class="centerframe">
-                    <div id='calendar'></div>
+                <td width="80%" valign="top" class="centerframe">
+                    <div id='simplecalendar'></div>
                 </td>
                 <td width="20%" valign="top" class="rightframe">
                     <div class="rightbox">
@@ -33,6 +33,20 @@
                                 <td>
                                     <button class="fullsize group_opt_margin pointer" onclick="changeShowTimeView('$baseUrl');">
                                         #if($usrPref.isShowTime())$i18n.getText("mailrucal.hidefulltime")#else$i18n.getText("mailrucal.showfulltime")#end
+                                    </button>
+                                </td>
+                            </tr>
+                        </table>
+                        </div>
+                        <div class="optionbox">
+                        <table width="100%">
+                            <tr>
+                                <td><span class="groupheader">$i18n.getText("mailrucal.calactiongroup")</span></td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <button id="addMailRuCalendarBtn" name="addMailRuCalendarBtn" class="fullsize pointer" onclick="addMailRuCalendar(event, '$baseUrl')">
+                                        $i18n.getText("mailrucal.addcal")
                                     </button>
                                 </td>
                             </tr>
@@ -70,11 +84,6 @@
                                         </td>
                                     </tr>
                                 </table>
-                            </div>
-                            <div class="optionbox">
-                                <button id="addMailRuCalendarBtn" name="addMailRuCalendarBtn" class="fullsize pointer" onclick="addMailRuCalendar(event, '$baseUrl')">
-                                     $i18n.getText("mailrucal.addcal")
-                                </button>
                             </div>
                         </div>
                     </div>

@@ -8,7 +8,7 @@
             #end
         #end
 
-        jQuery('#calendar').fullCalendar({
+        jQuery('#simplecalendar').fullCalendar({
             #if($usrPref && $usrPref.getDefaultView())defaultView: '$usrPref.getDefaultView()',#end
             header: {
                 left: 'prev,next today',
@@ -60,5 +60,7 @@
             created: '$i18n.getText("mailrucal.created")',
             updated: '$i18n.getText("mailrucal.updated")'
         });
+
+        jQuery("div.rightbox").height(jQuery("#simplecalendar").height());
     });
 </script>

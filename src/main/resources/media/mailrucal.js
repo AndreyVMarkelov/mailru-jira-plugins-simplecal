@@ -121,7 +121,7 @@ function changeCalMode(baseUrl, ctime) {
             }
         },
         success: function(result) {
-            AJS.$('#calendar').fullCalendar('refetchEvents');
+            AJS.$('#simplecalendar').fullCalendar('refetchEvents');
         }
     });
 }

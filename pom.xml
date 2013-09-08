@@ -4,10 +4,10 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>ru.mail.jira.plugins</groupId>
     <artifactId>mailrucal</artifactId>
-    <version>1.4.8</version>
+    <version>1.5.0</version>
     <organization>
-        <name>Andrey Markelov | Mail.Ru Group</name>
-        <url>http://corp.mail.ru/en</url>
+        <name>Andrey Markelov</name>
+        <url>http://ru.linkedin.com/in/andreymarkelov/</url>
     </organization>
     <name>Simple Calendar</name>
     <description>This is the ru.mail.jira.plugins:mailrucal plugin for Atlassian JIRA.</description>
@@ -19,6 +19,19 @@
             <version>${jira.version}</version>
             <scope>provided</scope>
         </dependency>
+        <dependency>
+            <groupId>com.atlassian.jira</groupId>
+            <artifactId>jira-api</artifactId>
+            <version>${jira.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <!--<dependency>
+            <groupId>com.atlassian.jira</groupId>
+            <artifactId>jira-core</artifactId>
+            <version>${jira.version}</version>
+            <scope>provided</scope>
+        </dependency>-->
+
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
@@ -110,8 +123,8 @@
         </plugins>
     </build>
     <properties>
-        <jira.version>4.3.4</jira.version>
-        <jira.data.version>4.3</jira.data.version>
+        <!--<jira.version>6.0.1</jira.version> -->
+        <jira.version>5.0</jira.version>
         <amps.version>4.0</amps.version>
         <useFastdevCli>false</useFastdevCli>
     </properties>

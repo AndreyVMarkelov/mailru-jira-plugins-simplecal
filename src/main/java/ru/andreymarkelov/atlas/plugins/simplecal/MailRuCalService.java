@@ -2,7 +2,7 @@
  * Created by Andrey Markelov 29-08-2012.
  * Copyright Mail.Ru Group 2012. All rights reserved.
  */
-package ru.mail.jira.plugins;
+package ru.andreymarkelov.atlas.plugins.simplecal;
 
 import java.io.Writer;
 import java.net.URI;
@@ -1853,6 +1853,14 @@ public class MailRuCalService
                 pcud.setGroups(groups);
                 pcud.setProjRoles(projRoles);
                 mailCfg.storeProjectCalUserData(pcud);
+
+                UserCalPref userPref = mailCfg.getUserCalPref(user.getName());
+                if (userPref == null)
+                {
+                    userPref = new UserCalPref();
+                }
+                userPref.storeUserColor(pcud.getCalId(), color);
+                mailCfg.putUserCalPref(user.getName(), userPref);
             }
             else
             {
